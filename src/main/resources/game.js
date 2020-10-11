@@ -139,7 +139,7 @@ function CLASS_resources(){
 	var already_loading = false;
 	
 	function on_loaded(){
-	//alert(untitled23.Testing);
+
 		resources_loaded++;
 	};
 // Public:
@@ -151,6 +151,7 @@ function CLASS_resources(){
 		return (resources_loaded == NUM_RESOURCES);
 	}
 	this.load = function(){
+
 		if(already_loading){
 			return;
 		}
@@ -694,18 +695,21 @@ function CLASS_game(){
 	// Savegame section:
 	//////////////////////////////////////////////////////////////////////////////
 	function CLASS_savegame(){
-		this.usernumber = -1;
-	
-		this.username = null;
-		this.password = null;
-		this.reached_level = 1;
+
+		//this.usernumber = -1;
+	untitled23.saveGame(this);
+	//	this.username = null;
+		//this.password = null;
+	//	this.reached_level = 1;
 		
-		this.progressed = false;
+	//	this.progressed = false;
 	
 		this.arr_steps = new Array();
 		for(var i = 1; i <= 50; i++){
 			this.arr_steps[i] = 0;
 		}
+
+
 	}
 	
 	this.savegame = new CLASS_savegame();
@@ -1779,103 +1783,7 @@ function CLASS_visual(){
 	this.offset_argl_y = -44;
 	
 	this.init_animation = function(){
-		for(var y = 0; y < LEV_DIMENSION_Y; y++){
-			for(var x = 0; x < LEV_DIMENSION_X; x++){
-				var block = game.level_array[x][y];
-				switch (block.id) {
-					case -1:// DUMMY BLOCK (invisible). Prevents entities from moving to already occupied spaces.
-						break;
-					case 1:// 1: Berti (entry point)
-					case 2:// 2: AUTO Menu Berti
-						block.animation_frame = 59;
-						break;
-					case 3:// Solid block
-						block.animation_frame = 31;
-						break;
-					case 4:// Banana
-						block.animation_frame = 2;
-						block.fine_offset_x = that.offset_banana_x;
-						block.fine_offset_y = that.offset_banana_y;
-						break;
-					case 5:// Light block
-						block.animation_frame = 32;
-						break;
-					case 6:// Heavy block
-						block.animation_frame = 33;
-						break;
-					case 7:// Purple monster (Monster 2)
-						block.animation_frame = 111;
-						break;
-					case 8:
-						// NOTHING
-						break;
-					case 9:
-						// NOTHING
-						break;
-					case 10:// Green monster (Monster 2)
-						block.animation_frame = 147;
-						break;
-					case 11:
-						// NOTHING
-						break;
-					case 12:
-						// NOTHING
-						break;
-					case 13:// Key 1
-						block.animation_frame = 3;
-						block.fine_offset_x = that.offset_key_x;
-						block.fine_offset_y = that.offset_key_y;
-						break;
-					case 14:// Key 2
-						block.animation_frame = 4;
-						block.fine_offset_x = that.offset_key_x;
-						block.fine_offset_y = that.offset_key_y;
-						break;
-					case 15:// Key 3
-						block.animation_frame = 5;
-						block.fine_offset_x = that.offset_key_x;
-						block.fine_offset_y = that.offset_key_y;
-						break;
-					case 16:// Key 4
-						block.animation_frame = 6;
-						block.fine_offset_x = that.offset_key_x;
-						block.fine_offset_y = that.offset_key_y;
-						break;
-					case 17:// Key 5
-						block.animation_frame = 7;
-						block.fine_offset_x = that.offset_key_x;
-						block.fine_offset_y = that.offset_key_y;
-						break;
-					case 18:// Key 6
-						block.animation_frame = 8;
-						block.fine_offset_x = that.offset_key_x;
-						block.fine_offset_y = that.offset_key_y;
-						break;
-					case 19:// Door 1
-						block.animation_frame = 41;
-						break;
-					case 20:// Door 2
-						block.animation_frame = 44;
-						break;
-					case 21:// Door 3
-						block.animation_frame = 47;
-						break;
-					case 22:// Door 4
-						block.animation_frame = 50;
-						break;
-					case 23:// Door 5
-						block.animation_frame = 53;
-						break;
-					case 24:// Door 6
-						block.animation_frame = 56;
-						break;
-				
-					default:
-					// Uh oh, this part should never be executed
-					break;
-				}
-			}
-		}
+	untitled23.kt_init_animation(that,game);
 	}
 	
 	this.update_animation = function(x, y){
@@ -1883,173 +1791,13 @@ function CLASS_visual(){
 		switch (block.id) {
 			case 1:
 			case 2:
-				block.fine_offset_x = 0;
-				if(game.level_ended == 0){
-					if(block.moving){
-						block.fine_offset_x = -1;
-						if(block.pushing){
-							switch (block.face_dir) {
-								case DIR_UP:
-									if(block.animation_frame < 87 || block.animation_frame > 90){
-										block.animation_frame = 87;
-									}
-									break;
-								case DIR_DOWN:
-									if(block.animation_frame < 91 || block.animation_frame > 94){
-										block.animation_frame = 91;
-									}
-									break;
-								case DIR_LEFT:
-									if(block.animation_frame < 79 || block.animation_frame > 82){
-										block.animation_frame = 79;
-									}
-									break;
-								case DIR_RIGHT:
-									if(block.animation_frame < 83 || block.animation_frame > 86){
-										block.animation_frame = 83;
-									}
-									break;
-								default:
-									// This should never be executed
-									break;
-							}
-						}else{
-							switch (block.face_dir) {
-								case DIR_UP:
-									if(block.animation_frame < 71 || block.animation_frame > 74){
-										block.animation_frame = 71;
-									}
-									break;
-								case DIR_DOWN:
-									if(block.animation_frame < 75 || block.animation_frame > 78){
-										block.animation_frame = 75;
-									}
-									break;
-								case DIR_LEFT:
-									if(block.animation_frame < 63 || block.animation_frame > 66){
-										block.animation_frame = 63;
-									}
-									break;
-								case DIR_RIGHT:
-									if(block.animation_frame < 67 || block.animation_frame > 70){
-										block.animation_frame = 67;
-									}
-									break;
-								default:
-									// This should never be executed
-									break;
-							}
-						}
-					}else{
-						block.animation_frame = 59;
-					}
-				}else if(game.level_ended == 1){
-					block.animation_frame = 61;
-				}else if(game.level_ended == 2){
-					block.animation_frame = 62;
-				}
+			untitled23.kt_update_animation_case2(x,y,block);
 				break;
 			case 7:// Purple monster (Monster 2)
-				block.fine_offset_x = 0;
-				if(game.level_ended == 0){
-					if(block.moving){
-						block.fine_offset_x = -1;
-						if(block.pushing){
-							switch (block.face_dir) {
-								case DIR_UP:
-									if(block.animation_frame < 139 || block.animation_frame > 142){
-										block.animation_frame = 139;
-									}
-									break;
-								case DIR_DOWN:
-									if(block.animation_frame < 143 || block.animation_frame > 146){
-										block.animation_frame = 143;
-									}
-									break;
-								case DIR_LEFT:
-									if(block.animation_frame < 131 || block.animation_frame > 134){
-										block.animation_frame = 131;
-									}
-									break;
-								case DIR_RIGHT:
-									if(block.animation_frame < 135 || block.animation_frame > 138){
-										block.animation_frame = 135;
-									}
-									break;
-								default:
-									// This should never be executed
-									break;
-							}
-						}else{
-							switch (block.face_dir) {
-								case DIR_UP:
-									if(block.animation_frame < 123 || block.animation_frame > 126){
-										block.animation_frame = 123;
-									}
-									break;
-								case DIR_DOWN:
-									if(block.animation_frame < 127 || block.animation_frame > 130){
-										block.animation_frame = 127;
-									}
-									break;
-								case DIR_LEFT:
-									if(block.animation_frame < 115 || block.animation_frame > 118){
-										block.animation_frame = 115;
-									}
-									break;
-								case DIR_RIGHT:
-									if(block.animation_frame < 119 || block.animation_frame > 122){
-										block.animation_frame = 119;
-									}
-									break;
-								default:
-									// This should never be executed
-									break;
-							}
-						}
-					}else{
-						block.animation_frame = 111;
-					}
-				}else{
-					block.animation_frame = 111;
-				}
+				untitled23.kt_update_animation_case7(x,y,block);
 				break;
 			case 10:// Green monster (Monster 2)
-				block.fine_offset_x = 0;
-				if(game.level_ended == 0){
-					if(block.moving){
-						block.fine_offset_x = -1;
-						switch (block.face_dir) {
-							case DIR_UP:
-								if(block.animation_frame < 159 || block.animation_frame > 162){
-									block.animation_frame = 159;
-								}
-								break;
-							case DIR_DOWN:
-								if(block.animation_frame < 163 || block.animation_frame > 166){
-									block.animation_frame = 163;
-								}
-								break;
-							case DIR_LEFT:
-								if(block.animation_frame < 151 || block.animation_frame > 154){
-									block.animation_frame = 151;
-								}
-								break;
-							case DIR_RIGHT:
-								if(block.animation_frame < 155 || block.animation_frame > 158){
-									block.animation_frame = 155;
-								}
-								break;
-							default:
-								// This should never be executed
-								break;
-						}
-					}else{
-						block.animation_frame = 147;
-					}
-				}else{
-					block.animation_frame = 147;
-				}
+				untitled23.kt_update_animation_case10(x,y,block);
 				break;
 			case 19:// Door 1
 				if(block.gets_removed_in >= 0){
@@ -2586,45 +2334,7 @@ function CLASS_visual(){
 // UPDATING PROCESS
 // Here, the behaviour of the game is calculated, once per UPS (update per second)
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
-var update = function () {
-	if(res.ready()){// All resources loaded
-		if(!game.initialized){
-			game.set_volume(DEFAULT_VOLUME);
-			input.init();// Only init inputs after everything is loaded.
-			game.play_sound(0);
-			game.initialized = true;
-		}
-		
-		if(!game.paused){
-			if(game.mode == 0){
-				game.wait_timer--;
-				if(game.wait_timer <= 0){
-					game.load_level(0);
-				}
-			}else if(game.mode == 1){
-				if(game.wait_timer <= 0){
-					if(game.level_ended == 0){
-						game.update_tick++;
-						update_entities();
-					}else if(game.level_ended == 1){
-						game.update_savegame(game.level_number, game.steps_taken);
-						game.next_level();
-					}else if(game.level_ended == 2){
-						game.reset_level();
-					}
-				}else{
-					game.wait_timer--;
-				}
-			}
-		}
-	}
-	
-	var now = Date.now();
-	game.delta_updated = now - game.last_updated;
-	game.last_updated = now;
-	
-	game.update_drawn = false;
-};
+
 
 var update_entities = function(){
 	var tick = (game.update_tick*60/UPS);
@@ -2678,7 +2388,8 @@ var render = function () {
     var elapsed = game.now - game.then;
 	if (elapsed > game.fpsInterval) {
         game.then = game.now - (elapsed % game.fpsInterval);
-		update();
+		//update();
+		untitled23.ktupdate();
 	}
 	
 	//CTX.fillStyle="red";
