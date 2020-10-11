@@ -24,28 +24,8 @@ EXTERNAL_LEVELS[0][19] = new Array(0,3,3,3,3,0,0,0,3,3,3,3,0);
 EXTERNAL_LEVELS[0][20] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
 
 
-EXTERNAL_LEVELS[1] = new Array();
-EXTERNAL_LEVELS[1][0] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][1] = new Array(0,0,0,0,0,0,1,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][2] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][3] = new Array(0,3,3,3,3,3,3,3,3,3,3,3,0);
-EXTERNAL_LEVELS[1][4] = new Array(0,0,0,0,0,5,0,6,0,0,0,0,0);
-EXTERNAL_LEVELS[1][5] = new Array(3,3,3,3,3,3,0,3,3,3,3,3,3);
-EXTERNAL_LEVELS[1][6] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][7] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][8] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][9] = new Array(0,3,3,3,3,3,3,3,3,3,3,3,0);
-EXTERNAL_LEVELS[1][10] = new Array(0,0,5,0,6,0,0,0,5,0,5,0,0);
-EXTERNAL_LEVELS[1][11] = new Array(3,3,3,3,3,3,0,3,3,3,3,3,3);
-EXTERNAL_LEVELS[1][12] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][13] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][14] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][15] = new Array(0,3,3,3,3,3,3,3,3,3,3,3,0);
-EXTERNAL_LEVELS[1][16] = new Array(0,0,0,0,0,5,0,6,0,0,0,0,0);
-EXTERNAL_LEVELS[1][17] = new Array(3,3,3,3,3,3,0,3,3,3,3,3,3);
-EXTERNAL_LEVELS[1][18] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][19] = new Array(0,0,0,0,0,0,4,0,0,0,0,0,0);
-EXTERNAL_LEVELS[1][20] = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
+EXTERNAL_LEVELS[1] = untitled23.firstLevel;
+
 
 
 EXTERNAL_LEVELS[2] = new Array();

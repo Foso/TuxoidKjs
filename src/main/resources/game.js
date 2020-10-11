@@ -139,7 +139,7 @@ function CLASS_resources(){
 	var already_loading = false;
 	
 	function on_loaded(){
-	//alert("HALLO");
+	//alert(untitled23.Testing);
 		resources_loaded++;
 	};
 // Public:
@@ -304,19 +304,7 @@ function CLASS_resources(){
 		// Sounds: /////////////////////////////////////////////
 		////////////////////////////////////////////////////////
 		
-		var soundarray = [
-		"about.mp3",
-		"argl.mp3",
-		"attack1.mp3",
-		"attack2.mp3",
-		"chart.mp3",
-		"click.mp3",
-		"gameend.mp3",
-		"getpoint.mp3",
-		"newplane.mp3",
-		"opendoor.mp3",
-		"wow.mp3",
-		"yeah.mp3"];
+		var soundarray = untitled23.soundarray;
 		
 		for(var i = 0; i < soundarray.length; i++){
 			that.sounds[i] = new Audio();
