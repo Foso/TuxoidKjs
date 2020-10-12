@@ -32,7 +32,14 @@ fun saveGame(test: dynamic) {
 }
 interface Resources{
     fun ready():Boolean
+    val levels: dynamic
     var images : Array<dynamic>
+}
+
+
+external interface Tile{
+    val x : Int
+    val y : Int
 }
 
 external interface Game{
@@ -42,7 +49,16 @@ external interface Game{
     fun next_level()
     fun update_savegame(levelNumber: Int, stepsTaken: Int)
     fun reset_level()
+    fun dir_to_coords(currX: Int, currY: Int, faceDir: dynamic): dynamic
+    fun move(currX: Int, currY: Int, faceDir: dynamic)
+    fun walkable(currX: Int, currY: Int, dirLeft: Int): Boolean
+    fun start_move(currX: Int, currY: Int, dirLeft: Int)
+    fun get_adjacent_tiles(currX: Int, currY: Int): Array<Tile>
 
+    val walk_dir: Int
+    val single_steps: Boolean
+    var prime_movement: dynamic
+    val move_speed: dynamic
     var door_removal_delay: Double
     var level_array: dynamic
     var update_drawn: Boolean
@@ -51,7 +67,7 @@ external interface Game{
     val steps_taken: Int
     val level_number: Int
     var update_tick: Int
-    val level_ended: Int
+    var level_ended: Int
     var wait_timer: Int
     val mode: Int
     val paused: Boolean
@@ -65,6 +81,9 @@ external var DIR_UP: Int
 external var DIR_DOWN: Int
 
 external var DIR_RIGHT: Int
+external var DIR_NONE: Int
+external var LEV_START_DELAY: Int
+external var UPS: Int
 
 external var res : Resources
 external var game : Game
@@ -74,7 +93,15 @@ external var SCREEN_WIDTH : dynamic
 external var SCREEN_HEIGHT : dynamic
 external var LEV_DIMENSION_Y : Int
 external var LEV_DIMENSION_X : Int
+external var RENDER_FULL: Int
+external var RENDER_TOP: Int
+external var RENDER_BOTTOM: Int
+external var RENDER_BOTTOM_BORDER: Int
+external var LEV_OFFSET_X: Int
+external var LEV_OFFSET_Y: Int
 
+external var LEV_STOP_DELAY: Int
+external var ANIMATION_DURATION: Int
 
 external var DEFAULT_VOLUME : dynamic
 external var input : dynamic

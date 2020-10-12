@@ -695,15 +695,8 @@ function CLASS_game(){
 	// Savegame section:
 	//////////////////////////////////////////////////////////////////////////////
 	function CLASS_savegame(){
+	    untitled23.saveGame(this);
 
-		//this.usernumber = -1;
-	untitled23.saveGame(this);
-	//	this.username = null;
-		//this.password = null;
-	//	this.reached_level = 1;
-		
-	//	this.progressed = false;
-	
 		this.arr_steps = new Array();
 		for(var i = 1; i <= 50; i++){
 			this.arr_steps[i] = 0;
@@ -1076,97 +1069,16 @@ function CLASS_game(){
 	}
 	
 	CLASS_entity.prototype.update_entity = function(curr_x, curr_y){
-		this.animation_delay++;// This is an important link between the game logic and animation timing.
-		
-		if(this.moving){
-			switch (this.face_dir) {
-				case DIR_UP:
-					this.moving_offset.y -= game.move_speed;
-					break;
-				case DIR_DOWN:
-					this.moving_offset.y += game.move_speed;
-					break;
-				case DIR_LEFT:
-					this.moving_offset.x -= game.move_speed;
-					break;
-				case DIR_RIGHT:
-					this.moving_offset.x += game.move_speed;
-					break;
-				default:
-					alert("002: Something went mighty wrong! Blame the programmer!");// This should never be executed
-					break;
-			}
-			if(this.moving_offset.x <= -24 || this.moving_offset.x >= 24 || this.moving_offset.y <= -24 || this.moving_offset.y >= 24){
-				game.move(curr_x, curr_y, this.face_dir);
-				this.just_moved = true;
-			}
-		}
-		
-		if(this.gets_removed_in == 0){
-			if(this.moving){
-				var dst = game.dir_to_coords(curr_x, curr_y, this.face_dir);
-				game.level_array[dst.x][dst.y].init(0);
-			}
-			game.level_array[curr_x][curr_y].init(0);
-		}else if(this.gets_removed_in > 0){
-			this.gets_removed_in -= 1;
-			vis.update_animation(curr_x, curr_y);
-		}
+	    untitled23.kt_update_entity(curr_x,curr_y,this);
 	}
 	
 	CLASS_entity.prototype.register_input = function(curr_x, curr_y, just_prime){
-		if(!this.moving){
-			if((IS_TOUCH_DEVICE && input.joystick_dir == DIR_LEFT) || input.keys_down[37] || (!game.single_steps && game.walk_dir == DIR_LEFT) || (game.prime_movement && game.walk_dir == DIR_LEFT)){
-				game.prime_movement = just_prime;
-				if(!just_prime && game.walkable(curr_x, curr_y, DIR_LEFT)){
-					game.start_move(curr_x, curr_y, DIR_LEFT);
-				}
-			}else if((IS_TOUCH_DEVICE && input.joystick_dir == DIR_UP) || input.keys_down[38] || (!game.single_steps && game.walk_dir == DIR_UP) || (game.prime_movement && game.walk_dir == DIR_UP)){
-				game.prime_movement = just_prime;
-				if(!just_prime && game.walkable(curr_x, curr_y, DIR_UP)){
-					game.start_move(curr_x, curr_y, DIR_UP);
-				}
-			}else if((IS_TOUCH_DEVICE && input.joystick_dir == DIR_RIGHT) || input.keys_down[39] || (!game.single_steps && game.walk_dir == DIR_RIGHT) || (game.prime_movement && game.walk_dir == DIR_RIGHT)){
-				game.prime_movement = just_prime;
-				if(!just_prime && game.walkable(curr_x, curr_y, DIR_RIGHT)){
-					game.start_move(curr_x, curr_y, DIR_RIGHT);
-				}
-			}else if((IS_TOUCH_DEVICE && input.joystick_dir == DIR_DOWN) || input.keys_down[40] || (!game.single_steps && game.walk_dir == DIR_DOWN) || (game.prime_movement && game.walk_dir == DIR_DOWN)){
-				game.prime_movement = just_prime;
-				if(!just_prime && game.walkable(curr_x, curr_y, DIR_DOWN)){
-					game.start_move(curr_x, curr_y, DIR_DOWN);
-				}
-			}
-		}
+	    untitled23.kt_register_input(curr_x, curr_y, just_prime,this);
 	}
+
 	// After each update, this function gets called for (every) Berti to see if he was caught!
 	CLASS_entity.prototype.check_enemy_proximity = function(curr_x, curr_y){
-		
-		if(this.moving_offset.x != 0 || this.moving_offset.y != 0) return;
-		
-		var adj_array = game.get_adjacent_tiles(curr_x, curr_y);
-		for(var i = 0; i < adj_array.length; i++){
-			if(game.level_array[adj_array[i].x][adj_array[i].y].id == 7 || game.level_array[adj_array[i].x][adj_array[i].y].id == 10){// If there's an opponent on this adjacent tile
-				var enemy_moving_offset_x = game.level_array[adj_array[i].x][adj_array[i].y].moving_offset.x;
-				var enemy_moving_offset_y = game.level_array[adj_array[i].x][adj_array[i].y].moving_offset.y;
-				if(enemy_moving_offset_x != 0 || enemy_moving_offset_y != 0) continue;
-				
-				if(Math.abs(curr_x - adj_array[i].x) == 1 && Math.abs(curr_y - adj_array[i].y) == 1){// If the opponent is diagonally AND
-					// there's an obstacle in the way
-					if((game.level_array[adj_array[i].x][curr_y].id != -1 && game.level_array[adj_array[i].x][curr_y].id != 0) ||
-						(game.level_array[curr_x][adj_array[i].y].id != -1 && game.level_array[curr_x][adj_array[i].y].id != 0)){
-						continue;// Don't perform a proximity check for this particular foe.
-					}
-				}
-			
-				// Got caught!
-				game.play_sound(1);
-				game.wait_timer = LEV_STOP_DELAY*UPS;
-				game.level_ended = 2;
-				vis.update_all_animations();
-				return;
-			}
-		}
+		untitled23.kt_check_enemy_proximity(curr_x, curr_y, this);
 	}
 
 	/*//////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1215,6 +1127,7 @@ function CLASS_game(){
 	this.prime_movement = false;
 	
 	this.load_level = function(lev_number){
+	//untitled23.kt_load_level(lev_number,that);
 		that.mode = 1;
 		that.update_tick = 0;
 	
@@ -1493,157 +1406,8 @@ function CLASS_game(){
 	}
 	
 	this.can_see_tile = function(eye_x, eye_y, tile_x, tile_y){
-		var diff_x = tile_x - eye_x;
-		var diff_y = tile_y - eye_y;
-		
-		var walk1_x;
-		var walk1_y;
-		var walk2_x;
-		var walk2_y;
-		
-		if (diff_x==0){
-			if(diff_y==0){
-				return true;
-			}else if(diff_y > 0){
-				walk1_x = 0;
-				walk1_y = 1;
-				walk2_x = 0;
-				walk2_y = 1;
-			}else{// diff_y < 0
-				walk1_x = 0;
-				walk1_y = -1;
-				walk2_x = 0;
-				walk2_y = -1;
-			}
-		}else if(diff_x > 0){
-			if(diff_y==0){
-				walk1_x = 1;
-				walk1_y = 0;
-				walk2_x = 1;
-				walk2_y = 0;
-			}else if(diff_y > 0){
-				if(diff_y > diff_x){
-					walk1_x = 0;
-					walk1_y = 1;
-					walk2_x = 1;
-					walk2_y = 1;
-				}else if(diff_y == diff_x){
-					walk1_x = 1;
-					walk1_y = 1;
-					walk2_x = 1;
-					walk2_y = 1;
-				}else{// diff_y < diff_x
-					walk1_x = 1;
-					walk1_y = 0;
-					walk2_x = 1;
-					walk2_y = 1;
-				}
-			}else{// diff_y < 0
-				if(diff_y*(-1) > diff_x){
-					walk1_x = 0;
-					walk1_y = -1;
-					walk2_x = 1;
-					walk2_y = -1;
-				}else if(diff_y*(-1) == diff_x){
-					walk1_x = 1;
-					walk1_y = -1;
-					walk2_x = 1;
-					walk2_y = -1;
-				}else{// diff_y < diff_x
-					walk1_x = 1;
-					walk1_y = 0;
-					walk2_x = 1;
-					walk2_y = -1;
-				}
-			}
-		}else{// diff_x < 0
-			if(diff_y==0){
-				walk1_x = -1;
-				walk1_y = 0;
-				walk2_x = -1;
-				walk2_y = 0;
-			}else if(diff_y > 0){
-				if(diff_y > diff_x*(-1)){
-					walk1_x = 0;
-					walk1_y = 1;
-					walk2_x = -1;
-					walk2_y = 1;
-				}else if(diff_y == diff_x*(-1)){
-					walk1_x = -1;
-					walk1_y = 1;
-					walk2_x = -1;
-					walk2_y = 1;
-				}else{// diff_y < diff_x
-					walk1_x = -1;
-					walk1_y = 0;
-					walk2_x = -1;
-					walk2_y = 1;
-				}
-			}else{// diff_y < 0
-				if(diff_y > diff_x){
-					walk1_x = -1;
-					walk1_y = 0;
-					walk2_x = -1;
-					walk2_y = -1;
-				}else if(diff_y == diff_x){
-					walk1_x = -1;
-					walk1_y = -1;
-					walk2_x = -1;
-					walk2_y = -1;
-				}else{// diff_y < diff_x
-					walk1_x = 0;
-					walk1_y = -1;
-					walk2_x = -1;
-					walk2_y = -1;
-				}
-			}
-		}
-		
-		
-		var x_offset = 0;
-		var y_offset = 0;
-		var x_ratio1;
-		var y_ratio1;
-		var x_ratio2;
-		var y_ratio2;
-		var diff1;
-		var diff2;
-		
-		while(true){
-			if(diff_x != 0){
-				x_ratio1 = (x_offset+walk1_x)/diff_x;
-				x_ratio2 = (x_offset+walk2_x)/diff_x;
-			}else{
-				x_ratio1 = 1;
-				x_ratio2 = 1;
-			}
-			if(diff_y != 0){
-				y_ratio1 = (y_offset+walk1_y)/diff_y;
-				y_ratio2 = (y_offset+walk2_y)/diff_y;
-			}else{
-				y_ratio1 = 1;
-				y_ratio2 = 1;
-			}
-			
-			diff1 = Math.abs(x_ratio1-y_ratio1);
-			diff2 = Math.abs(x_ratio2-y_ratio2);
-			
-			if (diff1 <= diff2){
-				x_offset += walk1_x;
-				y_offset += walk1_y;
-			}else{
-				x_offset += walk2_x;
-				y_offset += walk2_y;
-			}
-			
-			if(x_offset == diff_x && y_offset == diff_y){
-				return true;
-			}
-			if(game.level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && game.level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !game.level_array[eye_x + x_offset][eye_y + y_offset].is_small){
-				return false;
-			}
-		}
-		// Code here is unreachable
+	return untitled23.kt_can_see_tile(eye_x, eye_y, tile_x, tile_y)
+
 	}
 	
 	this.prev_level = function(){
@@ -1787,51 +1551,7 @@ function CLASS_visual(){
 	}
 	
 	this.update_animation = function(x, y){
-		var block = game.level_array[x][y];
-		switch (block.id) {
-			case 1:
-			case 2:
-			untitled23.kt_update_animation_case2(x,y,block);
-				break;
-			case 7:// Purple monster (Monster 2)
-				untitled23.kt_update_animation_case7(x,y,block);
-				break;
-			case 10:// Green monster (Monster 2)
-				untitled23.kt_update_animation_case10(x,y,block);
-				break;
-			case 19:// Door 1
-				if(block.gets_removed_in >= 0){
-					block.animation_frame = 43-Math.floor(block.gets_removed_in/game.door_removal_delay*2);
-				}
-				break;
-			case 20:// Door 2
-				if(block.gets_removed_in >= 0){
-					block.animation_frame = 46-Math.floor(block.gets_removed_in/game.door_removal_delay*2);
-				}
-				break;
-			case 21:// Door 3
-				if(block.gets_removed_in >= 0){
-					block.animation_frame = 49-Math.floor(block.gets_removed_in/game.door_removal_delay*2);
-				}
-				break;
-			case 22:// Door 4
-				if(block.gets_removed_in >= 0){
-					block.animation_frame = 52-Math.floor(block.gets_removed_in/game.door_removal_delay*2);
-				}
-				break;
-			case 23:// Door 5
-				if(block.gets_removed_in >= 0){
-					block.animation_frame = 55-Math.floor(block.gets_removed_in/game.door_removal_delay*2);
-				}
-				break;
-			case 24:// Door 6
-				if(block.gets_removed_in >= 0){
-					block.animation_frame = 58-Math.floor(block.gets_removed_in/game.door_removal_delay*2);
-				}
-				break;
-			default:
-			break;
-		}
+		untitled23.kt_update_animation(x,y);
 	}
 	
 	this.update_all_animations = function(){
@@ -1953,28 +1673,12 @@ function CLASS_visual(){
 	}
 	
 	function add_text(text, pos_x, pos_y){
-		var txt = document.createElement("p");
-		txt.innerHTML = text;
-		txt.style.position = "absolute";
-		txt.style.left = pos_x+"px";
-		txt.style.top = pos_y+"px";
-		txt.style.fontFamily = "Tahoma";
-		txt.style.fontSize = "12px";
-		that.dbx.appendChild(txt);
+	untitled23.add_text(text, pos_x, pos_y,that)
 	}
 	
 	function add_number(a_num, pos_x, pos_y, width, height){
-		var num = document.createElement("p");
-		num.innerHTML = a_num;
-		num.style.position = "absolute";
-		num.style.left = pos_x+"px";
-		num.style.top = pos_y+"px";
-		num.style.width = width+"px";
-		num.style.height = height+"px";
-		num.style.fontFamily = "Tahoma";
-		num.style.fontSize = "12px";
-		num.style.textAlign = "right";
-		that.dbx.appendChild(num);
+	untitled23.add_text(a_num, pos_x, pos_y, width, height,that);
+
 	}
 	
 	function add_title(text){
@@ -2631,147 +2335,7 @@ function render_field_subset(consumable){
 	}
 }
 function render_block(x, y, render_option){
-	var block = game.level_array[x][y];
-
-	var offset_x = block.moving_offset.x;
-	var offset_y = block.moving_offset.y;
-	
-	var needs_update = false;
-	while(block.animation_delay >= ANIMATION_DURATION && !block.just_moved){
-		block.animation_delay -= ANIMATION_DURATION;
-		needs_update = true;
-	}
-	
-	if(game.level_array[x][y].id <= 0) return;// Optimization (empty and dummy block can't be drawn)
-	
-	if(needs_update)
-	switch (game.level_array[x][y].id) {
-		/*case -1://DUMMY BLOCK (invisible). Prevents entities from moving to already occupied spaces.
-			break;*/
-		case 1:// 1: Berti
-		case 2:// 2: AUTO Menu Berti
-			if(block.animation_frame >= 63 && block.animation_frame < 66){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 66){
-				block.animation_frame = 63;
-			}else if(block.animation_frame >= 67 && block.animation_frame < 70){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 70){
-				block.animation_frame = 67;
-			}else if(block.animation_frame >= 71 && block.animation_frame < 74){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 74){
-				block.animation_frame = 71;
-			}else if(block.animation_frame >= 75 && block.animation_frame < 78){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 78){
-				block.animation_frame = 75;
-			}else if(block.animation_frame >= 79 && block.animation_frame < 82){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 82){
-				block.animation_frame = 79;
-			}else if(block.animation_frame >= 83 && block.animation_frame < 86){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 86){
-				block.animation_frame = 83;
-			}else if(block.animation_frame >= 87 && block.animation_frame < 90){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 90){
-				block.animation_frame = 87;
-			}else if(block.animation_frame >= 91 && block.animation_frame < 94){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 94){
-				block.animation_frame = 91;
-			}
-			break;
-		case 7:// Purple monster (Monster 2)
-			if(block.animation_frame >= 111 && block.animation_frame < 114){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 114){
-				block.animation_frame = 111;
-			}else if(block.animation_frame >= 115 && block.animation_frame < 118){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 118){
-				block.animation_frame = 115;
-			}else if(block.animation_frame >= 119 && block.animation_frame < 122){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 122){
-				block.animation_frame = 119;
-			}else if(block.animation_frame >= 123 && block.animation_frame < 126){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 126){
-				block.animation_frame = 123;
-			}else if(block.animation_frame >= 127 && block.animation_frame < 130){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 130){
-				block.animation_frame = 127;
-			}else if(block.animation_frame >= 131 && block.animation_frame < 134){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 134){
-				block.animation_frame = 131;
-			}else if(block.animation_frame >= 135 && block.animation_frame < 138){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 138){
-				block.animation_frame = 135;
-			}else if(block.animation_frame >= 139 && block.animation_frame < 142){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 142){
-				block.animation_frame = 139;
-			}else if(block.animation_frame >= 143 && block.animation_frame < 146){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 146){
-				block.animation_frame = 143;
-			}
-			break;
-		case 10:// Green monster (Monster 2)
-			if(block.animation_frame >= 147 && block.animation_frame < 150){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 150){
-				block.animation_frame = 147;
-			}else if(block.animation_frame >= 151 && block.animation_frame < 154){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 154){
-				block.animation_frame = 151;
-			}else if(block.animation_frame >= 155 && block.animation_frame < 158){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 158){
-				block.animation_frame = 155;
-			}else if(block.animation_frame >= 159 && block.animation_frame < 162){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 162){
-				block.animation_frame = 159;
-			}else if(block.animation_frame >= 163 && block.animation_frame < 166){
-				block.animation_frame += 1;
-			}else if(block.animation_frame == 166){
-				block.animation_frame = 163;
-			}
-			break;
-		default:
-		break;
-	}
-	
-	//drawImage reference: context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
-	if(block.animation_frame >= 0){
-		if(render_option == RENDER_FULL){// Render the full block
-			CTX.drawImage(res.images[block.animation_frame], LEV_OFFSET_X+24*x+offset_x+block.fine_offset_x, LEV_OFFSET_Y+24*y+offset_y+block.fine_offset_y);
-		}else if(render_option == RENDER_TOP){// Render top
-			if(block.face_dir == DIR_DOWN){
-				CTX.drawImage(res.images[block.animation_frame], 0, 0, res.images[block.animation_frame].width, res.images[block.animation_frame].height-offset_y, LEV_OFFSET_X+24*x+offset_x+block.fine_offset_x, LEV_OFFSET_Y+24*y+offset_y+block.fine_offset_y, res.images[block.animation_frame].width, res.images[block.animation_frame].height-offset_y);
-			}else if(block.face_dir == DIR_UP){
-				CTX.drawImage(res.images[block.animation_frame], 0, 0, res.images[block.animation_frame].width, res.images[block.animation_frame].height-offset_y-24, LEV_OFFSET_X+24*x+offset_x+block.fine_offset_x, LEV_OFFSET_Y+24*y+offset_y+block.fine_offset_y, res.images[block.animation_frame].width, res.images[block.animation_frame].height-offset_y-24);
-			}
-		}else if(render_option == RENDER_BOTTOM){// Render bottom
-			var imgsize_offset = res.images[block.animation_frame].height - 24;
-		
-			if(block.face_dir == DIR_DOWN){
-				CTX.drawImage(res.images[block.animation_frame], 0, res.images[block.animation_frame].height-offset_y-imgsize_offset, res.images[block.animation_frame].width, offset_y+imgsize_offset, LEV_OFFSET_X+24*x+offset_x+block.fine_offset_x, LEV_OFFSET_Y+24*y+24+block.fine_offset_y, res.images[block.animation_frame].width, offset_y+imgsize_offset);
-			}else if(block.face_dir == DIR_UP){
-				CTX.drawImage(res.images[block.animation_frame], 0, -offset_y, res.images[block.animation_frame].width, res.images[block.animation_frame].height+offset_y, LEV_OFFSET_X+24*x+offset_x+block.fine_offset_x, LEV_OFFSET_Y+24*y+block.fine_offset_y, res.images[block.animation_frame].width, res.images[block.animation_frame].height+offset_y);
-			}
-		}else if(render_option == RENDER_BOTTOM_BORDER){// Render the bottom 4 pixels
-			CTX.drawImage(res.images[block.animation_frame], 0, 24, res.images[block.animation_frame].width-4, 4, LEV_OFFSET_X+24*x+offset_x+block.fine_offset_x, LEV_OFFSET_Y+24*y+offset_y+block.fine_offset_y+24, res.images[block.animation_frame].width-4, 4);
-		}
-	}
+    untitled23.kt_render_block(x,y,render_option)
 }
 
 function render_buttons(){
