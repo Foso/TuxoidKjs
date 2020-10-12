@@ -681,6 +681,10 @@ function CLASS_input(){
 	}
 }
 
+function myTest(){
+    return new CLASS_entity();
+}
+
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////
 // GAME CLASS
 // Holds entities and the game itself
@@ -696,13 +700,6 @@ function CLASS_game(){
 	//////////////////////////////////////////////////////////////////////////////
 	function CLASS_savegame(){
 	    untitled23.saveGame(this);
-
-		this.arr_steps = new Array();
-		for(var i = 1; i <= 50; i++){
-			this.arr_steps[i] = 0;
-		}
-
-
 	}
 	
 	this.savegame = new CLASS_savegame();
@@ -787,19 +784,8 @@ function CLASS_game(){
 	}
 	
 	this.name_savegame = function(uname, pass){
-		var user_count = localStorage.getItem("user_count");
-		if(user_count !== null){
-			user_count = parseInt(user_count);
-			for(var i = 0; i < user_count; i++){
-				var prefix = "player"+i+"_";
-				if(localStorage.getItem(prefix+"username") == uname){
-					return ERR_EXISTS;// Failed already exists
-				}
-			}	
-		}
-		that.savegame.username = uname;
-		that.savegame.password = md5.digest(pass)
-		return ERR_SUCCESS;// Worked
+	return untitled23.kt_name_savegame(uname,pass,that);
+
 	}
 	
 	this.change_password = function(pass, newpass){
@@ -952,120 +938,7 @@ function CLASS_game(){
 		}
 	}
 	CLASS_entity.prototype.chase_berti = function(curr_x, curr_y){
-		if(!this.moving){
-			this.time_since_noise++;
-			
-			var closest_dist = LEV_DIMENSION_X + LEV_DIMENSION_Y + 1;
-			var closest_berti = -1;
-			
-			for(var i = 0; i < game.berti_positions.length; i++){
-				var face_right_direction = 
-				(this.face_dir == DIR_DOWN && game.berti_positions[i].y >= curr_y) || 
-				(this.face_dir == DIR_UP && game.berti_positions[i].y <= curr_y) || 
-				(this.face_dir == DIR_LEFT && game.berti_positions[i].x <= curr_x) || 
-				(this.face_dir == DIR_RIGHT && game.berti_positions[i].x >= curr_x);
-				
-				if(face_right_direction && game.can_see_tile(curr_x, curr_y, game.berti_positions[i].x, game.berti_positions[i].y)){
-					var distance = Math.abs(game.berti_positions[i].x - curr_x) + Math.abs(game.berti_positions[i].y - curr_y);// Manhattan distance
-					if(distance < closest_dist || (distance == closest_dist && Math.random() < 0.50)){
-						closest_dist = distance;
-						closest_berti = i;
-					}
-				}
-			}
-			
-			if(closest_berti == -1 || Math.random() < 0.02){// Can't see berti OR he randomly gets distracted THEN Random search
-				this.sees_berti = false;
-				this.move_randomly(curr_x, curr_y);
-			}else{// Chasing code here.
-				if(!this.sees_berti){
-					this.sees_berti = true;
-					
-					if(this.time_since_noise > Math.ceil(Math.random()*10)+3){
-						this.time_since_noise = 0;
-						if(this.id == 7){
-							game.play_sound(2);
-						}else if(this.id == 10){
-							game.play_sound(3);
-						}
-					}
-				}
-				
-				var diff_x = game.berti_positions[closest_berti].x - curr_x;
-				var diff_y = game.berti_positions[closest_berti].y - curr_y;
-				
-				// THIS IS AN OPTIONAL FIX THAT MAKES THE GAME MUCH HARDER!
-				/*var closest_berti_obj = game.level_array[game.berti_positions[closest_berti].x][game.berti_positions[closest_berti].y];
-				
-				if(closest_berti_obj.moving){
-					var next_pos = game.dir_to_coords(game.berti_positions[closest_berti].x, game.berti_positions[closest_berti].y, closest_berti_obj.face_dir);
-					if(Math.abs(curr_x - next_pos.x) + Math.abs(curr_y - next_pos.y) == 1){
-						if(Math.abs(closest_berti_obj.moving_offset.x) + Math.abs(closest_berti_obj.moving_offset.x) >= 15)
-						return;
-					}
-				}*/// END OF OPTIONAL FIX
-				
-				var dir1;
-				var dir2;
-				
-				if(diff_x == 0){
-					if(diff_y == 0){// This should NEVER happen.
-						alert("001: Something went mighty wrong! Blame the programmer!");
-						this.move_randomly(curr_x, curr_y);
-						return;
-					}else if(diff_y > 0){
-						dir1 = dir2 = DIR_DOWN;
-					}else{// diff_y < 0
-						dir1 = dir2 = DIR_UP;
-					}
-				}else if(diff_x > 0){
-					if(diff_y == 0){
-						dir1 = dir2 = DIR_RIGHT;
-					}else if(diff_y > 0){
-						dir1 = DIR_RIGHT;
-						dir2 = DIR_DOWN;
-					}else{// diff_y < 0
-						dir1 = DIR_RIGHT
-						dir2 = DIR_UP;
-					}
-				}else{// diff_x < 0
-					if(diff_y == 0){
-						dir1 = dir2 = DIR_LEFT;
-					}else if(diff_y > 0){
-						dir1 = DIR_LEFT;
-						dir2 = DIR_DOWN;
-					}else{// diff_y < 0
-						dir1 = DIR_LEFT
-						dir2 = DIR_UP;
-					}
-				}
-				
-				if(dir1 != dir2){
-					var total_distance = Math.abs(diff_x) + Math.abs(diff_y);
-					var percentage_x = Math.abs(diff_x / total_distance);
-					
-					if(Math.random() >= percentage_x){
-						var swapper = dir1;
-						dir1 = dir2;
-						dir2 = swapper;
-					}
-					if(game.walkable(curr_x, curr_y, dir1)){
-						game.start_move(curr_x, curr_y, dir1);
-					}else if(game.walkable(curr_x, curr_y, dir2)){
-						game.start_move(curr_x, curr_y, dir2);
-					}else{
-						this.move_randomly(curr_x, curr_y);
-					}
-				}else{
-					if(game.walkable(curr_x, curr_y, dir1)){
-						game.start_move(curr_x, curr_y, dir1);
-					}else{
-						this.move_randomly(curr_x, curr_y);
-					}
-				}
-				
-			}
-		}
+	    untitled23.kt_chase_berti(curr_x,curr_y,this);
 	}
 	
 	CLASS_entity.prototype.update_entity = function(curr_x, curr_y){
@@ -1130,7 +1003,7 @@ function CLASS_game(){
 	//untitled23.kt_load_level(lev_number,that);
 		that.mode = 1;
 		that.update_tick = 0;
-	
+
 		that.steps_taken = 0;
 		that.num_bananas = 0;
 		that.level_ended = 0;
@@ -1138,35 +1011,35 @@ function CLASS_game(){
 		that.level_number = lev_number;
 		that.wait_timer = LEV_START_DELAY*UPS;
 		that.walk_dir = DIR_NONE;
-		
+
 		if(that.level_unlocked < lev_number){
 			that.level_unlocked = lev_number;
 		}
-		
+
 		if(lev_number < that.level_unlocked && lev_number != 0){
 			that.buttons_activated[2] = true;
 		}else{
 			that.buttons_activated[2] = false;
 		}
-		
+
 		if(lev_number > 1){
 			that.buttons_activated[0] = true;
 		}else{
 			that.buttons_activated[0] = false;
 		}
-		
+
 		for(var i = 0; i < LEV_DIMENSION_X; i++){
 			that.level_array[i] = new Array()
 		}
-		
+
 		var berti_counter = 0;
 		that.berti_positions = new Array();
-		
+
 		for(var y = 0; y < LEV_DIMENSION_Y; y++){
 			for(var x = 0; x < LEV_DIMENSION_X; x++){
 				that.level_array[x][y] = new CLASS_entity();
 				that.level_array[x][y].init(res.levels[lev_number][x][y]);
-				
+
 				if(res.levels[lev_number][x][y] == 4){
 					that.num_bananas++;
 				}else if(res.levels[lev_number][x][y] == 1){
@@ -1176,23 +1049,16 @@ function CLASS_game(){
 				}
 			}
 		}
-		
+
 		vis.init_animation();
-		
+
 		if(berti_counter > 0){
 			that.play_sound(8);
 		}
 	}
 	
 	this.remove_door = function(id){
-		that.play_sound(9);
-		for(var y = 0; y < LEV_DIMENSION_Y; y++){
-			for(var x = 0; x < LEV_DIMENSION_X; x++){
-				if(that.level_array[x][y].id == id){
-					that.level_array[x][y].gets_removed_in = that.door_removal_delay;
-				}					
-			}
-		}
+		untitled23.kt_remove_door(id,that)
 	}
 	// Whether you can walk from a tile in a certain direction, boolean
 	this.walkable = function(curr_x, curr_y, dir){
@@ -1249,92 +1115,8 @@ function CLASS_game(){
 	}
 	
 	this.move = function(src_x, src_y, dir){
-	
-		var dst = that.dir_to_coords(src_x, src_y, dir);
-		that.level_array[src_x][src_y].moving = false;
-		that.level_array[src_x][src_y].moving_offset = {x: 0, y: 0};
-		that.level_array[src_x][src_y].pushing = false;
-		
-		if((that.level_array[src_x][src_y].id == 1 || that.level_array[src_x][src_y].id == 2) && that.level_array[dst.x][dst.y].consumable){
-			switch (that.level_array[dst.x][dst.y].id) {// Done Om nom nom
-				case 4:
-					that.num_bananas--;
-					if(that.num_bananas <= 0){
-						that.wait_timer = LEV_STOP_DELAY*UPS;
-						that.level_ended = 1;
-						if(Math.random() < 0.50){
-							game.wow = true;
-							that.play_sound(10);// wow
-						}else{
-							game.wow = false;
-							that.play_sound(11);// yeah
-						}
-						vis.update_all_animations();
-					}else{
-						that.play_sound(7);// Om nom nom
-					}
-					break;
-				case 13:
-					that.remove_door(19);
-					break;
-				case 14:
-					that.remove_door(20);
-					break;
-				case 15:
-					that.remove_door(21);
-					break;
-				case 16:
-					that.remove_door(22);
-					break;
-				case 17:
-					that.remove_door(23);
-					break;
-				case 18:
-					that.remove_door(24);
-					break;
-				default:
-					alert("003: Something went mighty wrong! Blame the programmer!");
-					break;
-			 }
-		}else if(that.level_array[dst.x][dst.y].id != -1 && that.level_array[dst.x][dst.y].id != 0){
-			that.move(dst.x, dst.y, dir);
-		}else if(that.sound){// we need another logic to determine this correctly...DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			var dst2 = that.dir_to_coords(dst.x, dst.y, dir);
-			if(	(that.level_array[src_x][src_y].id == 5 || that.level_array[src_x][src_y].id == 6) &&
-				(!that.is_in_bounds(dst2.x, dst2.y) || that.level_array[dst2.x][dst2.y].id == 3)){
-				that.play_sound(5);
-			}
-		}
-		var swapper = that.level_array[dst.x][dst.y];
-		that.level_array[dst.x][dst.y] = that.level_array[src_x][src_y];
-		that.level_array[src_x][src_y] = swapper;
-		
-		var back_dir = that.opposite_dir(dir);
-		var before_src = that.dir_to_coords(src_x, src_y, back_dir);
-		
-		var possibilities = new Array(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT);
-		for(var i = 0; i < possibilities.length; i++){
-			if(possibilities[i] == dir || possibilities[i] == back_dir){
-				possibilities.splice(i, 1);
-				i--;
-			}
-		}
-		var before_src2 = that.dir_to_coords(src_x, src_y, possibilities[0]);
-		var before_src3 = that.dir_to_coords(src_x, src_y, possibilities[1]);
-		
-		if(
-		(that.is_in_bounds(before_src.x, before_src.y) && (that.level_array[before_src.x][before_src.y].moving && that.level_array[before_src.x][before_src.y].face_dir == dir)) ||
-		that.level_array[dst.x][dst.y].is_small && ((that.is_in_bounds(before_src2.x, before_src2.y) && (that.level_array[before_src2.x][before_src2.y].is_small &&  that.level_array[before_src2.x][before_src2.y].moving && that.level_array[before_src2.x][before_src2.y].face_dir == possibilities[1])) ||
-		(that.is_in_bounds(before_src3.x, before_src3.y) && (that.level_array[before_src3.x][before_src3.y].is_small &&  that.level_array[before_src3.x][before_src3.y].moving && that.level_array[before_src3.x][before_src3.y].face_dir == possibilities[0])))
-		){
-			that.level_array[src_x][src_y].init(-1);
-		}else{		
-			that.level_array[src_x][src_y].init(0);
-		}
-		
-		if(that.level_array[dst.x][dst.y].id == 1){// Rectify the position of berti
-			that.berti_positions[that.level_array[dst.x][dst.y].berti_id] = dst;
-		}
+	untitled23.kt_move(src_x,src_y,dir,that);
+
 	}
 	
 	this.dir_to_coords = function(curr_x, curr_y, dir){
@@ -1406,7 +1188,157 @@ function CLASS_game(){
 	}
 	
 	this.can_see_tile = function(eye_x, eye_y, tile_x, tile_y){
-	return untitled23.kt_can_see_tile(eye_x, eye_y, tile_x, tile_y)
+	var diff_x = tile_x - eye_x;
+    		var diff_y = tile_y - eye_y;
+
+    		var walk1_x;
+    		var walk1_y;
+    		var walk2_x;
+    		var walk2_y;
+
+    		if (diff_x==0){
+    			if(diff_y==0){
+    				return true;
+    			}else if(diff_y > 0){
+    				walk1_x = 0;
+    				walk1_y = 1;
+    				walk2_x = 0;
+    				walk2_y = 1;
+    			}else{// diff_y < 0
+    				walk1_x = 0;
+    				walk1_y = -1;
+    				walk2_x = 0;
+    				walk2_y = -1;
+    			}
+    		}else if(diff_x > 0){
+    			if(diff_y==0){
+    				walk1_x = 1;
+    				walk1_y = 0;
+    				walk2_x = 1;
+    				walk2_y = 0;
+    			}else if(diff_y > 0){
+    				if(diff_y > diff_x){
+    					walk1_x = 0;
+    					walk1_y = 1;
+    					walk2_x = 1;
+    					walk2_y = 1;
+    				}else if(diff_y == diff_x){
+    					walk1_x = 1;
+    					walk1_y = 1;
+    					walk2_x = 1;
+    					walk2_y = 1;
+    				}else{// diff_y < diff_x
+    					walk1_x = 1;
+    					walk1_y = 0;
+    					walk2_x = 1;
+    					walk2_y = 1;
+    				}
+    			}else{// diff_y < 0
+    				if(diff_y*(-1) > diff_x){
+    					walk1_x = 0;
+    					walk1_y = -1;
+    					walk2_x = 1;
+    					walk2_y = -1;
+    				}else if(diff_y*(-1) == diff_x){
+    					walk1_x = 1;
+    					walk1_y = -1;
+    					walk2_x = 1;
+    					walk2_y = -1;
+    				}else{// diff_y < diff_x
+    					walk1_x = 1;
+    					walk1_y = 0;
+    					walk2_x = 1;
+    					walk2_y = -1;
+    				}
+    			}
+    		}else{// diff_x < 0
+    			if(diff_y==0){
+    				walk1_x = -1;
+    				walk1_y = 0;
+    				walk2_x = -1;
+    				walk2_y = 0;
+    			}else if(diff_y > 0){
+    				if(diff_y > diff_x*(-1)){
+    					walk1_x = 0;
+    					walk1_y = 1;
+    					walk2_x = -1;
+    					walk2_y = 1;
+    				}else if(diff_y == diff_x*(-1)){
+    					walk1_x = -1;
+    					walk1_y = 1;
+    					walk2_x = -1;
+    					walk2_y = 1;
+    				}else{// diff_y < diff_x
+    					walk1_x = -1;
+    					walk1_y = 0;
+    					walk2_x = -1;
+    					walk2_y = 1;
+    				}
+    			}else{// diff_y < 0
+    				if(diff_y > diff_x){
+    					walk1_x = -1;
+    					walk1_y = 0;
+    					walk2_x = -1;
+    					walk2_y = -1;
+    				}else if(diff_y == diff_x){
+    					walk1_x = -1;
+    					walk1_y = -1;
+    					walk2_x = -1;
+    					walk2_y = -1;
+    				}else{// diff_y < diff_x
+    					walk1_x = 0;
+    					walk1_y = -1;
+    					walk2_x = -1;
+    					walk2_y = -1;
+    				}
+    			}
+    		}
+
+
+    		var x_offset = 0;
+    		var y_offset = 0;
+    		var x_ratio1;
+    		var y_ratio1;
+    		var x_ratio2;
+    		var y_ratio2;
+    		var diff1;
+    		var diff2;
+
+    		while(true){
+    			if(diff_x != 0){
+    				x_ratio1 = (x_offset+walk1_x)/diff_x;
+    				x_ratio2 = (x_offset+walk2_x)/diff_x;
+    			}else{
+    				x_ratio1 = 1;
+    				x_ratio2 = 1;
+    			}
+    			if(diff_y != 0){
+    				y_ratio1 = (y_offset+walk1_y)/diff_y;
+    				y_ratio2 = (y_offset+walk2_y)/diff_y;
+    			}else{
+    				y_ratio1 = 1;
+    				y_ratio2 = 1;
+    			}
+
+    			diff1 = Math.abs(x_ratio1-y_ratio1);
+    			diff2 = Math.abs(x_ratio2-y_ratio2);
+
+    			if (diff1 <= diff2){
+    				x_offset += walk1_x;
+    				y_offset += walk1_y;
+    			}else{
+    				x_offset += walk2_x;
+    				y_offset += walk2_y;
+    			}
+
+    			if(x_offset == diff_x && y_offset == diff_y){
+    				return true;
+    			}
+    			if(game.level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && game.level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !game.level_array[eye_x + x_offset][eye_y + y_offset].is_small){
+    				return false;
+    			}
+    		}
+    		// Code here is unreachable
 
 	}
 	
@@ -2339,64 +2271,7 @@ function render_block(x, y, render_option){
 }
 
 function render_buttons(){
-	var over_button = false;
-	if(input.mouse_down){
-		if(input.mouse_pos.y >= 35 && input.mouse_pos.y <= 65){
-			if(input.mouse_pos.x >= 219 && input.mouse_pos.x <= 249 && input.lastclick_button == 0){
-				vis.buttons_pressed[0] = true;
-				over_button = true;
-			}else if(input.mouse_pos.x >= 253 && input.mouse_pos.x <= 283 && input.lastclick_button == 1){
-				vis.buttons_pressed[1] = true;
-				over_button = true;
-			}else if(input.mouse_pos.x >= 287 && input.mouse_pos.x <= 317 && input.lastclick_button == 2){
-				vis.buttons_pressed[2] = true;
-				over_button = true;
-			}
-		}
-	}
-	if(!over_button){
-		vis.buttons_pressed[0] = vis.buttons_pressed[1] = vis.buttons_pressed[2] = false;
-	}
-	
-	if(game.buttons_activated[0]){
-		if(vis.buttons_pressed[0]){
-			CTX.drawImage(res.images[26], 219, 35);// << pressed
-		}else{
-			CTX.drawImage(res.images[23], 219, 35);// << up
-		}
-	}else{
-		CTX.drawImage(res.images[29], 219, 35);// << disabled
-	}
-	
-	if(vis.buttons_pressed[1]){
-		CTX.drawImage(res.images[25], 253, 35);// Berti pressed
-	}else{
-		if(vis.berti_blink_time < 100){
-			CTX.drawImage(res.images[22], 253, 35);// Berti up
-			if(vis.berti_blink_time == 0){
-				vis.berti_blink_time = 103;//Math.floor(100+(Math.random()*100)+1);
-			}else{
-				vis.berti_blink_time--;
-			}
-		}else{
-			CTX.drawImage(res.images[28], 253, 35);// Berti up blink
-			if(vis.berti_blink_time == 100){
-				vis.berti_blink_time = Math.floor((Math.random()*95)+5);
-			}else{
-				vis.berti_blink_time--;
-			}
-		}
-	}
-	
-	if(game.buttons_activated[2]){
-		if(vis.buttons_pressed[2]){
-			CTX.drawImage(res.images[27], 287, 35);// >> pressed
-		}else{
-			CTX.drawImage(res.images[24], 287, 35);// >> up
-		}
-	}else{
-		CTX.drawImage(res.images[30], 287, 35);// >> disabled
-	}
+untitled23.kt_render_buttons();
 
 }
 
