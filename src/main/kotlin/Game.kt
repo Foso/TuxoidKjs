@@ -344,12 +344,13 @@ fun kt_move(src_x: Int, src_y: Int, dir: Int, that: dynamic) {
                 window.alert("003: Something went mighty wrong! Blame the programmer!")
             }
         }
-    }else if(that.level_array[dst.x][dst.y].id != -1 && that.level_array[dst.x][dst.y].id != 0){
+    } else if (that.level_array[dst.x][dst.y].id != -1 && that.level_array[dst.x][dst.y].id != 0) {
         that.move(dst.x, dst.y, dir);
-    }else if(that.sound){// we need another logic to determine this correctly...DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    } else if (that.sound) {// we need another logic to determine this correctly...DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         var dst2 = that.dir_to_coords(dst.x, dst.y, dir);
-        if(	(that.level_array[src_x][src_y].id == 5 || that.level_array[src_x][src_y].id == 6) &&
-            (!that.is_in_bounds(dst2.x, dst2.y) || that.level_array[dst2.x][dst2.y].id == 3)){
+        if ((that.level_array[src_x][src_y].id == 5 || that.level_array[src_x][src_y].id == 6) &&
+            (!that.is_in_bounds(dst2.x, dst2.y) || that.level_array[dst2.x][dst2.y].id == 3)
+        ) {
             that.play_sound(5);
         }
     }
@@ -362,29 +363,71 @@ fun kt_move(src_x: Int, src_y: Int, dir: Int, that: dynamic) {
     var before_src = that.dir_to_coords(src_x, src_y, back_dir);
 
     var possibilities = arrayOf(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT);
-    for(i in 0 until possibilities.size){
-        if(possibilities[i] == dir || possibilities[i] == back_dir){
+    for (i in 0 until possibilities.size) {
+        if (possibilities[i] == dir || possibilities[i] == back_dir) {
             //TODO: Find out how this works in Kotlin
-            js("" +
-                    "possibilities.splice(i, 1);\n" +
-                    "            i--;")
+            js(
+                "" +
+                        "possibilities.splice(i, 1);\n" +
+                        "            i--;"
+            )
         }
     }
 
     var before_src2 = that.dir_to_coords(src_x, src_y, possibilities[0]);
     var before_src3 = that.dir_to_coords(src_x, src_y, possibilities[1]);
 
-    if(
-        (that.is_in_bounds(before_src.x, before_src.y) && (that.level_array[before_src.x][before_src.y].moving && that.level_array[before_src.x][before_src.y].face_dir == dir)) ||
-        that.level_array[dst.x][dst.y].is_small && ((that.is_in_bounds(before_src2.x, before_src2.y) && (that.level_array[before_src2.x][before_src2.y].is_small &&  that.level_array[before_src2.x][before_src2.y].moving && that.level_array[before_src2.x][before_src2.y].face_dir == possibilities[1])) ||
-                (that.is_in_bounds(before_src3.x, before_src3.y) && (that.level_array[before_src3.x][before_src3.y].is_small &&  that.level_array[before_src3.x][before_src3.y].moving && that.level_array[before_src3.x][before_src3.y].face_dir == possibilities[0])))
-    ){
+    if (
+        (that.is_in_bounds(
+            before_src.x,
+            before_src.y
+        ) && (that.level_array[before_src.x][before_src.y].moving && that.level_array[before_src.x][before_src.y].face_dir == dir)) ||
+        that.level_array[dst.x][dst.y].is_small && ((that.is_in_bounds(
+            before_src2.x,
+            before_src2.y
+        ) && (that.level_array[before_src2.x][before_src2.y].is_small && that.level_array[before_src2.x][before_src2.y].moving && that.level_array[before_src2.x][before_src2.y].face_dir == possibilities[1])) ||
+                (that.is_in_bounds(
+                    before_src3.x,
+                    before_src3.y
+                ) && (that.level_array[before_src3.x][before_src3.y].is_small && that.level_array[before_src3.x][before_src3.y].moving && that.level_array[before_src3.x][before_src3.y].face_dir == possibilities[0])))
+    ) {
         that.level_array[src_x][src_y].init(-1);
-    }else{
+    } else {
         that.level_array[src_x][src_y].init(0);
     }
-    if(that.level_array[dst.x][dst.y].id == 1){// Rectify the position of berti
+    if (that.level_array[dst.x][dst.y].id == 1) {// Rectify the position of berti
         that.berti_positions[that.level_array[dst.x][dst.y].berti_id] = dst;
     }
 
+}
+
+@JsExport
+fun kt_error_dbx(errno: Int, that: dynamic) {
+    if (that.dbx.errfield === null) return;
+    var err_string = "";
+    when (errno) {
+        ERR_EXISTS -> {
+            err_string = "Error - the account already exists.";
+        }
+
+        ERR_NOSAVE -> {
+            err_string = "Error - there are no savegames to load!";
+        }
+
+        ERR_WRONGPW -> {
+            err_string = "Error - you used the wrong password.";
+        }
+
+        ERR_NOTFOUND -> {
+            err_string = "Error - this username couldn't be found.";
+        }
+
+        ERR_EMPTYNAME -> {
+            err_string = "Error - please fill in your uname.";
+        }
+        else -> {
+            err_string = "Unknown error";
+        }
+    }
+    that.dbx.errfield.innerHTML = err_string;
 }
