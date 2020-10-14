@@ -44,7 +44,7 @@ class VolumeBar(){
     val offset_y = 2;
     val height = 17;
     val width = 100;
-    val volume = DEFAULT_VOLUME;
+    var volume = DEFAULT_VOLUME;
 
     val colour_1 = js("{r:0, g:255, b: 0}")// Low volume colour: Green
     val colour_2 = js("{r:255, g:0, b: 0}");// High volume colour: Red

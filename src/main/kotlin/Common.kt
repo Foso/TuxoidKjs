@@ -32,6 +32,43 @@ var DBX_CHARTS = 5;
 external var md5: dynamic
 
 
+
+
+
+
+external var vis: Visual
+external var DIR_LEFT: Int
+external var DIR_UP: Int
+external var DIR_DOWN: Int
+
+external var DIR_RIGHT: Int
+external var DIR_NONE: Int
+external var LEV_START_DELAY: Int
+external var UPS: Int
+
+external var res: MyRes
+external var game: Game
+external var CTX: dynamic//CanvasRenderingContext2D
+
+external var SCREEN_WIDTH: dynamic
+external var SCREEN_HEIGHT: dynamic
+external var LEV_DIMENSION_Y: Int
+external var LEV_DIMENSION_X: Int
+external var RENDER_FULL: Int
+external var RENDER_TOP: Int
+external var RENDER_BOTTOM: Int
+external var RENDER_BOTTOM_BORDER: Int
+external var LEV_OFFSET_X: Int
+external var LEV_OFFSET_Y: Int
+
+external var LEV_STOP_DELAY: Int
+external var ANIMATION_DURATION: Int
+
+external var DEFAULT_VOLUME: dynamic
+external var input: MyInput
+external fun update_entities()
+
+
 /**
  * This needed
  */
@@ -78,37 +115,13 @@ external interface Dbx {
 
 
 
-external var vis: Visual
-external var DIR_LEFT: Int
-external var DIR_UP: Int
-external var DIR_DOWN: Int
 
-external var DIR_RIGHT: Int
-external var DIR_NONE: Int
-external var LEV_START_DELAY: Int
-external var UPS: Int
 
-external var res: MyRes
-external var game: Game
-external var CTX: dynamic//CanvasRenderingContext2D
 
-external var SCREEN_WIDTH: dynamic
-external var SCREEN_HEIGHT: dynamic
-external var LEV_DIMENSION_Y: Int
-external var LEV_DIMENSION_X: Int
-external var RENDER_FULL: Int
-external var RENDER_TOP: Int
-external var RENDER_BOTTOM: Int
-external var RENDER_BOTTOM_BORDER: Int
-external var LEV_OFFSET_X: Int
-external var LEV_OFFSET_Y: Int
 
-external var LEV_STOP_DELAY: Int
-external var ANIMATION_DURATION: Int
 
-external var DEFAULT_VOLUME: dynamic
-external var input: MyInput
-external fun update_entities()
+
+
 
 
 
