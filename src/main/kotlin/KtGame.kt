@@ -41,7 +41,7 @@ external interface Game {
     var prime_movement: dynamic
     val move_speed: dynamic
     var door_removal_delay: Double
-    var level_array: dynamic
+    var level_array: Array<Array<KtEntity>>
     var update_drawn: Boolean
     var last_updated: dynamic
     var delta_updated: dynamic

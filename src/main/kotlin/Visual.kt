@@ -31,6 +31,14 @@ external interface Visual {
     fun open_dbx(dbxConfirm: Int)
     fun error_dbx(errEmptyname: Int)
 
+    val offset_yeah_x: Int
+    val offset_yeah_y: Int
+    val offset_argl_x: Int
+    val offset_argl_y: Int
+
+    val offset_wow_y: Int
+
+    val offset_wow_x: Int
     val vol_bar: VolumeBar
     val dbx: Dbx
     val blue: Rgb
@@ -70,8 +78,6 @@ fun add_number(a_num: Int, pos_x: Int, pos_y: Int, width: dynamic, height: dynam
     num.style.textAlign = "right";
     that.dbx.appendChild(num);
 }
-
-
 
 
 @JsExport
@@ -230,7 +236,7 @@ fun kt_can_see_tile(eye_x: Int, eye_y: Int, tile_x: Int, tile_y: Int): Boolean {
 
 
 @JsExport
-class KtVisual(that: dynamic){
+class KtVisual(that: dynamic) {
 
 
     fun kt_init_animation(that: dynamic, game: dynamic) {
@@ -369,6 +375,7 @@ class KtVisual(that: dynamic){
             }
         }
     }
+
     fun kt_update_animation(x: Int, y: Int) {
         var block = game.level_array[x][y] as Block;
         when (block.id) {
@@ -422,8 +429,6 @@ class KtVisual(that: dynamic){
         }
     }
 }
-
-
 
 
 @JsExport
@@ -605,7 +610,7 @@ fun kt_update_animation_case2(x: Int, y: Int, block: Block) {
 }
 
 @JsExport
-fun kt_render_block(x: Int, y: Int, render_option: dynamic) {
+fun render_block(x: Int, y: Int, render_option: dynamic) {
     var block = game.level_array[x][y] as Block;
 
     var offset_x = block.moving_offset.x as Int;
@@ -919,35 +924,127 @@ fun kt_render_buttons() {
     }
 }
 
+
+@JsExport
+fun render_field() {
+    render_field_subset(true);// Consumables in the background
+    render_field_subset(false);// The rest in the foreground
+
+    CTX.drawImage(
+        res.images[0],
+        0,
+        391,
+        537,
+        4,
+        0,
+        LEV_OFFSET_Y + 24 * LEV_DIMENSION_Y,
+        537,
+        4
+    );// Bottom border covering blocks
+    CTX.drawImage(
+        res.images[0],
+        520,
+        LEV_OFFSET_Y,
+        4,
+        391 - LEV_OFFSET_Y,
+        LEV_OFFSET_X + 24 * LEV_DIMENSION_X,
+        LEV_OFFSET_Y,
+        4,
+        391 - LEV_OFFSET_Y
+    );// Right border covering blocks
+
+    if (game.level_ended == 1) {// Berti cheering, wow or yeah
+        for (i in game.berti_positions.indices) {
+            if (game.wow) {
+                CTX.drawImage(
+                    res.images[168],
+                    LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_wow_x,
+                    LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_wow_y
+                );
+            } else {
+                CTX.drawImage(
+                    res.images[169],
+                    LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_yeah_x,
+                    LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_yeah_y
+                );
+            }
+        }
+    } else if (game.level_ended == 2) {// Berti dies in a pool of blood
+        for (i in game.berti_positions.indices) {
+            CTX.drawImage(
+                res.images[167],
+                LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_argl_x,
+                LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_argl_y
+            );
+        }
+    }
+}
+
+@JsExport
+fun render_field_subset(consumable: dynamic) {
+    for (y in 0 until LEV_DIMENSION_Y) {
+        for (x in 0 until LEV_DIMENSION_X) {
+            var block = game.level_array[x][y] as KtEntity;
+            if (y > 0 && game.level_array[x][y - 1].moving && game.level_array[x][y - 1].face_dir == DIR_DOWN && game.level_array[x][y - 1].consumable == consumable) {
+                render_block(x, y - 1, RENDER_BOTTOM);
+            }
+
+            if (y > 0 && (!game.level_array[x][y - 1].moving) && game.level_array[x][y - 1].consumable == consumable) {
+                if (x > 0 && game.level_array[x - 1][y].face_dir != DIR_RIGHT) {
+                    render_block(x, y - 1, RENDER_BOTTOM_BORDER);
+                }
+            }
+
+            if (block.consumable == consumable) {
+                if (!block.moving || block.face_dir == DIR_LEFT || block.face_dir == DIR_RIGHT) {
+                    render_block(x, y, RENDER_FULL);
+                } else if (block.face_dir == DIR_DOWN) {
+                    render_block(x, y, RENDER_TOP);
+                } else if (block.face_dir == DIR_UP) {
+                    render_block(x, y, RENDER_BOTTOM);
+                }
+            }
+
+            if (y + 1 < LEV_DIMENSION_Y && game.level_array[x][y + 1].moving && game.level_array[x][y + 1].face_dir == DIR_UP && game.level_array[x][y + 1].consumable == consumable) {
+                render_block(x, y + 1, RENDER_TOP);
+            }
+        }
+    }
+}
+
+
 @JsExport
 fun render_vol_bar() {
     var vb = vis.vol_bar;
     var switcher = false;
 
-    for(i in 0 until vb.width){
-        var line_height:Int=0
+    for (i in 0 until vb.width) {
+        var line_height: Int = 0
 
-        if(switcher){
+        if (switcher) {
             switcher = false;
-            CTX.fillStyle = "rgb("+vb.colour_4.r+", "+vb.colour_4.g+", "+vb.colour_4.b+")";
-        }else{
+            CTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
+        } else {
             switcher = true;
-            var ratio2 = i/ vb.width.toDouble();
-            line_height = round((vb.height*ratio2).toDouble()).toInt();
+            var ratio2 = i / vb.width.toDouble();
+            line_height = round((vb.height * ratio2).toDouble()).toInt();
 
-            if(i < ceil(vb.volume*vb.width)){
-                if(game.sound){
-                    var ratio1 = 1-ratio2;
-                    CTX.fillStyle = "rgb("+round(vb.colour_1.r*ratio1+vb.colour_2.r*ratio2)+", "+round(vb.colour_1.g*ratio1+vb.colour_2.g*ratio2)+", "+round(vb.colour_1.b*ratio1+vb.colour_2.b*ratio2)+")";
-                }else{
-                    CTX.fillStyle = "rgb("+vb.colour_5.r+", "+vb.colour_5.g+", "+vb.colour_5.b+")";
+            if (i < ceil(vb.volume * vb.width)) {
+                if (game.sound) {
+                    var ratio1 = 1 - ratio2;
+                    CTX.fillStyle =
+                        "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
+                            vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
+                        ) + ")";
+                } else {
+                    CTX.fillStyle = "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
                 }
-            }else{
-                CTX.fillStyle = "rgb("+vb.colour_3.r+", "+vb.colour_3.g+", "+vb.colour_3.b+")";
+            } else {
+                CTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
             }
 
         }
-        CTX.fillRect(vb.offset_x+i, vb.offset_y+vb.height-line_height, 1, line_height);
+        CTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
 
     }
 }
@@ -960,71 +1057,126 @@ fun kt_render_menu() {
     CTX.textAlign = "left";
     CTX.textBaseline = "top";
 
-    for(i in 0 until vis.menu1.submenu_list.length){
+    for (i in 0 until vis.menu1.submenu_list.length) {
         var sm = vis.menu1.submenu_list[i];
-        if(i == vis.menu1.submenu_open){
-            CTX.fillStyle = "rgb("+vis.light_grey.r+", "+vis.light_grey.g+", "+vis.light_grey.b+")";
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y + vis.menu1.height + 1, sm.dd_width, sm.dd_height);// Options box
+        if (i == vis.menu1.submenu_open) {
+            CTX.fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")";
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset,
+                vis.menu1.offset_y + vis.menu1.height + 1,
+                sm.dd_width,
+                sm.dd_height
+            );// Options box
 
-            CTX.fillStyle = "rgb("+vis.med_grey.r+", "+vis.med_grey.g+", "+vis.med_grey.b+")";
+            CTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
             CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y, sm.width, 1);
             CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y, 1, vis.menu1.height);
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset + sm.dd_width - 2, vis.menu1.offset_y + vis.menu1.height + 2, 1, sm.dd_height - 2);// Options box
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset + 1, vis.menu1.offset_y + vis.menu1.height + sm.dd_height - 1, sm.dd_width - 2, 1);// Options box
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset + sm.dd_width - 2,
+                vis.menu1.offset_y + vis.menu1.height + 2,
+                1,
+                sm.dd_height - 2
+            );// Options box
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset + 1,
+                vis.menu1.offset_y + vis.menu1.height + sm.dd_height - 1,
+                sm.dd_width - 2,
+                1
+            );// Options box
 
-            CTX.fillStyle = "rgb("+vis.white.r+", "+vis.white.g+", "+vis.white.b+")";
+            CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
             CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y + vis.menu1.height, sm.width, 1);
             CTX.fillRect(vis.menu1.offset_x + submenu_offset + sm.width - 1, vis.menu1.offset_y, 1, vis.menu1.height);
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset + 1, vis.menu1.offset_y + vis.menu1.height + 2, 1, sm.dd_height - 3);// Options box
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset + 1, vis.menu1.offset_y + vis.menu1.height + 2, sm.dd_width - 3, 1);// Options box
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset + 1,
+                vis.menu1.offset_y + vis.menu1.height + 2,
+                1,
+                sm.dd_height - 3
+            );// Options box
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset + 1,
+                vis.menu1.offset_y + vis.menu1.height + 2,
+                sm.dd_width - 3,
+                1
+            );// Options box
 
-            CTX.fillStyle = "rgb("+vis.dark_grey.r+", "+vis.dark_grey.g+", "+vis.dark_grey.b+")";
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset + sm.dd_width - 1, vis.menu1.offset_y + vis.menu1.height + 1, 1, sm.dd_height);// Options box
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y + vis.menu1.height + sm.dd_height, sm.dd_width - 1, 1);// Options box
+            CTX.fillStyle = "rgb(" + vis.dark_grey.r + ", " + vis.dark_grey.g + ", " + vis.dark_grey.b + ")";
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset + sm.dd_width - 1,
+                vis.menu1.offset_y + vis.menu1.height + 1,
+                1,
+                sm.dd_height
+            );// Options box
+            CTX.fillRect(
+                vis.menu1.offset_x + submenu_offset,
+                vis.menu1.offset_y + vis.menu1.height + sm.dd_height,
+                sm.dd_width - 1,
+                1
+            );// Options box
 
             //input.mouse_pos.x
             var option_offset = vis.menu1.offset_y + vis.menu1.height + 4;
-            CTX.fillStyle = "rgb("+vis.black.r+", "+vis.black.g+", "+vis.black.b+")";
+            CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
 
-            for(j in 0 until sm.options.length){
-                var next_offset:Int;
+            for (j in 0 until sm.options.length) {
+                var next_offset: Int;
                 var check_image = 171;
-                if(sm.options[j].line){
+                if (sm.options[j].line) {
                     next_offset = option_offset + sm.offset_line;
 
-                    CTX.fillStyle = "rgb("+vis.med_grey.r+", "+vis.med_grey.g+", "+vis.med_grey.b+")";
-                    CTX.fillRect(vis.menu1.offset_x + submenu_offset + 3 , option_offset + 3, sm.dd_width - 6, 1);// Separator line
-                    CTX.fillStyle = "rgb("+vis.white.r+", "+vis.white.g+", "+vis.white.b+")";
-                    CTX.fillRect(vis.menu1.offset_x + submenu_offset + 3 , option_offset + 4, sm.dd_width - 6, 1);// Separator line
+                    CTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
+                    CTX.fillRect(
+                        vis.menu1.offset_x + submenu_offset + 3,
+                        option_offset + 3,
+                        sm.dd_width - 6,
+                        1
+                    );// Separator line
+                    CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
+                    CTX.fillRect(
+                        vis.menu1.offset_x + submenu_offset + 3,
+                        option_offset + 4,
+                        sm.dd_width - 6,
+                        1
+                    );// Separator line
 
-                }else{
+                } else {
                     next_offset = option_offset + sm.offset_text;
                 }
 
-                if(!sm.options[j].line && input.mouse_pos.x > vis.menu1.offset_x + submenu_offset && input.mouse_pos.x < vis.menu1.offset_x + submenu_offset + sm.dd_width &&
-                    input.mouse_pos.y > option_offset && input.mouse_pos.y < next_offset){
-                    CTX.fillStyle = "rgb("+vis.blue.r+", "+vis.blue.g+", "+vis.blue.b+")";
-                    CTX.fillRect(vis.menu1.offset_x + submenu_offset + 3 , option_offset, sm.dd_width - 6, sm.offset_text);// Options box
-                    CTX.fillStyle = "rgb("+vis.white.r+", "+vis.white.g+", "+vis.white.b+")";
+                if (!sm.options[j].line && input.mouse_pos.x > vis.menu1.offset_x + submenu_offset && input.mouse_pos.x < vis.menu1.offset_x + submenu_offset + sm.dd_width &&
+                    input.mouse_pos.y > option_offset && input.mouse_pos.y < next_offset
+                ) {
+                    CTX.fillStyle = "rgb(" + vis.blue.r + ", " + vis.blue.g + ", " + vis.blue.b + ")";
+                    CTX.fillRect(
+                        vis.menu1.offset_x + submenu_offset + 3,
+                        option_offset,
+                        sm.dd_width - 6,
+                        sm.offset_text
+                    );// Options box
+                    CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
 
                     check_image = 172;
-                }else if(!sm.options[j].on()){
-                    CTX.fillStyle = "rgb("+vis.white.r+", "+vis.white.g+", "+vis.white.b+")";
+                } else if (!sm.options[j].on()) {
+                    CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
                     CTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 21, option_offset + 2);
-                }else{
-                    CTX.fillStyle = "rgb("+vis.black.r+", "+vis.black.g+", "+vis.black.b+")";
+                } else {
+                    CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
                 }
 
-                if(sm.options[j].on()){
+                if (sm.options[j].on()) {
                     CTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1);
-                }else{
-                    CTX.fillStyle = "rgb("+vis.med_grey.r+", "+vis.med_grey.g+", "+vis.med_grey.b+")";
+                } else {
+                    CTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
                     CTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1);
                 }
 
-                if(sm.options[j].check != 0){
-                    if((sm.options[j].effect_id == 3 && game.paused) || (sm.options[j].effect_id == 4 && game.single_steps) || (sm.options[j].effect_id == 5 && game.sound)){
-                        CTX.drawImage(res.images[check_image], vis.menu1.offset_x + submenu_offset + 6, option_offset + 6);// Background
+                if (sm.options[j].check != 0) {
+                    if ((sm.options[j].effect_id == 3 && game.paused) || (sm.options[j].effect_id == 4 && game.single_steps) || (sm.options[j].effect_id == 5 && game.sound)) {
+                        CTX.drawImage(
+                            res.images[check_image],
+                            vis.menu1.offset_x + submenu_offset + 6,
+                            option_offset + 6
+                        );// Background
                     }
                 }
 
@@ -1032,7 +1184,7 @@ fun kt_render_menu() {
 
             }
         }
-        CTX.fillStyle = "rgb("+vis.black.r+", "+vis.black.g+", "+vis.black.b+")";
+        CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
         CTX.fillText(sm.name, vis.menu1.offset_x + submenu_offset + 6, vis.menu1.offset_y + 3);
         submenu_offset += sm.width as Double;
     }

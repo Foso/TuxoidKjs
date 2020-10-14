@@ -728,66 +728,16 @@ function render_vol_bar(){
 
 };
 
-
 function render_field(){
-	render_field_subset(true);// Consumables in the background
-	render_field_subset(false);// The rest in the foreground
-	
-	CTX.drawImage(res.images[0], 0, 391, 537, 4, 0, LEV_OFFSET_Y+24*LEV_DIMENSION_Y, 537, 4);// Bottom border covering blocks
-	CTX.drawImage(res.images[0], 520, LEV_OFFSET_Y, 4, 391-LEV_OFFSET_Y, LEV_OFFSET_X+24*LEV_DIMENSION_X, LEV_OFFSET_Y, 4, 391-LEV_OFFSET_Y);// Right border covering blocks
-	
-	if(game.level_ended == 1){// Berti cheering, wow or yeah
-		for(var i = 0; i < game.berti_positions.length; i++){
-			if(game.wow){
-				CTX.drawImage(res.images[168],
-				LEV_OFFSET_X+24*game.berti_positions[i].x+game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x+vis.offset_wow_x,
-				LEV_OFFSET_Y+24*game.berti_positions[i].y+game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y+vis.offset_wow_y);
-			}else{
-				CTX.drawImage(res.images[169],
-				LEV_OFFSET_X+24*game.berti_positions[i].x+game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x+vis.offset_yeah_x,
-				LEV_OFFSET_Y+24*game.berti_positions[i].y+game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y+vis.offset_yeah_y);
-			}
-		}
-	}else if(game.level_ended == 2){// Berti dies in a pool of blood
-		for(var i = 0; i < game.berti_positions.length; i++){
-			CTX.drawImage(res.images[167],
-			LEV_OFFSET_X+24*game.berti_positions[i].x+game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x+vis.offset_argl_x,
-			LEV_OFFSET_Y+24*game.berti_positions[i].y+game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y+vis.offset_argl_y);
-		}
-	}
+untitled23.render_field()
 }
+
+
 function render_field_subset(consumable){
-	for(var y = 0; y < LEV_DIMENSION_Y; y++){
-		for(var x = 0; x < LEV_DIMENSION_X; x++){
-			var block = game.level_array[x][y];
-			if(y > 0 && game.level_array[x][y-1].moving && game.level_array[x][y-1].face_dir == DIR_DOWN && game.level_array[x][y-1].consumable == consumable){
-				render_block(x, y-1, RENDER_BOTTOM);
-			}
-			
-			if(y > 0 && (!game.level_array[x][y-1].moving) && game.level_array[x][y-1].consumable == consumable){
-				if(x > 0 && game.level_array[x-1][y].face_dir != DIR_RIGHT){
-					render_block(x, y-1, RENDER_BOTTOM_BORDER);
-				}
-			}
-		
-			if(block.consumable == consumable){
-				if(!block.moving || block.face_dir == DIR_LEFT || block.face_dir == DIR_RIGHT){
-					render_block(x, y, RENDER_FULL);
-				}else if(block.face_dir == DIR_DOWN){
-					render_block(x, y, RENDER_TOP);
-				}else if(block.face_dir == DIR_UP){
-					render_block(x, y, RENDER_BOTTOM);
-				}
-			}
-			
-			if(y+1 < LEV_DIMENSION_Y && game.level_array[x][y+1].moving && game.level_array[x][y+1].face_dir == DIR_UP && game.level_array[x][y+1].consumable == consumable){
-				render_block(x, y+1, RENDER_TOP);
-			}
-		}
-	}
+	untitled23.render_field_subset(consumable);
 }
 function render_block(x, y, render_option){
-    untitled23.kt_render_block(x,y,render_option)
+    untitled23.render_block(x,y,render_option)
 }
 
 function render_buttons(){
