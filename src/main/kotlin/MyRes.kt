@@ -6,6 +6,12 @@ external var EXTERNAL_LEVELS: dynamic
 var NUM_RESOURCES = 197;
 var IMAGE_DIR = "images/";
 var SOUND_DIR = "sound/";
+
+
+
+
+
+
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////
 // RESOURCES CLASS
 // Images, sounds, level. Just resources.

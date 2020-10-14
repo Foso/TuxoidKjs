@@ -20,6 +20,28 @@ external interface Block {
 
 }
 
+
+external interface Visual {
+    fun update_animation(currX: Int, currY: Int)
+    fun update_all_animations()
+    fun init_animation()
+    fun open_dbx(dbxConfirm: Int, i: Int)
+    fun open_dbx(dbxConfirm: Int)
+    fun error_dbx(errEmptyname: Int)
+
+    val vol_bar: dynamic
+    val dbx: Dbx
+    val blue: Rgb
+    val black: Rgb
+    val dark_grey: Rgb
+    val white: Rgb
+    val med_grey: Rgb
+    val light_grey: Rgb
+    var berti_blink_time: Int
+    val buttons_pressed: Array<Boolean>
+    val menu1: dynamic
+}
+
 @JsExport
 fun add_text(text: String, pos_x: Int, pos_y: Int, that: dynamic) {
     var txt = document.createElement("p").asDynamic();

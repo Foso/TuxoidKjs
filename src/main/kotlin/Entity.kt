@@ -5,13 +5,6 @@ import kotlin.math.floor
 import kotlin.random.Random
 
 
-external fun myTest(): dynamic
-
-external fun CLASS_entity()
-
-
-
-
 @JsExport
 class KtEntity() {
 
@@ -61,8 +54,6 @@ class KtEntity() {
             is_small =
                 true;// This is a technical attribute. Small entities can go into occupied, moving places from all directions. Monsters can see through small entities
         }
-
-
     }
 
 
@@ -73,9 +64,7 @@ class KtEntity() {
             var possibilities = mutableListOf(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT);
             for (i in 0 until possibilities.size) {
                 if (possibilities[i] == this.face_dir || possibilities[i] == back_dir) {
-                    //possibilities.removeAt(i)
-
-
+                    //TODO:possibilities.removeAt(i)
                 }
             }
 

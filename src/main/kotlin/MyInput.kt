@@ -45,7 +45,7 @@ external var JOYSTICK: JoyStick
  */
 class MyInput {
     var last_joystick_render by Delegates.notNull<Double>()
-    private var joystick_dir: Int = DIR_NONE
+    var joystick_dir: Int = DIR_NONE
 
     val that = this
 
