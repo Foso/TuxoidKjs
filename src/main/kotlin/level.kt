@@ -1,3 +1,7 @@
+var testArray10 = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+var testArray11 = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
 var testArray12 = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 var testArray13 = arrayOf(0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0);
 var testArray14 = arrayOf(0, 0, 0, 0, 0, 5, 0, 6, 0, 0, 0, 0, 0);
@@ -14,14 +18,14 @@ var testArray114 = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 var testArray115 = arrayOf(0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0);
 var testArray116 = arrayOf(0, 0, 0, 0, 0, 5, 0, 6, 0, 0, 0, 0, 0);
 var testArray117 = arrayOf(3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3);
-var testArray118 = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+var testArray118 = arrayOf(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 var testArray119 = arrayOf(0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0);
 var testArray120 = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 
 var firstLevel = arrayOf(
-    arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-    arrayOf(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0),
+    testArray10,
+    testArray11,
     testArray12,
     testArray13,
     testArray14,
