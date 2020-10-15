@@ -172,19 +172,15 @@ function CLASS_visual(){
 	this.offset_argl_y = -44;
 	
 	this.init_animation = function(){
-	        ktvisual.kt_init_animation(that,game);
+	        ktvisual.init_animation(game);
 	}
 	
 	this.update_animation = function(x, y){
-		ktvisual.kt_update_animation(x,y);
+		ktvisual.update_animation(x,y);
 	}
 	
 	this.update_all_animations = function(){
-		for(var y = 0; y < LEV_DIMENSION_Y; y++){
-			for(var x = 0; x < LEV_DIMENSION_X; x++){
-				that.update_animation(x, y);
-			}
-		}
+		ktvisual.update_all_animations();
 	}
 	
 	// Volume bar:
@@ -204,131 +200,44 @@ function CLASS_visual(){
 	this.menu1;
 
 	this.init_menus = function(){
-		var tautology = function(){return true;};
-	
-		var arr_options1 = [
-		{line:false, check:0, name:"New", hotkey:"F2", effect_id:0, on:tautology},
-		{line:false, check:0, name:"Load Game...", hotkey:"", effect_id:1, on:function(){return HAS_STORAGE;}},
-		{line:false, check:0, name:"Save", hotkey:"", effect_id:2, on:function(){return (game.savegame.progressed && HAS_STORAGE);}},
-		{line:false, check:1, name:"Pause", hotkey:"", effect_id:3, on:tautology}
-		];
-		
-		var arr_options2 = [
-		{line:false, check:1, name:"Single steps", hotkey:"F5", effect_id:4, on:tautology},
-		{line:false, check:1, name:"Sound", hotkey:"", effect_id:5, on:tautology},
-		{line:true, check:0, name:"", hotkey:"", effect_id:-1, on:tautology},
-		{line:false, check:0, name:"Load Level", hotkey:"", effect_id:6, on:function(){return HAS_STORAGE;}},
-		{line:false, check:0, name:"Change Password", hotkey:"", effect_id:7, on:function(){return (game.savegame.username !== null && HAS_STORAGE);}},
-		{line:true, check:0, name:"", hotkey:"", effect_id:-1, on:tautology},
-		{line:false, check:0, name:"Charts", hotkey:"", effect_id:8, on:function(){return HAS_STORAGE;}}
-		];
-		
-		var sub_m1 = new untitled23.SubMenu(43, 100, "Game", arr_options1);
-		var sub_m2 = new untitled23.SubMenu(55, 150, "Options", arr_options2);
-		
-		that.menu1 = new untitled23.Menu(1, 2, 17, [sub_m1, sub_m2]);
+		ktvisual.init_menus(that);
 	}
 	
 	// Dialog box stuff:
-	
-	function add_button(img, pos_x, pos_y, click_effect){
-		var btn = document.createElement("img");
-		btn.src = res.images[img].src;
-		btn.style.position = "absolute";
-		btn.style.width = res.images[img].width+"px";
-		btn.style.height = res.images[img].height+"px";
-		btn.style.left = pos_x+"px";
-		btn.style.top = pos_y+"px";
-		
-		btn.pressed = false;
-		btn.onmousedown = function(evt){btn.src = res.images[img+1].src; btn.pressed = true; evt.preventDefault();};
-		btn.onmouseup = function(evt){btn.src = res.images[img].src; btn.pressed = false;};
-		btn.onmouseout = function(evt){btn.src = res.images[img].src;};
-		btn.onmouseover = function(evt){if(btn.pressed && input.mouse_down) btn.src = res.images[img+1].src;};
-		btn.onclick = click_effect;
-		
-		that.dbx.appendChild(btn);
-		that.dbx.arr_btn[that.dbx.arr_btn.length] = btn;
-	}
+
+		function add_button(img, pos_x, pos_y, click_effect){
+		ktvisual.add_button(img, pos_x, pos_y, click_effect);
+		}
+
+
 	
 	function add_text(text, pos_x, pos_y){
-	untitled23.add_text(text, pos_x, pos_y,that)
+	ktvisual.add_text(text, pos_x, pos_y)
 	}
 	
 	function add_number(a_num, pos_x, pos_y, width, height){
-	untitled23.add_text(a_num, pos_x, pos_y, width, height,that);
+	ktvisual.add_number(a_num, pos_x, pos_y, width, height);
 
 	}
 	
 	function add_title(text){
-		var txt = document.createElement("p");
-		txt.innerHTML = text;
-		txt.style.position = "absolute";
-		txt.style.left = "5px";
-		txt.style.top = "-13px";
-		txt.style.fontFamily = "Tahoma";
-		txt.style.fontSize = "14px";
-		txt.style.color = "white";
-		txt.style.fontWeight = "bold";
-		that.dbx.appendChild(txt);
+		ktvisual.add_title(text);
 	}
+
+
 	
 	function add_input(pos_x, pos_y, width, height, type){
-		var txt = document.createElement("input");
-		//txt.innerHTML = text;
-		txt.type = type;
-		txt.style.position = "absolute";
-		txt.style.left = pos_x+"px";
-		pos_y += 10;// Because of padding
-		txt.style.top = pos_y+"px";
-		txt.style.width = width+"px";
-		txt.style.height = height+"px";
-		txt.style.fontFamily = "Tahoma";
-		txt.style.fontSize = "12px";
-		
-		that.dbx.appendChild(txt);
-		that.dbx.arr_input[that.dbx.arr_input.length] = txt;
-		
-		//window.setTimeout( function() {txt.focus();}, 10);
+		ktvisual.add_input(pos_x, pos_y, width, height, type);
 	}
-	
-	function add_lvlselect(pos_x, pos_y, width, height){
-		var select = document.createElement("select");
-		select.size = 2;
-		
-		select.innerHTML = "";
-		for(var i = 1; i < game.savegame.reached_level; i++){
-			select.innerHTML += "<option value=\""+i+"\">\n"+i+", "+game.savegame.arr_steps[i]+"</option>";
-		}
-		if(game.savegame.reached_level <= 50){
-			select.innerHTML += "<option value=\""+game.savegame.reached_level+"\">\n"+game.savegame.reached_level+", -</option>";
-		}
-		
-		
-		select.style.position = "absolute";
-		select.style.left = pos_x+"px";
-		select.style.top = pos_y+"px";
-		select.style.width = width+"px";
-		select.style.height = height+"px";
-		select.style.fontFamily = "Tahoma";
-		select.style.fontSize = "12px";
-		
-		that.dbx.appendChild(select);
-		that.dbx.lvlselect = select;
+
+function add_lvlselect(pos_x, pos_y, width, height){
+		ktvisual.add_lvlselect(pos_x, pos_y, width, height);
 	}
-	
+
+
 	function add_errfield(pos_x, pos_y){
-		var ef = document.createElement("p");
-		ef.innerHTML = "";
-		ef.style.position = "absolute";
-		ef.style.left = pos_x+"px";
-		ef.style.top = pos_y+"px";
-		ef.style.fontFamily = "Tahoma";
-		ef.style.fontSize = "12px";
-		ef.style.color = "#FF0000";
-		that.dbx.appendChild(ef);
-		
-		that.dbx.errfield = ef;
+				ktvisual.add_errfield(pos_x, pos_y);
+
 	}
 	
 	this.dbx = document.createElement("div");
@@ -357,196 +266,24 @@ function CLASS_visual(){
 	
 		switch(dbx_id){
 			case DBX_CONFIRM:
-				add_title("Confirm");
-			
-				that.dbx.style.width = "256px";
-				that.dbx.style.height = "154px";
-				that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+"px";
-				that.dbx.style.top = Math.max(Math.floor(window.innerHeight-154)/2, 0)+"px";
-				that.dbx.style.background = 'url('+res.images[173].src+')';
-				
-				var f_y;
-				var f_n;
-				var f_c = function(){that.close_dbx();};
-				
-				if(opt == 0){// "New Game"
-					f_y = function(){that.open_dbx(DBX_SAVE, 1);};
-					f_n = function(){game.clear_savegame();that.close_dbx();};
-				}else if(opt == 1){// "Load Game" 
-					f_y = function(){that.open_dbx(DBX_SAVE, 2);};
-					f_n = function(){that.open_dbx(DBX_LOAD);};
-				}
-				
-				that.dbx.enterfun = f_y;
-				that.dbx.cancelfun = f_c;
-				
-				add_button(183, 20, 100, f_y);// yes
-				add_button(179, 100, 100, f_n);// no
-				add_button(177, 180, 100, f_c);// cancel
-				
-				add_text("Do you want to save the game?", 40, 35);
+			ktvisual.dbx_confirm(opt);
+
 				break;
 			case DBX_SAVE:
-				add_title("Save game");
-			
-				that.dbx.style.width = "256px";
-				that.dbx.style.height = "213px";
-				that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+"px";
-				that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+"px";
-				that.dbx.style.background = 'url('+res.images[174].src+')';
-				
-				add_text("Player name:", 20, 35);
-				add_input(100, 35, 120, 15, "text");
-				add_text("Password:", 20, 60);
-				add_input(100, 60, 120, 15, "password");
-				
-				var f_o;
-				var f_c;
-				
-				if(opt == 0){// "Save game"
-					f_o = function(){if(game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)){that.close_dbx();}};
-					f_c = function(){that.close_dbx();};
-				}else if(opt == 1){// "New Game" -> yes, save 
-					f_o = function(){if(game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)){game.clear_savegame();that.close_dbx();}};
-					f_c = function(){game.clear_savegame();that.close_dbx();};
-				}else if(opt == 2){// "Load Game" -> yes, save
-					f_o = function(){if(game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)){that.open_dbx(DBX_LOAD);}};
-					f_c = function(){that.open_dbx(DBX_LOAD);};
-				}
-				
-				that.dbx.enterfun = f_o;
-				that.dbx.cancelfun = f_c;
-				
-				add_button(181, 40, 160, f_o);// ok
-				add_button(177, 160, 160, f_c);// cancel
-				
-				add_errfield(20, 85);
+				ktvisual.dbx_save(opt);
 				break;
 			case DBX_LOAD:
-				add_title("Load game");
-			
-				that.dbx.style.width = "256px";
-				that.dbx.style.height = "213px";
-				that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+"px";
-				that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+"px";
-				that.dbx.style.background = 'url('+res.images[174].src+')';
-				
-				add_text("Player name:", 20, 35);
-				add_input(100, 35, 120, 15, "text");
-				add_text("Password:", 20, 60);
-				add_input(100, 60, 120, 15, "password");
-				
-				var f_o = function(){if(game.dbxcall_load(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)){that.close_dbx();}};
-				var f_c = function(){that.close_dbx();};
-				
-				that.dbx.enterfun = f_o;
-				that.dbx.cancelfun = f_c;
-				
-				add_button(181, 40, 160, f_o);// ok
-				add_button(177, 160, 160, f_c);// cancel
-				
-				add_errfield(20, 85);
+				ktvisual.dbx_load();
+
 				break;
 			case DBX_CHPASS:
-				add_title("Change password");
-			
-				that.dbx.style.width = "256px";
-				that.dbx.style.height = "213px";
-				that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+"px";
-				that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+"px";
-				that.dbx.style.background = 'url('+res.images[174].src+')';
-				
-				add_text("Old password:", 20, 35);
-				add_input(100, 35, 120, 15, "password");
-				add_text("New password:", 20, 60);
-				add_input(100, 60, 120, 15, "password");
-				
-				var f_o = function(){if(game.dbxcall_chpass(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)){that.close_dbx();}};
-				var f_c = function(){that.close_dbx();};
-				
-				that.dbx.enterfun = f_o;
-				that.dbx.cancelfun = f_c;
-				
-				add_button(181, 40, 160, f_o);// ok
-				add_button(177, 160, 160, f_c);// cancel
-				
-				add_errfield(20, 85);
+				ktvisual.dbx_chpass();
 				break;
 			case DBX_LOADLVL:
-				add_title("Load level");
-			
-				that.dbx.style.width = "197px";
-				that.dbx.style.height = "273px";
-				that.dbx.style.left = Math.max(Math.floor(window.innerWidth-197)/2, 0)+"px";
-				that.dbx.style.top = Math.max(Math.floor(window.innerHeight-273)/2, 0)+"px";
-				that.dbx.style.background = 'url('+res.images[175].src+')';
-				
-				add_lvlselect(20, 80, 158, 109);
-				
-				var f_o = function(){if(parseInt(that.dbx.lvlselect.value) > 0) {game.load_level(parseInt(that.dbx.lvlselect.value)); that.close_dbx();}};
-				var f_c = function(){that.close_dbx();};
-				
-				that.dbx.enterfun = f_o;
-				that.dbx.cancelfun = f_c;
-				
-				add_button(181, 25, 220, f_o);// ok
-				add_button(177, 105, 220, f_c);// cancel
-				
-				add_text("Player name:", 20, 30);
-				if(game.savegame.username === null){
-					add_text("- none -", 100, 30);
-				}else{
-					add_text(game.savegame.username, 100, 30);
-				}
-				
-				add_text("Level, steps:", 20, 50);
-				
-				
+				ktvisual.dbx_loadlvl();
 				break;
 			case DBX_CHARTS:
-				game.play_sound(4);
-				
-				add_title("Charts");
-				
-				that.dbx.style.width = "322px";
-				that.dbx.style.height = "346px";
-				that.dbx.style.left = Math.max(Math.floor(window.innerWidth-322)/2, 0)+"px";
-				that.dbx.style.top = Math.max(Math.floor(window.innerHeight-346)/2, 0)+"px";
-				that.dbx.style.background = 'url('+res.images[176].src+')';
-				
-				var uc = localStorage.getItem("user_count");
-				var user_arr = new Array();
-				
-				for(var i = 0; i < uc; i++){
-					var prefix = "player"+i+"_";
-					var rl = parseInt(localStorage.getItem(prefix+"reached_level"));
-					var st = 0;
-					for(var j = 1; j < rl; j++){
-						st += parseInt(localStorage.getItem(prefix+"steps_lv"+j));
-					}
-					user_arr[i] = {name: localStorage.getItem(prefix+"username"), reached: rl, steps: st}
-				}
-				
-				user_arr.sort(function(a,b){return (b.reached-a.reached == 0)?(a.steps - b.steps):(b.reached-a.reached);});
-				
-				add_text("rank", 21, 37);
-				add_text("level", 57, 37);
-				add_text("steps", 100, 37);
-				add_text("name", 150, 37);
-				
-				for(var i = 0; i < uc && i < 10; i++){
-					add_number((i+1), 20, 65+18*i, 20, 20);
-					add_number(user_arr[i].reached, 50, 65+18*i, 30, 20);
-					add_number(user_arr[i].steps, 95, 65+18*i, 40, 20);
-					add_text(user_arr[i].name, 155, 65+18*i);
-				}
-				
-				var f_o = function(){that.close_dbx();};
-				
-				that.dbx.enterfun = f_o;
-				that.dbx.cancelfun = f_o;
-				
-				add_button(181, 125, 300, f_o);// okay
+				ktvisual.dbx_charts();
 				break;
 			default:
 				break;
@@ -559,34 +296,7 @@ function CLASS_visual(){
 	}
 	
 	this.close_dbx = function(){
-		that.dbx.style.display = "none";
-		
-		// IMPORTANT MEMORY LEAK PREVENTION
-		for(var i = that.dbx.arr_btn.length-1; i >= 0; i--){
-			that.dbx.arr_btn[i].pressed = null;
-			that.dbx.arr_btn[i].onmousedown = null;
-			that.dbx.arr_btn[i].onmouseup = null;
-			that.dbx.arr_btn[i].onmouseout = null;
-			that.dbx.arr_btn[i].onmouseover = null;
-			that.dbx.arr_btn[i].onclick = null;
-			that.dbx.arr_btn[i] = null;
-		}
-		that.dbx.arr_btn = new Array();
-		
-		for(var i = that.dbx.arr_input.length-1; i >= 0; i--){
-			that.dbx.arr_input[i] = null;
-		}
-		that.dbx.arr_input = new Array();
-		
-		that.dbx.lvlselect = null;
-		that.dbx.errfield = null;
-		
-		that.dbx.enterfun = null;
-		that.dbx.cancelfun = null;
-		
-		while (that.dbx.firstChild) {
-			that.dbx.removeChild(that.dbx.firstChild);
-		}
+		ktvisual.dbx_close();
 	}
 	
 }

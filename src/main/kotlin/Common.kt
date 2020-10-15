@@ -15,6 +15,8 @@ var soundarray = arrayOf(
     "yeah.mp3"
 )
 
+var arr3 = arrayOf(Option(false, 1, "bSingle steps", "F5", 4, { true }))
+
 
 var ERR_SUCCESS = 0;
 var ERR_EXISTS = 1;

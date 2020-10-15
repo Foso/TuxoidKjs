@@ -30,8 +30,11 @@ external interface Game {
     fun toggle_paused()
     fun toggle_single_steps()
     fun toggle_sound()
+    fun dbxcall_load(value: dynamic, value1: dynamic): Boolean
+    fun dbxcall_chpass(value: dynamic, value1: dynamic): Boolean
+    fun dbxcall_save(value: dynamic, value1: dynamic): Boolean
 
-    val savegame: dynamic
+    val savegame: SaveGame
     var wow: Boolean
     val berti_positions: Array<Tile>
     val sound: Boolean

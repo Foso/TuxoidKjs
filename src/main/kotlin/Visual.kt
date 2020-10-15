@@ -1,26 +1,10 @@
 import kotlinx.browser.document
-
-import kotlin.math.abs
+import kotlinx.browser.localStorage
+import org.w3c.dom.events.MouseEvent
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
 import kotlin.random.Random
-
-external interface Block {
-
-    val just_moved: Boolean
-    var animation_delay: Int
-    val moving_offset: dynamic
-    val gets_removed_in: Int
-    val pushing: Boolean
-    val face_dir: Int
-    val moving: Boolean
-    var fine_offset_y: Int
-    var fine_offset_x: Int
-    var animation_frame: Int
-    val id: Int
-
-}
 
 
 external interface Visual {
@@ -49,197 +33,524 @@ external interface Visual {
     val light_grey: Rgb
     var berti_blink_time: Int
     val buttons_pressed: Array<Boolean>
-    val menu1: dynamic
-}
-
-@JsExport
-fun add_text(text: String, pos_x: Int, pos_y: Int, that: dynamic) {
-    var txt = document.createElement("p").asDynamic();
-    txt.innerHTML = text;
-    txt.style.position = "absolute";
-    txt.style.left = pos_x.toString() + "px";
-    txt.style.top = pos_y.toString() + "px";
-    txt.style.fontFamily = "Tahoma";
-    txt.style.fontSize = "12px";
-    that.dbx.appendChild(txt);
-}
-
-@JsExport
-fun add_number(a_num: Int, pos_x: Int, pos_y: Int, width: dynamic, height: dynamic, that: dynamic) {
-    var num = document.createElement("p").asDynamic();
-    num.innerHTML = a_num;
-    num.style.position = "absolute";
-    num.style.left = pos_x.toString() + "px";
-    num.style.top = pos_y.toString() + "px";
-    num.style.width = width + "px";
-    num.style.height = height + "px";
-    num.style.fontFamily = "Tahoma";
-    num.style.fontSize = "12px";
-    num.style.textAlign = "right";
-    that.dbx.appendChild(num);
+    val menu1: Menu
 }
 
 
 @JsExport
-fun kt_can_see_tile(eye_x: Int, eye_y: Int, tile_x: Int, tile_y: Int): Boolean {
-    var diff_x = tile_x - eye_x;
-    var diff_y = tile_y - eye_y;
+class KtVisual(val that: dynamic) {
 
-    var walk1_x: Int;
-    var walk1_y: Int;
-    var walk2_x: Int;
-    var walk2_y: Int;
+    var berti_blink_time = 0;
+    var last_rendered = 0;
+    var fps_delay = 0;
+    var static_ups = 0;
+    var static_fps = 0;
 
-    if (diff_x == 0) {
-        if (diff_y == 0) {
-            return true;
-        } else if (diff_y > 0) {
-            walk1_x = 0;
-            walk1_y = 1;
-            walk2_x = 0;
-            walk2_y = 1;
-        } else {// diff_y < 0
-            walk1_x = 0;
-            walk1_y = -1;
-            walk2_x = 0;
-            walk2_y = -1;
+    var buttons_pressed = arrayOf<dynamic>();
+
+
+
+// Animations:
+    var offset_key_x = 3;
+    var offset_key_y = 4;
+    var offset_banana_x = 4;
+    var offset_banana_y = 4;
+
+    var offset_wow_x = -20;
+    var offset_wow_y = -44;
+
+    var offset_yeah_x = -20;
+    var offset_yeah_y = -44;
+
+    var offset_argl_x = -20;
+    var offset_argl_y = -44;
+
+
+    var vol_bar = VolumeBar()
+
+    lateinit var menu1 : Menu
+
+    // Menu stuff:
+    var black = js("{r:0, g:0, b: 0}");
+    var dark_grey = js("{r:64, g:64, b:64}");
+    var med_grey = js("{r:128, g:128, b:128}");
+    var light_grey = js("{r:212, g:208, b:200}");
+    var white = js("{r:255, g:255, b: 255}");
+    var blue = js("{r:10, g:36, b:106}");
+    var dbx = document.createElement("div").asDynamic();
+
+    fun HAS_STORAGE(): Boolean {
+        return true
+    }
+
+    fun init_menus(that:dynamic){
+
+        val arr_options1 = arrayOf(
+            Option(false, 0, "New", "F2", 0, { true }),
+            Option(false, 0, "Load Game...","", 1, { HAS_STORAGE() }),
+            Option(false, 0, "Save","", 2, { game.savegame.progressed && HAS_STORAGE()}),
+            Option(false, 1, "Pause", "", 3, { true })
+        )
+
+        val arr_options2 = arrayOf(
+            Option(false, 1, "Single steps", "F5", 4, { true }),
+            Option(false, 1, "Sound", "", 5, { true }),
+            Option(true, 0, "", "", -1, { true }),
+            Option(false, 0, "Load Level", "", 6, { HAS_STORAGE()}),
+            Option(false, 0, "Change Password", "", 7, {game.savegame.username !== null && HAS_STORAGE()}),
+            Option(true, 0, "", "", -1, { true }),
+            Option(
+                false, 0, "Charts", "", 8, { HAS_STORAGE()})
+            )
+
+        val sub_m1 = SubMenu(43, 100, "Game", arr_options1);
+        val sub_m2 = SubMenu(55, 150, "Options", arr_options2);
+
+
+        menu1 = Menu(1, 2, 17, arrayOf(sub_m1, sub_m2));
+        that.menu1= menu1
+    }
+
+    init {
+        buttons_pressed[2] == false
+        buttons_pressed[1] == false
+        buttons_pressed[0] == false
+
+        dbx.style.position = "fixed";
+        dbx.style.zIndex = 100;
+        dbx.style.display = "none";
+        document.body?.appendChild(dbx);
+        dbx.drag_pos = js("{x:0, y:0}");
+        dbx.drag = false;
+        dbx.arr_btn = arrayOf<dynamic>();
+        dbx.arr_input = arrayOf<dynamic>();
+        dbx.lvlselect = null;
+        dbx.errfield = null;
+    }
+
+    fun open_dbx(dbx_id: dynamic, opt: Int? = 0) {
+        close_dbx();
+        when (dbx_id) {
+            DBX_CONFIRM -> {
+                dbx_confirm(opt)
+            }
+            DBX_SAVE -> {
+                dbx_save(opt)
+            }
+            DBX_LOAD -> {
+                dbx_load()
+            }
+            DBX_CHPASS -> {
+                dbx_chpass();
+            }
+            DBX_LOADLVL -> {
+                dbx_loadlvl()
+            }
+            DBX_CHARTS -> {
+                dbx_charts()
+            }
         }
-    } else if (diff_x > 0) {
-        if (diff_y == 0) {
-            walk1_x = 1;
-            walk1_y = 0;
-            walk2_x = 1;
-            walk2_y = 0;
-        } else if (diff_y > 0) {
-            if (diff_y > diff_x) {
-                walk1_x = 0;
-                walk1_y = 1;
-                walk2_x = 1;
-                walk2_y = 1;
-            } else if (diff_y == diff_x) {
-                walk1_x = 1;
-                walk1_y = 1;
-                walk2_x = 1;
-                walk2_y = 1;
-            } else {// diff_y < diff_x
-                walk1_x = 1;
-                walk1_y = 0;
-                walk2_x = 1;
-                walk2_y = 1;
-            }
-        } else {// diff_y < 0
-            if (diff_y * (-1) > diff_x) {
-                walk1_x = 0;
-                walk1_y = -1;
-                walk2_x = 1;
-                walk2_y = -1;
-            } else if (diff_y * (-1) == diff_x) {
-                walk1_x = 1;
-                walk1_y = -1;
-                walk2_x = 1;
-                walk2_y = -1;
-            } else {// diff_y < diff_x
-                walk1_x = 1;
-                walk1_y = 0;
-                walk2_x = 1;
-                walk2_y = -1;
-            }
+
+        that.dbx.style.display = "inline";
+
+        if (that.dbx.arr_input[0]) {
+            that.dbx.arr_input[0].focus();
         }
-    } else {// diff_x < 0
-        if (diff_y == 0) {
-            walk1_x = -1;
-            walk1_y = 0;
-            walk2_x = -1;
-            walk2_y = 0;
-        } else if (diff_y > 0) {
-            if (diff_y > diff_x * (-1)) {
-                walk1_x = 0;
-                walk1_y = 1;
-                walk2_x = -1;
-                walk2_y = 1;
-            } else if (diff_y == diff_x * (-1)) {
-                walk1_x = -1;
-                walk1_y = 1;
-                walk2_x = -1;
-                walk2_y = 1;
-            } else {// diff_y < diff_x
-                walk1_x = -1;
-                walk1_y = 0;
-                walk2_x = -1;
-                walk2_y = 1;
+    }
+
+    fun close_dbx() {
+        that.dbx.style.display = "none";
+
+        // IMPORTANT MEMORY LEAK PREVENTION
+        for (i in (that.dbx.arr_btn.length as Int - 1) downTo 0) {
+            dbx.arr_btn[i].pressed = null;
+            dbx.arr_btn[i].onmousedown = null;
+            dbx.arr_btn[i].onmouseup = null;
+            dbx.arr_btn[i].onmouseout = null;
+            dbx.arr_btn[i].onmouseover = null;
+            dbx.arr_btn[i].onclick = null;
+            dbx.arr_btn[i] = null;
+            dbx.enterfun = null;
+            dbx.cancelfun = null;
+        }
+
+        that.dbx.arr_btn = arrayOf<dynamic>();
+
+        for (i in (that.dbx.arr_btn.length as Int - 1) downTo 0) {
+            that.dbx.arr_input[i] = null;
+        }
+
+        that.dbx.arr_input = arrayOf<dynamic>();
+
+        that.dbx.lvlselect = null;
+        that.dbx.errfield = null;
+
+        that.dbx.enterfun = null;
+        that.dbx.cancelfun = null;
+
+        //while (that.dbx.firstChild) {
+        that.dbx.removeChild(that.dbx.firstChild);
+        //}
+    }
+
+    fun dbx_save(opt: dynamic) {
+        add_title("Save game");
+
+        that.dbx.style.width = "256px";
+        that.dbx.style.height = "213px";
+        that.dbx.style.left = js("Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        that.dbx.style.top = js("Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
+        that.dbx.style.background = "url(" + res.images[174].src + ')';
+
+        add_text("Player name:", 20, 35);
+        add_input(100, 35, 120, 15, "text");
+        add_text("Password:", 20, 60);
+        add_input(100, 60, 120, 15, "password");
+
+
+        var f_o: () -> Unit = {};
+        var f_c: () -> Unit = {};
+
+        if (opt == 0) {// "Save game"
+            f_o = {
+                if (game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
+                    that.close_dbx();
+                }
+            };
+            f_c = { that.close_dbx(); };
+        } else if (opt == 1) {// "New Game" -> yes, save
+            f_o = {
+                if (game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
+                    game.clear_savegame();that.close_dbx();
+                }
+            };
+            f_c = { game.clear_savegame();that.close_dbx(); };
+        } else if (opt == 2) {// "Load Game" -> yes, save
+            f_o = {
+                if (game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
+                    that.open_dbx(DBX_LOAD);
+                }
+            };
+            f_c = { that.open_dbx(DBX_LOAD); };
+        }
+
+        that.dbx.enterfun = f_o;
+        that.dbx.cancelfun = f_c;
+
+        add_button(181, 40, 160, f_o);// ok
+        add_button(177, 160, 160, f_c);// cancel
+
+        add_errfield(20, 85);
+    }
+
+
+    fun dbx_charts() {
+        game.play_sound(4);
+
+        add_title("Charts");
+
+        that.dbx.style.width = "322px";
+        that.dbx.style.height = "346px";
+        that.dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-322)/2, 0)+\"px\";")
+        that.dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-346)/2, 0)+\"px\";")
+        that.dbx.style.background = "url(" + res.images[176].src + ')';
+
+        var uc = localStorage.getItem("user_count")?.toInt() ?: 0;
+        var user_arr = arrayListOf<dynamic>();
+
+        for (i in 0 until uc) {
+            var prefix = "player" + i + "_";
+            var rl = localStorage.getItem(prefix + "reached_level")?.toInt() ?: 0;
+            var st = 0;
+            for (j in 1 until rl) {
+                st += localStorage.getItem(prefix + "steps_lv" + j)?.toInt() ?: 0;
             }
-        } else {// diff_y < 0
-            if (diff_y > diff_x) {
-                walk1_x = -1;
-                walk1_y = 0;
-                walk2_x = -1;
-                walk2_y = -1;
-            } else if (diff_y == diff_x) {
-                walk1_x = -1;
-                walk1_y = -1;
-                walk2_x = -1;
-                walk2_y = -1;
-            } else {// diff_y < diff_x
-                walk1_x = 0;
-                walk1_y = -1;
-                walk2_x = -1;
-                walk2_y = -1;
+            user_arr.add(js("{name: localStorage.getItem(prefix+\"username\"), reached: rl, steps: st}"))
+        }
+
+        //SORT
+
+        add_text("rank", 21, 37);
+        add_text("level", 57, 37);
+        add_text("steps", 100, 37);
+        add_text("name", 150, 37);
+
+        for (i in 0 until uc) {
+            add_number((i + 1), 20, 65 + 18 * i, 20, 20);
+            add_number(user_arr[i].reached, 50, 65 + 18 * i, 30, 20);
+            add_number(user_arr[i].steps, 95, 65 + 18 * i, 40, 20);
+            add_text(user_arr[i].name, 155, 65 + 18 * i);
+        }
+        var f_o = { that.close_dbx(); };
+
+        that.dbx.enterfun = f_o;
+        that.dbx.cancelfun = f_o;
+
+        add_button(181, 125, 300, f_o);// okay
+
+
+    }
+
+
+    fun dbx_loadlvl() {
+        add_title("Load level");
+
+        that.dbx.style.width = "197px";
+        that.dbx.style.height = "273px";
+        this.that.dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-197)/2, 0)+\"px\";")
+        this.that.dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-273)/2, 0)+\"px\";")
+        that.dbx.style.background = "url(" + res.images[175].src + ')';
+
+        add_lvlselect(20, 80, 158, 109);
+
+        var f_o = {
+            if (that.dbx.lvlselect.value > 0) {
+                game.load_level(that.dbx.lvlselect.value);
+                that.close_dbx();
+            }
+        };
+        var f_c = { that.close_dbx(); };
+
+        that.dbx.enterfun = f_o;
+        that.dbx.cancelfun = f_c;
+
+        add_button(181, 25, 220, f_o);// ok
+        add_button(177, 105, 220, f_c);// cancel
+
+        add_text("Player name:", 20, 30);
+        if (game.savegame.username == null) {
+            add_text("- none -", 100, 30);
+        } else {
+            add_text(game.savegame.username, 100, 30);
+        }
+
+        add_text("Level, steps:", 20, 50);
+
+    }
+
+
+    fun dbx_chpass() {
+        add_title("Change password");
+
+        that.dbx.style.width = "256px";
+        that.dbx.style.height = "213px";
+        js("this.that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        js("this.that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
+
+        that.dbx.style.background = "url(" + res.images[174].src + ')';
+
+        add_text("Old password:", 20, 35);
+        add_input(100, 35, 120, 15, "password");
+        add_text("New password:", 20, 60);
+        add_input(100, 60, 120, 15, "password");
+
+        var f_o = {
+            if (game.dbxcall_chpass(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
+                that.close_dbx();
+            }
+        };
+        var f_c = { that.close_dbx(); };
+
+        that.dbx.enterfun = f_o;
+        that.dbx.cancelfun = f_c;
+
+        add_button(181, 40, 160, f_o);// ok
+        add_button(177, 160, 160, f_c);// cancel
+
+        add_errfield(20, 85);
+    }
+
+
+    fun dbx_load() {
+        add_title("Load game");
+
+        that.dbx.style.width = "256px";
+        that.dbx.style.height = "213px";
+        js("this.that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        js("\t\t\t\tthis.that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";\n")
+        that.dbx.style.background = "url(" + res.images[174].src + ')';
+
+        add_text("Player name:", 20, 35);
+        add_input(100, 35, 120, 15, "text");
+        add_text("Password:", 20, 60);
+        add_input(100, 60, 120, 15, "password");
+
+        var f_o = {
+            if (game.dbxcall_load(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
+                that.close_dbx();
+            }
+        };
+        var f_c = { that.close_dbx(); };
+
+        that.dbx.enterfun = f_o;
+        that.dbx.cancelfun = f_c;
+
+        add_button(181, 40, 160, f_o);// ok
+        add_button(177, 160, 160, f_c);// cancel
+
+        add_errfield(20, 85);
+    }
+
+
+    fun dbx_confirm(opt: dynamic) {
+        add_title("Confirm");
+
+        that.dbx.style.width = "256px";
+        that.dbx.style.height = "154px";
+        js("\t\t\t\tthis.that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";\n")
+        js("this.that.dbx.style.top = Math.max(Math.floor(window.innerHeight-154)/2, 0)+\"px\";")
+        that.dbx.style.background = "url(" + res.images[173].src + ')';
+
+        var f_y: () -> Unit = {};
+        var f_n: () -> Unit = {};
+        var f_c = { that.close_dbx(); };
+
+        if (opt == 0) {// "New Game"
+            f_y = { that.open_dbx(DBX_SAVE, 1); };
+            f_n = { game.clear_savegame();that.close_dbx(); };
+        } else if (opt == 1) {// "Load Game"
+            f_y = { that.open_dbx(DBX_SAVE, 2); };
+            f_n = { that.open_dbx(DBX_LOAD); };
+        }
+
+        that.dbx.enterfun = f_y;
+        that.dbx.cancelfun = f_c;
+
+        add_button(183, 20, 100, f_y);// yes
+        add_button(179, 100, 100, f_n);// no
+        add_button(177, 180, 100, f_c);// cancel
+
+        add_text("Do you want to save the game?", 40, 35);
+    }
+
+
+    fun add_errfield(pos_x: dynamic, pos_y: dynamic) {
+        var ef = document.createElement("p").asDynamic();
+        ef.innerHTML = "";
+        ef.style.position = "absolute";
+        js("ef.style.left = pos_x+\"px\";")
+        js("ef.style.top = pos_y+\"px\";")
+        ef.style.fontFamily = "Tahoma";
+        ef.style.fontSize = "12px";
+        ef.style.color = "#FF0000";
+        that.dbx.appendChild(ef);
+
+        that.dbx.errfield = ef;
+    }
+
+    fun add_button(img: dynamic, pos_x: dynamic, pos_y: dynamic, click_effect: dynamic) {
+        var btn = document.createElement("img").asDynamic();
+        btn.src = res.images[img].src;
+        btn.style.position = "absolute";
+        btn.style.width = res.images[img].width + "px";
+        btn.style.height = res.images[img].height + "px";
+        btn.style.left = pos_x + "px";
+        btn.style.top = pos_y + "px";
+
+        btn.pressed = false;
+        btn.onmousedown =
+            { evt: MouseEvent -> btn.src = res.images[img + 1].src; btn.pressed = true; evt.preventDefault(); };
+        btn.onmouseup = { evt: MouseEvent -> btn.src = res.images[img].src; btn.pressed = false; };
+        btn.onmouseout = { evt: MouseEvent -> btn.src = res.images[img].src; };
+        btn.onmouseover =
+            { evt: MouseEvent -> if (btn.pressed && input.mouse_down) btn.src = res.images[img + 1].src; };
+
+        btn.onclick = click_effect;
+
+        that.dbx.appendChild(btn);
+        that.dbx.arr_btn[that.dbx.arr_btn.length] = btn;
+    }
+
+    fun add_lvlselect(pos_x: dynamic, pos_y: dynamic, width: dynamic, height: dynamic) {
+
+        var select = document.createElement("select").asDynamic();
+        select.size = 2;
+
+        select.innerHTML = "";
+        for (i in 1 until game.savegame.reached_level) {
+            select.innerHTML += "<option value=\"" + i + "\">\n" + i + ", " + game.savegame.arr_steps[i] + "</option>";
+        }
+        if (game.savegame.reached_level <= 50) {
+            select.innerHTML += "<option value=\"" + game.savegame.reached_level + "\">\n" + game.savegame.reached_level + ", -</option>";
+        }
+
+
+        select.style.position = "absolute";
+        select.style.left = pos_x + "px";
+        select.style.top = pos_y + "px";
+        select.style.width = width + "px";
+        select.style.height = height + "px";
+        select.style.fontFamily = "Tahoma";
+        select.style.fontSize = "12px";
+
+        that.dbx.appendChild(select);
+        that.dbx.lvlselect = select;
+    }
+
+    fun add_text(text: String?, pos_x: Int, pos_y: Int) {
+        var txt = document.createElement("p").asDynamic();
+        txt.innerHTML = text;
+        txt.style.position = "absolute";
+        txt.style.left = pos_x.toString() + "px";
+        txt.style.top = pos_y.toString() + "px";
+        txt.style.fontFamily = "Tahoma";
+        txt.style.fontSize = "12px";
+        that.dbx.appendChild(txt);
+    }
+
+    fun add_number(a_num: Int, pos_x: Int, pos_y: Int, width: dynamic, height: dynamic) {
+        var num = document.createElement("p").asDynamic();
+        num.innerHTML = a_num;
+        num.style.position = "absolute";
+        num.style.left = pos_x.toString() + "px";
+        num.style.top = pos_y.toString() + "px";
+        num.style.width = width + "px";
+        num.style.height = height + "px";
+        num.style.fontFamily = "Tahoma";
+        num.style.fontSize = "12px";
+        num.style.textAlign = "right";
+        that.dbx.appendChild(num);
+    }
+
+    fun add_title(text: String) {
+        var txt = document.createElement("p").asDynamic();
+        txt.innerHTML = text;
+        txt.style.position = "absolute";
+        txt.style.left = "5px";
+        txt.style.top = "-13px";
+        txt.style.fontFamily = "Tahoma";
+        txt.style.fontSize = "14px";
+        txt.style.color = "white";
+        txt.style.fontWeight = "bold";
+        that.dbx.appendChild(txt);
+    }
+
+    fun add_input(pos_x: dynamic, pos_y: dynamic, width: dynamic, height: dynamic, type: dynamic) {
+        var txt = document.createElement("input").asDynamic();
+        //txt.innerHTML = text;
+        txt.type = type;
+        txt.style.position = "absolute";
+        txt.style.left = pos_x + "px";
+        pos_y += 10;// Because of padding
+        txt.style.top = pos_y + "px";
+        txt.style.width = width + "px";
+        txt.style.height = height + "px";
+        txt.style.fontFamily = "Tahoma";
+        txt.style.fontSize = "12px";
+
+        that.dbx.appendChild(txt);
+        that.dbx.arr_input[that.dbx.arr_input.length] = txt;
+    }
+
+    fun update_all_animations(){
+        for(y in 0 until LEV_DIMENSION_Y){
+            for (x in 0 until LEV_DIMENSION_X){
+                update_animation(x, y);
             }
         }
     }
-    var x_offset = 0;
-    var y_offset = 0;
-    var x_ratio1: Int;
-    var y_ratio1: Int;
-    var x_ratio2: Int;
-    var y_ratio2: Int;
-    var diff1: Int;
-    var diff2: Int;
 
-    while (true) {
-        if (diff_x != 0) {
-            x_ratio1 = (x_offset + walk1_x) / diff_x;
-            x_ratio2 = (x_offset + walk2_x) / diff_x;
-        } else {
-            x_ratio1 = 1;
-            x_ratio2 = 1;
-        }
-        if (diff_y != 0) {
-            y_ratio1 = (y_offset + walk1_y) / diff_y;
-            y_ratio2 = (y_offset + walk2_y) / diff_y;
-        } else {
-            y_ratio1 = 1;
-            y_ratio2 = 1;
-        }
-
-        diff1 = abs(x_ratio1 - y_ratio1);
-        diff2 = abs(x_ratio2 - y_ratio2);
-
-        if (diff1 <= diff2) {
-            x_offset += walk1_x;
-            y_offset += walk1_y;
-        } else {
-            x_offset += walk2_x;
-            y_offset += walk2_y;
-        }
-
-        if (x_offset == diff_x && y_offset == diff_y) {
-            return true;
-        }
-        if (game.level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && game.level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !game.level_array[eye_x + x_offset][eye_y + y_offset].is_small) {
-            return false;
-        }
-    }
-    // Code here is unreachable
-
-}
-
-
-@JsExport
-class KtVisual(that: dynamic) {
-
-
-    fun kt_init_animation(that: dynamic, game: dynamic) {
+    fun init_animation( game: dynamic) {
 
         for (y in 0 until LEV_DIMENSION_Y) {
             // console.log("HALLO"+y+" "+LEV_DIMENSION_Y)
@@ -376,7 +687,72 @@ class KtVisual(that: dynamic) {
         }
     }
 
-    fun kt_update_animation(x: Int, y: Int) {
+
+    fun kt_update_animation_case2(x: Int, y: Int, block: Block) {
+        block.fine_offset_x = 0;
+        if (game.level_ended == 0) {
+            if (block.moving) {
+                block.fine_offset_x = -1;
+                if (block.pushing) {
+                    when (block.face_dir) {
+                        DIR_UP -> {
+                            if (block.animation_frame < 87 || block.animation_frame > 90) {
+                                block.animation_frame = 87;
+                            }
+                        }
+                        DIR_DOWN -> {
+                            if (block.animation_frame < 91 || block.animation_frame > 94) {
+                                block.animation_frame = 91;
+                            }
+                        }
+                        DIR_LEFT -> {
+                            if (block.animation_frame < 79 || block.animation_frame > 82) {
+                                block.animation_frame = 79;
+                            }
+                        }
+                        DIR_RIGHT -> {
+                            if (block.animation_frame < 83 || block.animation_frame > 86) {
+                                block.animation_frame = 83;
+                            }
+                        }
+                    }
+                } else {
+                    when (block.face_dir) {
+                        DIR_UP -> {
+                            if (block.animation_frame < 71 || block.animation_frame > 74) {
+                                block.animation_frame = 71;
+                            }
+                        }
+                        DIR_DOWN -> {
+                            if (block.animation_frame < 75 || block.animation_frame > 78) {
+                                block.animation_frame = 75;
+                            }
+                        }
+                        DIR_LEFT -> {
+                            if (block.animation_frame < 63 || block.animation_frame > 66) {
+                                block.animation_frame = 63;
+                            }
+                        }
+                        DIR_RIGHT -> {
+                            if (block.animation_frame < 67 || block.animation_frame > 70) {
+                                block.animation_frame = 67;
+                            }
+                        }
+                    }
+                }
+            } else {
+                block.animation_frame = 59;
+            }
+        } else if (game.level_ended == 1) {
+            block.animation_frame = 61;
+        } else if (game.level_ended == 2) {
+            block.animation_frame = 62;
+        }
+
+    }
+
+    fun update_animation(x: Int, y: Int) {
+
         var block = game.level_array[x][y] as Block;
         when (block.id) {
             1, 2 -> {
@@ -384,11 +760,113 @@ class KtVisual(that: dynamic) {
             }
             7 -> {
                 // Purple monster (Monster 2)
-                kt_update_animation_case7(x, y, block);
+                block.fine_offset_x = 0
+                if (game.level_ended == 0) {
+                    if (block.moving) {
+                        block.fine_offset_x = -1;
+                        if (block.pushing) {
+                            when (block.face_dir) {
+                                DIR_UP -> {
+                                    if (block.animation_frame < 139 || block.animation_frame > 142) {
+                                        block.animation_frame = 139;
+                                    }
+
+                                }
+                                DIR_DOWN -> {
+                                    if (block.animation_frame < 143 || block.animation_frame > 146) {
+                                        block.animation_frame = 143;
+                                    }
+
+                                }
+                                DIR_LEFT -> {
+                                    if (block.animation_frame < 131 || block.animation_frame > 134) {
+                                        block.animation_frame = 131;
+                                    }
+
+                                }
+                                DIR_RIGHT -> {
+                                    if (block.animation_frame < 135 || block.animation_frame > 138) {
+                                        block.animation_frame = 135;
+                                    }
+                                }
+                            }
+                        } else {
+                            when (block.face_dir) {
+                                DIR_UP -> {
+                                    if (block.animation_frame < 123 || block.animation_frame > 126) {
+                                        block.animation_frame = 123;
+                                    }
+
+
+                                }
+                                DIR_DOWN -> {
+                                    if (block.animation_frame < 127 || block.animation_frame > 130) {
+                                        block.animation_frame = 127;
+                                    }
+
+
+                                }
+                                DIR_LEFT -> {
+                                    if (block.animation_frame < 115 || block.animation_frame > 118) {
+                                        block.animation_frame = 115;
+                                    }
+
+
+                                }
+                                DIR_RIGHT -> {
+                                    if (block.animation_frame < 119 || block.animation_frame > 122) {
+                                        block.animation_frame = 119;
+                                    }
+
+                                }
+                            }
+                        }
+
+                    } else {
+                        block.animation_frame = 111;
+                    }
+                } else {
+                    block.animation_frame = 111;
+                }
             }
             10 -> {
                 // Green monster (Monster 2)
-                kt_update_animation_case10(x, y, block);
+                block.fine_offset_x = 0
+                if (game.level_ended == 0) {
+                    if (block.moving) {
+                        block.fine_offset_x = -1;
+                        when (block.face_dir) {
+                            DIR_UP -> {
+                                if (block.animation_frame < 159 || block.animation_frame > 162) {
+                                    block.animation_frame = 159;
+                                }
+
+                            }
+                            DIR_DOWN -> {
+                                if (block.animation_frame < 163 || block.animation_frame > 166) {
+                                    block.animation_frame = 163;
+                                }
+
+                            }
+                            DIR_LEFT -> {
+                                if (block.animation_frame < 151 || block.animation_frame > 154) {
+                                    block.animation_frame = 151;
+                                }
+
+                            }
+                            DIR_RIGHT -> {
+                                if (block.animation_frame < 155 || block.animation_frame > 158) {
+                                    block.animation_frame = 155;
+                                }
+
+                            }
+                        }
+                    } else {
+                        block.animation_frame = 147;
+                    }
+                } else {
+                    block.animation_frame = 147;
+                }
             }
             19 -> {
                 // Door 1
@@ -431,183 +909,7 @@ class KtVisual(that: dynamic) {
 }
 
 
-@JsExport
-fun kt_update_animation_case10(x: Int, y: Int, block: Block) {
-    // Green monster (Monster 2)
-    block.fine_offset_x = 0;
-    if (game.level_ended == 0) {
-        if (block.moving) {
-            block.fine_offset_x = -1;
-            when (block.face_dir) {
-                DIR_UP -> {
-                    if (block.animation_frame < 159 || block.animation_frame > 162) {
-                        block.animation_frame = 159;
-                    }
 
-                }
-                DIR_DOWN -> {
-                    if (block.animation_frame < 163 || block.animation_frame > 166) {
-                        block.animation_frame = 163;
-                    }
-
-                }
-                DIR_LEFT -> {
-                    if (block.animation_frame < 151 || block.animation_frame > 154) {
-                        block.animation_frame = 151;
-                    }
-
-                }
-                DIR_RIGHT -> {
-                    if (block.animation_frame < 155 || block.animation_frame > 158) {
-                        block.animation_frame = 155;
-                    }
-
-                }
-            }
-        } else {
-            block.animation_frame = 147;
-        }
-    } else {
-        block.animation_frame = 147;
-    }
-}
-
-@JsExport
-fun kt_update_animation_case7(x: Int, y: Int, block: Block) {
-    // Purple monster (Monster 2)
-    block.fine_offset_x = 0;
-    if (game.level_ended == 0) {
-        if (block.moving) {
-            block.fine_offset_x = -1;
-            if (block.pushing) {
-                when (block.face_dir) {
-                    DIR_UP -> {
-                        if (block.animation_frame < 139 || block.animation_frame > 142) {
-                            block.animation_frame = 139;
-                        }
-
-                    }
-                    DIR_DOWN -> {
-                        if (block.animation_frame < 143 || block.animation_frame > 146) {
-                            block.animation_frame = 143;
-                        }
-
-                    }
-                    DIR_LEFT -> {
-                        if (block.animation_frame < 131 || block.animation_frame > 134) {
-                            block.animation_frame = 131;
-                        }
-
-                    }
-                    DIR_RIGHT -> {
-                        if (block.animation_frame < 135 || block.animation_frame > 138) {
-                            block.animation_frame = 135;
-                        }
-                    }
-                }
-            } else {
-                when (block.face_dir) {
-                    DIR_UP -> {
-                        if (block.animation_frame < 123 || block.animation_frame > 126) {
-                            block.animation_frame = 123;
-                        }
-
-
-                    }
-                    DIR_DOWN -> {
-                        if (block.animation_frame < 127 || block.animation_frame > 130) {
-                            block.animation_frame = 127;
-                        }
-
-
-                    }
-                    DIR_LEFT -> {
-                        if (block.animation_frame < 115 || block.animation_frame > 118) {
-                            block.animation_frame = 115;
-                        }
-
-
-                    }
-                    DIR_RIGHT -> {
-                        if (block.animation_frame < 119 || block.animation_frame > 122) {
-                            block.animation_frame = 119;
-                        }
-
-                    }
-                }
-            }
-
-        } else {
-            block.animation_frame = 111;
-        }
-    } else {
-        block.animation_frame = 111;
-    }
-}
-
-@JsExport
-fun kt_update_animation_case2(x: Int, y: Int, block: Block) {
-    block.fine_offset_x = 0;
-    if (game.level_ended == 0) {
-        if (block.moving) {
-            block.fine_offset_x = -1;
-            if (block.pushing) {
-                when (block.face_dir) {
-                    DIR_UP -> {
-                        if (block.animation_frame < 87 || block.animation_frame > 90) {
-                            block.animation_frame = 87;
-                        }
-                    }
-                    DIR_DOWN -> {
-                        if (block.animation_frame < 91 || block.animation_frame > 94) {
-                            block.animation_frame = 91;
-                        }
-                    }
-                    DIR_LEFT -> {
-                        if (block.animation_frame < 79 || block.animation_frame > 82) {
-                            block.animation_frame = 79;
-                        }
-                    }
-                    DIR_RIGHT -> {
-                        if (block.animation_frame < 83 || block.animation_frame > 86) {
-                            block.animation_frame = 83;
-                        }
-                    }
-                }
-            } else {
-                when (block.face_dir) {
-                    DIR_UP -> {
-                        if (block.animation_frame < 71 || block.animation_frame > 74) {
-                            block.animation_frame = 71;
-                        }
-                    }
-                    DIR_DOWN -> {
-                        if (block.animation_frame < 75 || block.animation_frame > 78) {
-                            block.animation_frame = 75;
-                        }
-                    }
-                    DIR_LEFT -> {
-                        if (block.animation_frame < 63 || block.animation_frame > 66) {
-                            block.animation_frame = 63;
-                        }
-                    }
-                    DIR_RIGHT -> {
-                        if (block.animation_frame < 67 || block.animation_frame > 70) {
-                            block.animation_frame = 67;
-                        }
-                    }
-                }
-            }
-        } else {
-            block.animation_frame = 59;
-        }
-    } else if (game.level_ended == 1) {
-        block.animation_frame = 61;
-    } else if (game.level_ended == 2) {
-        block.animation_frame = 62;
-    }
-
-}
 
 @JsExport
 fun render_block(x: Int, y: Int, render_option: dynamic) {
@@ -980,6 +1282,7 @@ fun render_field() {
     }
 }
 
+
 @JsExport
 fun render_field_subset(consumable: dynamic) {
     for (y in 0 until LEV_DIMENSION_Y) {
@@ -1057,7 +1360,7 @@ fun kt_render_menu() {
     CTX.textAlign = "left";
     CTX.textBaseline = "top";
 
-    for (i in 0 until vis.menu1.submenu_list.length) {
+    for (i in 0 until vis.menu1.submenu_list.size) {
         var sm = vis.menu1.submenu_list[i];
         if (i == vis.menu1.submenu_open) {
             CTX.fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")";
@@ -1118,7 +1421,7 @@ fun kt_render_menu() {
             var option_offset = vis.menu1.offset_y + vis.menu1.height + 4;
             CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
 
-            for (j in 0 until sm.options.length) {
+            for (j in 0 until sm.options.size) {
                 var next_offset: Int;
                 var check_image = 171;
                 if (sm.options[j].line) {
