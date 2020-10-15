@@ -15,9 +15,6 @@ var soundarray = arrayOf(
     "yeah.mp3"
 )
 
-var arr3 = arrayOf(Option(false, 1, "bSingle steps", "F5", 4, { true }))
-
-
 var ERR_SUCCESS = 0;
 var ERR_EXISTS = 1;
 var ERR_NOSAVE = 2;
@@ -33,12 +30,7 @@ var DBX_LOADLVL = 4;
 var DBX_CHARTS = 5;
 external var md5: dynamic
 
-
-
-
-
-
-external var vis: Visual
+external var vis: KtVisual
 external var DIR_LEFT: Int
 external var DIR_UP: Int
 external var DIR_DOWN: Int
@@ -49,7 +41,7 @@ external var LEV_START_DELAY: Int
 external var UPS: Int
 
 external var res: MyRes
-external var game: Game
+external var game: KtGame
 external var CTX: dynamic//CanvasRenderingContext2D
 
 external var SCREEN_WIDTH: dynamic
@@ -71,25 +63,6 @@ external var input: MyInput
 external fun update_entities()
 
 
-/**
- * This needed
- */
-
-fun save2Game(test: dynamic) {
-    // window.alert(test.usernumber)
-    test.usernumber = -1
-    test.username = null;
-    test.password = null;
-    test.reached_level = 1;
-    test.progressed = false;
-    test.arr_steps = arrayOf<Int>()
-    for (i in 0 until 50) {
-        test.arr_steps[i] = 0
-    }
-
-
-}
-
 
 external interface Tile {
     val x: Int
@@ -104,27 +77,14 @@ external interface Rgb {
     val b: dynamic
 }
 
-external interface Dbx {
-    fun enterfun()
-    fun cancelfun()
+@JsExport
+fun kt_update_entities(){
+    var tick = (game.update_tick*60/UPS);
+    var synced_move = tick % (12/game.move_speed) //==0 ?
 
-    var drag_pos: dynamic
-    var drag: Boolean
-    val style: dynamic
-    val firstChild: Boolean
+    // The player moves first at all times to ensure the best response time and remove directional quirks.
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -177,34 +137,3 @@ fun ktupdate() {
 
 
 
-
-@JsExport
-fun kt_error_dbx(errno: Int, that: dynamic) {
-    if (that.dbx.errfield === null) return;
-    var err_string = "";
-    when (errno) {
-        ERR_EXISTS -> {
-            err_string = "Error - the account already exists.";
-        }
-
-        ERR_NOSAVE -> {
-            err_string = "Error - there are no savegames to load!";
-        }
-
-        ERR_WRONGPW -> {
-            err_string = "Error - you used the wrong password.";
-        }
-
-        ERR_NOTFOUND -> {
-            err_string = "Error - this username couldn't be found.";
-        }
-
-        ERR_EMPTYNAME -> {
-            err_string = "Error - please fill in your uname.";
-        }
-        else -> {
-            err_string = "Unknown error";
-        }
-    }
-    that.dbx.errfield.innerHTML = err_string;
-}

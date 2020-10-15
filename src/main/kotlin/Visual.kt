@@ -38,7 +38,7 @@ external interface Visual {
 
 
 @JsExport
-class KtVisual(val that: dynamic) {
+class KtVisual() {
 
     var berti_blink_time = 0;
     var last_rendered = 0;
@@ -52,7 +52,7 @@ class KtVisual(val that: dynamic) {
 
 // Animations:
     var offset_key_x = 3;
-    var offset_key_y = 4;
+    var offset_key_y = 4
     var offset_banana_x = 4;
     var offset_banana_y = 4;
 
@@ -83,7 +83,36 @@ class KtVisual(val that: dynamic) {
         return true
     }
 
-    fun init_menus(that:dynamic){
+    fun error_dbx(errno: Int) {
+        if (dbx.errfield === null) return;
+        var err_string = "";
+        when (errno) {
+            ERR_EXISTS -> {
+                err_string = "Error - the account already exists.";
+            }
+
+            ERR_NOSAVE -> {
+                err_string = "Error - there are no savegames to load!";
+            }
+
+            ERR_WRONGPW -> {
+                err_string = "Error - you used the wrong password.";
+            }
+
+            ERR_NOTFOUND -> {
+                err_string = "Error - this username couldn't be found.";
+            }
+
+            ERR_EMPTYNAME -> {
+                err_string = "Error - please fill in your uname.";
+            }
+            else -> {
+                err_string = "Unknown error";
+            }
+        }
+        dbx.errfield.innerHTML = err_string;
+    }
+    fun init_menus(){
 
         val arr_options1 = arrayOf(
             Option(false, 0, "New", "F2", 0, { true }),
@@ -108,7 +137,7 @@ class KtVisual(val that: dynamic) {
 
 
         menu1 = Menu(1, 2, 17, arrayOf(sub_m1, sub_m2));
-        that.menu1= menu1
+
     }
 
     init {
@@ -151,18 +180,18 @@ class KtVisual(val that: dynamic) {
             }
         }
 
-        that.dbx.style.display = "inline";
+        dbx.style.display = "inline";
 
-        if (that.dbx.arr_input[0]) {
-            that.dbx.arr_input[0].focus();
+        if (dbx.arr_input[0]) {
+            dbx.arr_input[0].focus();
         }
     }
 
     fun close_dbx() {
-        that.dbx.style.display = "none";
+        dbx.style.display = "none";
 
         // IMPORTANT MEMORY LEAK PREVENTION
-        for (i in (that.dbx.arr_btn.length as Int - 1) downTo 0) {
+        for (i in (dbx.arr_btn.length as Int - 1) downTo 0) {
             dbx.arr_btn[i].pressed = null;
             dbx.arr_btn[i].onmousedown = null;
             dbx.arr_btn[i].onmouseup = null;
@@ -174,33 +203,33 @@ class KtVisual(val that: dynamic) {
             dbx.cancelfun = null;
         }
 
-        that.dbx.arr_btn = arrayOf<dynamic>();
+        dbx.arr_btn = arrayOf<dynamic>();
 
-        for (i in (that.dbx.arr_btn.length as Int - 1) downTo 0) {
-            that.dbx.arr_input[i] = null;
+        for (i in (dbx.arr_btn.length as Int - 1) downTo 0) {
+            dbx.arr_input[i] = null;
         }
 
-        that.dbx.arr_input = arrayOf<dynamic>();
+        dbx.arr_input = arrayOf<dynamic>();
 
-        that.dbx.lvlselect = null;
-        that.dbx.errfield = null;
+        dbx.lvlselect = null;
+        dbx.errfield = null;
 
-        that.dbx.enterfun = null;
-        that.dbx.cancelfun = null;
+        dbx.enterfun = null;
+        dbx.cancelfun = null;
 
-        //while (that.dbx.firstChild) {
-        that.dbx.removeChild(that.dbx.firstChild);
-        //}
+        while (dbx.firstChild) {
+        dbx.removeChild(dbx.firstChild);
+        }
     }
 
     fun dbx_save(opt: dynamic) {
         add_title("Save game");
 
-        that.dbx.style.width = "256px";
-        that.dbx.style.height = "213px";
-        that.dbx.style.left = js("Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
-        that.dbx.style.top = js("Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
-        that.dbx.style.background = "url(" + res.images[174].src + ')';
+        dbx.style.width = "256px";
+        dbx.style.height = "213px";
+        dbx.style.left = js("Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        dbx.style.top = js("Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
+        dbx.style.background = "url(" + res.images[174].src + ')';
 
         add_text("Player name:", 20, 35);
         add_input(100, 35, 120, 15, "text");
@@ -213,29 +242,29 @@ class KtVisual(val that: dynamic) {
 
         if (opt == 0) {// "Save game"
             f_o = {
-                if (game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
-                    that.close_dbx();
+                if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                    close_dbx();
                 }
             };
-            f_c = { that.close_dbx(); };
+            f_c = { close_dbx(); };
         } else if (opt == 1) {// "New Game" -> yes, save
             f_o = {
-                if (game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
-                    game.clear_savegame();that.close_dbx();
+                if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                    game.clear_savegame();close_dbx();
                 }
             };
-            f_c = { game.clear_savegame();that.close_dbx(); };
+            f_c = { game.clear_savegame();close_dbx(); };
         } else if (opt == 2) {// "Load Game" -> yes, save
             f_o = {
-                if (game.dbxcall_save(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
-                    that.open_dbx(DBX_LOAD);
+                if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                    open_dbx(DBX_LOAD);
                 }
             };
-            f_c = { that.open_dbx(DBX_LOAD); };
+            f_c = { open_dbx(DBX_LOAD); };
         }
 
-        that.dbx.enterfun = f_o;
-        that.dbx.cancelfun = f_c;
+        dbx.enterfun = f_o;
+        dbx.cancelfun = f_c;
 
         add_button(181, 40, 160, f_o);// ok
         add_button(177, 160, 160, f_c);// cancel
@@ -249,11 +278,11 @@ class KtVisual(val that: dynamic) {
 
         add_title("Charts");
 
-        that.dbx.style.width = "322px";
-        that.dbx.style.height = "346px";
-        that.dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-322)/2, 0)+\"px\";")
-        that.dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-346)/2, 0)+\"px\";")
-        that.dbx.style.background = "url(" + res.images[176].src + ')';
+        dbx.style.width = "322px";
+        dbx.style.height = "346px";
+        dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-322)/2, 0)+\"px\";")
+        dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-346)/2, 0)+\"px\";")
+        dbx.style.background = "url(" + res.images[176].src + ')';
 
         var uc = localStorage.getItem("user_count")?.toInt() ?: 0;
         var user_arr = arrayListOf<dynamic>();
@@ -281,10 +310,10 @@ class KtVisual(val that: dynamic) {
             add_number(user_arr[i].steps, 95, 65 + 18 * i, 40, 20);
             add_text(user_arr[i].name, 155, 65 + 18 * i);
         }
-        var f_o = { that.close_dbx(); };
+        var f_o = { close_dbx(); };
 
-        that.dbx.enterfun = f_o;
-        that.dbx.cancelfun = f_o;
+        dbx.enterfun = f_o;
+        dbx.cancelfun = f_o;
 
         add_button(181, 125, 300, f_o);// okay
 
@@ -295,24 +324,24 @@ class KtVisual(val that: dynamic) {
     fun dbx_loadlvl() {
         add_title("Load level");
 
-        that.dbx.style.width = "197px";
-        that.dbx.style.height = "273px";
-        this.that.dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-197)/2, 0)+\"px\";")
-        this.that.dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-273)/2, 0)+\"px\";")
-        that.dbx.style.background = "url(" + res.images[175].src + ')';
+        dbx.style.width = "197px";
+        dbx.style.height = "273px";
+        this.dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-197)/2, 0)+\"px\";")
+        this.dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-273)/2, 0)+\"px\";")
+        dbx.style.background = "url(" + res.images[175].src + ')';
 
         add_lvlselect(20, 80, 158, 109);
 
         var f_o = {
-            if (that.dbx.lvlselect.value > 0) {
-                game.load_level(that.dbx.lvlselect.value);
-                that.close_dbx();
+            if (dbx.lvlselect.value > 0) {
+                game.load_level(dbx.lvlselect.value);
+                close_dbx();
             }
         };
-        var f_c = { that.close_dbx(); };
+        var f_c = { close_dbx(); };
 
-        that.dbx.enterfun = f_o;
-        that.dbx.cancelfun = f_c;
+        dbx.enterfun = f_o;
+        dbx.cancelfun = f_c;
 
         add_button(181, 25, 220, f_o);// ok
         add_button(177, 105, 220, f_c);// cancel
@@ -332,12 +361,12 @@ class KtVisual(val that: dynamic) {
     fun dbx_chpass() {
         add_title("Change password");
 
-        that.dbx.style.width = "256px";
-        that.dbx.style.height = "213px";
-        js("this.that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
-        js("this.that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
+        dbx.style.width = "256px";
+        dbx.style.height = "213px";
+        dbx.style.left = js("this. Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        dbx.style.top =js(" Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
 
-        that.dbx.style.background = "url(" + res.images[174].src + ')';
+        dbx.style.background = "url(" + res.images[174].src + ')';
 
         add_text("Old password:", 20, 35);
         add_input(100, 35, 120, 15, "password");
@@ -345,14 +374,14 @@ class KtVisual(val that: dynamic) {
         add_input(100, 60, 120, 15, "password");
 
         var f_o = {
-            if (game.dbxcall_chpass(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
-                that.close_dbx();
+            if (game.dbxcall_chpass(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                close_dbx();
             }
         };
-        var f_c = { that.close_dbx(); };
+        var f_c = { close_dbx(); };
 
-        that.dbx.enterfun = f_o;
-        that.dbx.cancelfun = f_c;
+        dbx.enterfun = f_o;
+        dbx.cancelfun = f_c;
 
         add_button(181, 40, 160, f_o);// ok
         add_button(177, 160, 160, f_c);// cancel
@@ -364,11 +393,11 @@ class KtVisual(val that: dynamic) {
     fun dbx_load() {
         add_title("Load game");
 
-        that.dbx.style.width = "256px";
-        that.dbx.style.height = "213px";
-        js("this.that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
-        js("\t\t\t\tthis.that.dbx.style.top = Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";\n")
-        that.dbx.style.background = "url(" + res.images[174].src + ')';
+        dbx.style.width = "256px";
+        dbx.style.height = "213px";
+        dbx.style.left =js(" Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        dbx.style.top =js(" Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";\n")
+        dbx.style.background = "url(" + res.images[174].src + ')';
 
         add_text("Player name:", 20, 35);
         add_input(100, 35, 120, 15, "text");
@@ -376,14 +405,14 @@ class KtVisual(val that: dynamic) {
         add_input(100, 60, 120, 15, "password");
 
         var f_o = {
-            if (game.dbxcall_load(that.dbx.arr_input[0].value, that.dbx.arr_input[1].value)) {
-                that.close_dbx();
+            if (game.dbxcall_load(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                close_dbx();
             }
         };
-        var f_c = { that.close_dbx(); };
+        var f_c = { close_dbx(); };
 
-        that.dbx.enterfun = f_o;
-        that.dbx.cancelfun = f_c;
+        dbx.enterfun = f_o;
+        dbx.cancelfun = f_c;
 
         add_button(181, 40, 160, f_o);// ok
         add_button(177, 160, 160, f_c);// cancel
@@ -395,26 +424,26 @@ class KtVisual(val that: dynamic) {
     fun dbx_confirm(opt: dynamic) {
         add_title("Confirm");
 
-        that.dbx.style.width = "256px";
-        that.dbx.style.height = "154px";
-        js("\t\t\t\tthis.that.dbx.style.left = Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";\n")
-        js("this.that.dbx.style.top = Math.max(Math.floor(window.innerHeight-154)/2, 0)+\"px\";")
-        that.dbx.style.background = "url(" + res.images[173].src + ')';
+        dbx.style.width = "256px";
+        dbx.style.height = "154px";
+        this.dbx.style.left = js("Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";\n")
+        this.dbx.style.top =  js("Math.max(Math.floor(window.innerHeight-154)/2, 0)+\"px\";")
+        dbx.style.background = "url(" + res.images[173].src + ')';
 
         var f_y: () -> Unit = {};
         var f_n: () -> Unit = {};
-        var f_c = { that.close_dbx(); };
+        var f_c = { close_dbx(); };
 
         if (opt == 0) {// "New Game"
-            f_y = { that.open_dbx(DBX_SAVE, 1); };
-            f_n = { game.clear_savegame();that.close_dbx(); };
+            f_y = { open_dbx(DBX_SAVE, 1); };
+            f_n = { game.clear_savegame();close_dbx(); };
         } else if (opt == 1) {// "Load Game"
-            f_y = { that.open_dbx(DBX_SAVE, 2); };
-            f_n = { that.open_dbx(DBX_LOAD); };
+            f_y = { open_dbx(DBX_SAVE, 2); };
+            f_n = { open_dbx(DBX_LOAD); };
         }
 
-        that.dbx.enterfun = f_y;
-        that.dbx.cancelfun = f_c;
+        dbx.enterfun = f_y;
+        dbx.cancelfun = f_c;
 
         add_button(183, 20, 100, f_y);// yes
         add_button(179, 100, 100, f_n);// no
@@ -433,9 +462,9 @@ class KtVisual(val that: dynamic) {
         ef.style.fontFamily = "Tahoma";
         ef.style.fontSize = "12px";
         ef.style.color = "#FF0000";
-        that.dbx.appendChild(ef);
+        dbx.appendChild(ef);
 
-        that.dbx.errfield = ef;
+        dbx.errfield = ef;
     }
 
     fun add_button(img: dynamic, pos_x: dynamic, pos_y: dynamic, click_effect: dynamic) {
@@ -457,8 +486,8 @@ class KtVisual(val that: dynamic) {
 
         btn.onclick = click_effect;
 
-        that.dbx.appendChild(btn);
-        that.dbx.arr_btn[that.dbx.arr_btn.length] = btn;
+        dbx.appendChild(btn);
+        dbx.arr_btn[dbx.arr_btn.length] = btn;
     }
 
     fun add_lvlselect(pos_x: dynamic, pos_y: dynamic, width: dynamic, height: dynamic) {
@@ -483,8 +512,8 @@ class KtVisual(val that: dynamic) {
         select.style.fontFamily = "Tahoma";
         select.style.fontSize = "12px";
 
-        that.dbx.appendChild(select);
-        that.dbx.lvlselect = select;
+        dbx.appendChild(select);
+        dbx.lvlselect = select;
     }
 
     fun add_text(text: String?, pos_x: Int, pos_y: Int) {
@@ -495,7 +524,7 @@ class KtVisual(val that: dynamic) {
         txt.style.top = pos_y.toString() + "px";
         txt.style.fontFamily = "Tahoma";
         txt.style.fontSize = "12px";
-        that.dbx.appendChild(txt);
+        dbx.appendChild(txt);
     }
 
     fun add_number(a_num: Int, pos_x: Int, pos_y: Int, width: dynamic, height: dynamic) {
@@ -509,7 +538,7 @@ class KtVisual(val that: dynamic) {
         num.style.fontFamily = "Tahoma";
         num.style.fontSize = "12px";
         num.style.textAlign = "right";
-        that.dbx.appendChild(num);
+        dbx.appendChild(num);
     }
 
     fun add_title(text: String) {
@@ -522,7 +551,7 @@ class KtVisual(val that: dynamic) {
         txt.style.fontSize = "14px";
         txt.style.color = "white";
         txt.style.fontWeight = "bold";
-        that.dbx.appendChild(txt);
+        dbx.appendChild(txt);
     }
 
     fun add_input(pos_x: dynamic, pos_y: dynamic, width: dynamic, height: dynamic, type: dynamic) {
@@ -538,8 +567,8 @@ class KtVisual(val that: dynamic) {
         txt.style.fontFamily = "Tahoma";
         txt.style.fontSize = "12px";
 
-        that.dbx.appendChild(txt);
-        that.dbx.arr_input[that.dbx.arr_input.length] = txt;
+        dbx.appendChild(txt);
+        dbx.arr_input[dbx.arr_input.length] = txt;
     }
 
     fun update_all_animations(){
@@ -550,7 +579,7 @@ class KtVisual(val that: dynamic) {
         }
     }
 
-    fun init_animation( game: dynamic) {
+    fun init_animation() {
 
         for (y in 0 until LEV_DIMENSION_Y) {
             // console.log("HALLO"+y+" "+LEV_DIMENSION_Y)
@@ -574,8 +603,8 @@ class KtVisual(val that: dynamic) {
                     4 -> {
                         // Banana
                         block.animation_frame = 2;
-                        block.fine_offset_x = that.offset_banana_x;
-                        block.fine_offset_y = that.offset_banana_y;
+                        block.fine_offset_x = offset_banana_x;
+                        block.fine_offset_y = offset_banana_y;
                         break
                     }
                     5 -> {
@@ -610,43 +639,43 @@ class KtVisual(val that: dynamic) {
                     13 -> {
                         // Key 1
                         block.animation_frame = 3;
-                        block.fine_offset_x = that.offset_key_x;
-                        block.fine_offset_y = that.offset_key_y;
+                        block.fine_offset_x = offset_key_x;
+                        block.fine_offset_y = offset_key_y;
                         break
                     }
                     14 -> {
                         // Key 2
                         block.animation_frame = 4;
-                        block.fine_offset_x = that.offset_key_x;
-                        block.fine_offset_y = that.offset_key_y;
+                        block.fine_offset_x = offset_key_x;
+                        block.fine_offset_y = offset_key_y;
                         break
                     }
                     15 -> {
                         // Key 3
                         block.animation_frame = 5;
-                        block.fine_offset_x = that.offset_key_x;
-                        block.fine_offset_y = that.offset_key_y;
+                        block.fine_offset_x = offset_key_x;
+                        block.fine_offset_y = offset_key_y;
                         break
                     }
                     16 -> {
                         // Key 4
                         block.animation_frame = 6;
-                        block.fine_offset_x = that.offset_key_x;
-                        block.fine_offset_y = that.offset_key_y;
+                        block.fine_offset_x = offset_key_x;
+                        block.fine_offset_y = offset_key_y;
                         break
                     }
                     17 -> {
                         // Key 5
                         block.animation_frame = 7;
-                        block.fine_offset_x = that.offset_key_x;
-                        block.fine_offset_y = that.offset_key_y;
+                        block.fine_offset_x = offset_key_x;
+                        block.fine_offset_y = offset_key_y;
                         break
                     }
                     18 -> {
                         // Key 6
                         block.animation_frame = 8;
-                        block.fine_offset_x = that.offset_key_x;
-                        block.fine_offset_y = that.offset_key_y;
+                        block.fine_offset_x = offset_key_x;
+                        block.fine_offset_y = offset_key_y;
                         break
                     }
                     19 -> {

@@ -9,55 +9,7 @@ import kotlin.random.Random
 var INTRO_DURATION = 6;// In seconds
 var DEBUG = true;
 
-external interface Game {
-    fun set_volume(defaultVolume: dynamic)
-    fun play_sound(i: Int)
-    fun load_level(i: Int)
-    fun next_level()
-    fun update_savegame(levelNumber: Int, stepsTaken: Int)
-    fun reset_level()
-    fun dir_to_coords(currX: Int, currY: Int, faceDir: dynamic): dynamic
-    fun move(currX: Int, currY: Int, faceDir: dynamic)
-    fun walkable(currX: Int, currY: Int, dirLeft: Int): Boolean
-    fun start_move(currX: Int, currY: Int, dirLeft: Int)
-    fun get_adjacent_tiles(currX: Int, currY: Int): Array<Tile>
-    fun opposite_dir(faceDir: Any): Int
-    fun can_see_tile(currX: Int, currY: Int, x: dynamic, y: dynamic): Boolean
-    fun remove_soundrestriction()
-    fun prev_level()
-    fun clear_savegame()
-    fun store_savegame()
-    fun toggle_paused()
-    fun toggle_single_steps()
-    fun toggle_sound()
-    fun dbxcall_load(value: dynamic, value1: dynamic): Boolean
-    fun dbxcall_chpass(value: dynamic, value1: dynamic): Boolean
-    fun dbxcall_save(value: dynamic, value1: dynamic): Boolean
 
-    val savegame: SaveGame
-    var wow: Boolean
-    val berti_positions: Array<Tile>
-    val sound: Boolean
-    val buttons_activated: Array<Boolean>
-    var walk_dir: Int
-    val single_steps: Boolean
-    var prime_movement: dynamic
-    val move_speed: dynamic
-    var door_removal_delay: Double
-    var level_array: Array<Array<KtEntity>>
-    var update_drawn: Boolean
-    var last_updated: dynamic
-    var delta_updated: dynamic
-    var steps_taken: Int
-    val level_number: Int
-    var update_tick: Int
-    var level_ended: Int
-    var wait_timer: Int
-    var mode: Int
-    val paused: Boolean
-    var initialized: Boolean
-
-}
 
 @JsExport
 class KtGame() {
@@ -451,7 +403,7 @@ class KtGame() {
         }
     }
 
-    fun get_adjacent_tiles(tile_x: Int, tile_y: Int): Array<dynamic> {
+    fun get_adjacent_tiles(tile_x: Int, tile_y: Int): Array<Tile> {
 
         var result = arrayListOf<dynamic>()
         for (i in -1 until 1) {

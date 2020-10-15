@@ -15,14 +15,6 @@ import kotlin.math.sqrt
 import kotlin.properties.Delegates
 
 
-external interface JoyStick {
-    fun getBoundingClientRect(): dynamic
-    val width: Double
-    val height: Double
-
-
-}
-
 external var JOYCTX: dynamic
 
 private val HTMLCanvasElement.true_height: Int

@@ -47,7 +47,7 @@ class KtEntity() {
         }
 
 
-        if (id == 4 || (id >= 13 && id <= 18)) {// Those are the guys who are consumable, namely banana and the 6 keys
+        if (id == 4 || (id in 13..18)) {// Those are the guys who are consumable, namely banana and the 6 keys
             consumable = true;
         }
         if (id == 1 || id == 2 || id == 7 || id == 10) {// Those are small entities, Berti, MENU Berti, purple monster, green monster
