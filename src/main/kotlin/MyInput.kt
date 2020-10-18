@@ -1,5 +1,6 @@
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.TouchEvent
@@ -15,16 +16,8 @@ import kotlin.math.sqrt
 import kotlin.properties.Delegates
 
 
-external var JOYCTX: dynamic
 
-private val HTMLCanvasElement.true_height: Int
-    get() {
-        return SCREEN_HEIGHT
-    }
-private val HTMLCanvasElement.true_width : Int
-    get() = SCREEN_WIDTH
-external var CANVAS: HTMLCanvasElement
-external var JOYSTICK: JoyStick
+
 
 /**
  *
@@ -67,14 +60,14 @@ class MyInput {
 
         document.addEventListener("touchend", { handle_touchend_global(it as TouchEvent) }, false);
 
-        // Handle mouse controls (CANVAS)
-        CANVAS.addEventListener("mousemove", { handle_mousemove(it as MouseEvent) }, false);
+        // Handle mouse controls (MYCANVAS)
+        MYCANVAS.addEventListener("mousemove", { handle_mousemove(it as MouseEvent) }, false);
 
-        CANVAS.addEventListener("mousedown", { handle_mousedown(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mousedown", { handle_mousedown(it as MouseEvent) }, false);
 
-        CANVAS.addEventListener("mouseup", { handle_mouseup(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mouseup", { handle_mouseup(it as MouseEvent) }, false);
 
-        CANVAS.addEventListener("mouseout", { handle_mouseout(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mouseout", { handle_mouseout(it as MouseEvent) }, false);
     }
 
     // Public:
@@ -156,17 +149,17 @@ class MyInput {
     }
 
     fun handle_mousemove(evt: MouseEvent) {
-        var rect = CANVAS.getBoundingClientRect();
-        var style = window.getComputedStyle(CANVAS);
+        var rect = MYCANVAS.getBoundingClientRect();
+        var style = window.getComputedStyle(MYCANVAS);
 
 
         val x1 = round(
             (evt.clientX - rect.left.toDouble() - style.getPropertyValue("border-left-width").replace("px", "")
-                .toDouble()) / CANVAS.true_width as Double * CANVAS.width.toDouble()
+                .toDouble()) / true_width as Double * MYCANVAS.width.toDouble()
         )
         val y1 = round(
             (evt.clientY - rect.top - style.getPropertyValue("border-top-width").replace("px", "")
-                .toInt()) / CANVAS.true_height * CANVAS.height
+                .toInt()) / true_height * MYCANVAS.height
         )
        // console.log("HIER   " + x1)
 
@@ -356,13 +349,13 @@ class MyInput {
         game.remove_soundrestriction();
         //evt.preventDefault();
         var touches = evt.changedTouches;
-        var rect = JOYSTICK.getBoundingClientRect();
-        var style = window.getComputedStyle(JOYSTICK as Element);
+        var rect = (MyJOYSTICK as HTMLCanvasElement).getBoundingClientRect();
+        var style = window.getComputedStyle(MyJOYSTICK as Element);
 
         var changed = false;
 
-        var mid_x = JOYSTICK.width / 2;
-        var mid_y = JOYSTICK.height / 2;
+        var mid_x = MyJOYSTICK.width / 2;
+        var mid_y = MyJOYSTICK.height / 2;
 
         for (i in 0 until touches.length) {
 
@@ -375,9 +368,9 @@ class MyInput {
                     .toDouble()
             );
 
-            if (x >= 0 && x <= JOYSTICK.width && y >= 0 && y <= JOYSTICK.height) {
+            if (x >= 0 && x <= MyJOYSTICK.width && y >= 0 && y <= MyJOYSTICK.height) {
                 if (x >= y) {
-                    if (-x + JOYSTICK.height >= y) {
+                    if (-x + MyJOYSTICK.height >= y) {
                         joystick_dir = DIR_UP;
                         changed = true;
                     } else {
@@ -385,7 +378,7 @@ class MyInput {
                         changed = true;
                     }
                 } else {
-                    if (-x + JOYSTICK.width >= y) {
+                    if (-x + MyJOYSTICK.width >= y) {
                         joystick_dir = DIR_LEFT;
                         changed = true;
                     } else {
@@ -419,24 +412,24 @@ class MyInput {
 fun render_joystick(x: Double? = null, y: Double? = null) {
     var newX = x
     var newY = y
-    val mid_x = JOYSTICK.width / 2;
-    val mid_y = JOYSTICK.height / 2;
+    val mid_x = MyJOYSTICK.width / 2;
+    val mid_y = MyJOYSTICK.height / 2;
 
-    JOYCTX.clearRect(0, 0, JOYSTICK.width, JOYSTICK.height);
-    JOYCTX.globalAlpha = 0.5;// Set joystick half-opaque (1 = opaque, 0 = fully transparent)
-    JOYCTX.beginPath();
-    JOYCTX.arc(mid_x, mid_y, JOYSTICK.width / 4 + 10, 0, 2 * PI);
-    JOYCTX.stroke();
+    MYJOYCTX.clearRect(0.0, 0.0, MyJOYSTICK.width.toDouble(), MyJOYSTICK.height.toDouble());
+    MYJOYCTX.globalAlpha = 0.5;// Set joystick half-opaque (1 = opaque, 0 = fully transparent)
+    MYJOYCTX.beginPath();
+    MYJOYCTX.arc(mid_x.toDouble(), mid_y.toDouble(), (MyJOYSTICK.width / 4 + 10).toDouble(), 0.0, 2 * PI);
+    MYJOYCTX.stroke();
 
     if (newX != null && newY != null) {
         var dist = sqrt((newX - mid_x).pow(2.0) + (newY - mid_y).pow(2.0));
-        if (dist > JOYSTICK.width / 4) {
-            newX = mid_x + (newX - mid_x) / dist * JOYSTICK.width / 4;
-            newY = mid_y + (newY - mid_y) / dist * JOYSTICK.width / 4;
+        if (dist > MyJOYSTICK.width / 4) {
+            newX = mid_x + (newX - mid_x) / dist * MyJOYSTICK.width / 4;
+            newY = mid_y + (newY - mid_y) / dist * MyJOYSTICK.width / 4;
         }
-        JOYCTX.beginPath();
-        JOYCTX.arc(newX, newY, 10, 0, 2 * PI, false);// a circle at the start
-        JOYCTX.fillStyle = "red";
-        JOYCTX.fill();
+        MYJOYCTX.beginPath();
+        MYJOYCTX.arc(newX, newY, 10.0, 0.0, 2 * PI, false);// a circle at the start
+        MYJOYCTX.fillStyle = "red";
+        MYJOYCTX.fill();
     }
 }

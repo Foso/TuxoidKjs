@@ -324,6 +324,5 @@ class KtEntity() {
 }
 
 
-external var IS_TOUCH_DEVICE: Boolean
 
 

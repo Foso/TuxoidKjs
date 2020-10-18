@@ -7,6 +7,7 @@ var NUM_RESOURCES = 197;
 var IMAGE_DIR = "images/";
 var SOUND_DIR = "sound/";
 
+var MENU_HEIGHT = 20;
 
 
 

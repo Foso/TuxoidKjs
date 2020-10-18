@@ -1,5 +1,10 @@
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
+import org.w3c.dom.CanvasRenderingContext2D
+import org.w3c.dom.CanvasTextAlign
+import org.w3c.dom.CanvasTextBaseline
+import org.w3c.dom.LEFT
+import org.w3c.dom.TOP
 import org.w3c.dom.events.MouseEvent
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -12,10 +17,10 @@ import kotlin.random.Random
 class KtVisual() {
 
     var berti_blink_time = 0;
-    var last_rendered = 0;
-    var fps_delay = 0;
-    var static_ups = 0;
-    var static_fps = 0;
+    var last_rendered = 0.0;
+    var fps_delay = 0.0;
+    var static_ups = 0.0;
+    var static_fps = 0.0;
 
     var buttons_pressed = arrayOf<dynamic>();
 
@@ -1087,33 +1092,33 @@ fun render_block(x: Int, y: Int, render_option: dynamic) {
     //drawImage reference: context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
     if (block.animation_frame >= 0) {
         if (render_option == RENDER_FULL) {// Render the full block
-            CTX.drawImage(
+            MYCTX.drawImage(
                 res.images[block.animation_frame],
                 LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x,
                 LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y
             );
         } else if (render_option == RENDER_TOP) {// Render top
             if (block.face_dir == DIR_DOWN) {
-                CTX.drawImage(
+                MYCTX.drawImage(
                     res.images[block.animation_frame],
-                    0,
-                    0,
+                    0.0,
+                    0.0,
                     res.images[block.animation_frame].width,
                     res.images[block.animation_frame].height - offset_y,
-                    LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x,
-                    LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y,
+                    (LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x).toDouble(),
+                    (LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y).toDouble(),
                     res.images[block.animation_frame].width,
                     res.images[block.animation_frame].height - offset_y
                 );
             } else if (block.face_dir == DIR_UP) {
-                CTX.drawImage(
+                MYCTX.drawImage(
                     res.images[block.animation_frame],
-                    0,
-                    0,
+                    0.0,
+                    0.0,
                     res.images[block.animation_frame].width,
                     res.images[block.animation_frame].height - offset_y - 24,
-                    LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x,
-                    LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y,
+                    (LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x).toDouble(),
+                    (LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y).toDouble(),
                     res.images[block.animation_frame].width,
                     res.images[block.animation_frame].height - offset_y - 24
                 );
@@ -1122,41 +1127,41 @@ fun render_block(x: Int, y: Int, render_option: dynamic) {
             var imgsize_offset: Int = res.images[block.animation_frame].height - 24;
 
             if (block.face_dir == DIR_DOWN) {
-                CTX.drawImage(
+                MYCTX.drawImage(
                     res.images[block.animation_frame],
-                    0,
+                    0.0,
                     res.images[block.animation_frame].height - offset_y - imgsize_offset,
                     res.images[block.animation_frame].width,
-                    offset_y + imgsize_offset,
-                    LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x,
-                    LEV_OFFSET_Y + 24 * y + 24 + block.fine_offset_y,
+                    (offset_y + imgsize_offset).toDouble(),
+                    (LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x).toDouble(),
+                    (LEV_OFFSET_Y + 24 * y + 24 + block.fine_offset_y).toDouble(),
                     res.images[block.animation_frame].width,
-                    offset_y + imgsize_offset
+                    (offset_y + imgsize_offset).toDouble()
                 );
             } else if (block.face_dir == DIR_UP) {
-                CTX.drawImage(
+                MYCTX.drawImage(
                     res.images[block.animation_frame],
-                    0,
-                    -offset_y,
+                    0.0,
+                    (-offset_y).toDouble(),
                     res.images[block.animation_frame].width,
                     res.images[block.animation_frame].height + offset_y,
-                    LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x,
-                    LEV_OFFSET_Y + 24 * y + block.fine_offset_y,
+                    (LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x).toDouble(),
+                    (LEV_OFFSET_Y + 24 * y + block.fine_offset_y).toDouble(),
                     res.images[block.animation_frame].width,
                     res.images[block.animation_frame].height + offset_y
                 );
             }
         } else if (render_option == RENDER_BOTTOM_BORDER) {// Render the bottom 4 pixels
-            CTX.drawImage(
+            MYCTX.drawImage(
                 res.images[block.animation_frame],
-                0,
-                24,
+                0.0,
+                24.0,
                 res.images[block.animation_frame].width - 4,
-                4,
-                LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x,
-                LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y + 24,
+                4.0,
+                (LEV_OFFSET_X + 24 * x + offset_x + block.fine_offset_x).toDouble(),
+                (LEV_OFFSET_Y + 24 * y + offset_y + block.fine_offset_y + 24).toDouble(),
                 res.images[block.animation_frame].width - 4,
-                4
+                4.0
             );
         }
     }
@@ -1187,26 +1192,26 @@ fun kt_render_buttons() {
 
     if (game.buttons_activated[0]) {
         if (vis.buttons_pressed[0]) {
-            CTX.drawImage(res.images[26], 219, 35);// << pressed
+            MYCTX.drawImage(res.images[26], 219, 35);// << pressed
         } else {
-            CTX.drawImage(res.images[23], 219, 35);// << up
+            MYCTX.drawImage(res.images[23], 219, 35);// << up
         }
     } else {
-        CTX.drawImage(res.images[29], 219, 35);// << disabled
+        MYCTX.drawImage(res.images[29], 219, 35);// << disabled
     }
 
     if (vis.buttons_pressed[1]) {
-        CTX.drawImage(res.images[25], 253, 35);// Berti pressed
+        MYCTX.drawImage(res.images[25], 253, 35);// Berti pressed
     } else {
         if (vis.berti_blink_time < 100) {
-            CTX.drawImage(res.images[22], 253, 35);// Berti up
+            MYCTX.drawImage(res.images[22], 253, 35);// Berti up
             if (vis.berti_blink_time == 0) {
                 vis.berti_blink_time = 103;//Math.floor(100+(Math.random()*100)+1);
             } else {
                 vis.berti_blink_time--;
             }
         } else {
-            CTX.drawImage(res.images[28], 253, 35);// Berti up blink
+            MYCTX.drawImage(res.images[28], 253, 35);// Berti up blink
             if (vis.berti_blink_time == 100) {
                 vis.berti_blink_time = floor((Random.nextDouble() * 95) + 5).toInt();
             } else {
@@ -1217,12 +1222,12 @@ fun kt_render_buttons() {
 
     if (game.buttons_activated[2]) {
         if (vis.buttons_pressed[2]) {
-            CTX.drawImage(res.images[27], 287, 35);// >> pressed
+            MYCTX.drawImage(res.images[27], 287, 35);// >> pressed
         } else {
-            CTX.drawImage(res.images[24], 287, 35);// >> up
+            MYCTX.drawImage(res.images[24], 287, 35);// >> up
         }
     } else {
-        CTX.drawImage(res.images[30], 287, 35);// >> disabled
+        MYCTX.drawImage(res.images[30], 287, 35);// >> disabled
     }
 }
 
@@ -1232,39 +1237,39 @@ fun render_field() {
     render_field_subset(true);// Consumables in the background
     render_field_subset(false);// The rest in the foreground
 
-    CTX.drawImage(
+    MYCTX.drawImage(
         res.images[0],
-        0,
-        391,
-        537,
-        4,
-        0,
-        LEV_OFFSET_Y + 24 * LEV_DIMENSION_Y,
-        537,
-        4
+        0.0,
+        391.0,
+        537.0,
+        4.0,
+        0.0,
+        (LEV_OFFSET_Y + 24 * LEV_DIMENSION_Y).toDouble(),
+        537.0,
+        4.0
     );// Bottom border covering blocks
-    CTX.drawImage(
+    MYCTX.drawImage(
         res.images[0],
-        520,
-        LEV_OFFSET_Y,
-        4,
-        391 - LEV_OFFSET_Y,
-        LEV_OFFSET_X + 24 * LEV_DIMENSION_X,
-        LEV_OFFSET_Y,
-        4,
-        391 - LEV_OFFSET_Y
+        520.0,
+        LEV_OFFSET_Y.toDouble(),
+        4.0,
+        (391 - LEV_OFFSET_Y).toDouble(),
+        (LEV_OFFSET_X + 24 * LEV_DIMENSION_X).toDouble(),
+        LEV_OFFSET_Y.toDouble(),
+        4.0,
+        (391 - LEV_OFFSET_Y).toDouble()
     );// Right border covering blocks
 
     if (game.level_ended == 1) {// Berti cheering, wow or yeah
         for (i in game.berti_positions.indices) {
             if (game.wow) {
-                CTX.drawImage(
+                MYCTX.drawImage(
                     res.images[168],
                     LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_wow_x,
                     LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_wow_y
                 );
             } else {
-                CTX.drawImage(
+                MYCTX.drawImage(
                     res.images[169],
                     LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_yeah_x,
                     LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_yeah_y
@@ -1273,7 +1278,7 @@ fun render_field() {
         }
     } else if (game.level_ended == 2) {// Berti dies in a pool of blood
         for (i in game.berti_positions.indices) {
-            CTX.drawImage(
+            MYCTX.drawImage(
                 res.images[167],
                 LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_argl_x,
                 LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_argl_y
@@ -1326,7 +1331,7 @@ fun render_vol_bar() {
 
         if (switcher) {
             switcher = false;
-            CTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
+            MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
         } else {
             switcher = true;
             var ratio2 = i / vb.width.toDouble();
@@ -1335,19 +1340,19 @@ fun render_vol_bar() {
             if (i < ceil(vb.volume * vb.width)) {
                 if (game.sound) {
                     var ratio1 = 1 - ratio2;
-                    CTX.fillStyle =
+                    MYCTX.fillStyle =
                         "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
                             vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
                         ) + ")";
                 } else {
-                    CTX.fillStyle = "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
+                    MYCTX.fillStyle = "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
                 }
             } else {
-                CTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
+                MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
             }
 
         }
-        CTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
+        MYCTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
 
     }
 }
@@ -1356,61 +1361,61 @@ fun render_vol_bar() {
 fun kt_render_menu() {
     var submenu_offset = 0.0;
     // The font is the same for the whole menu... Segoe UI is also nice
-    CTX.font = "11px Tahoma";
-    CTX.textAlign = "left";
-    CTX.textBaseline = "top";
+    MYCTX.font = "11px Tahoma";
+    MYCTX.textAlign = CanvasTextAlign.LEFT;
+    MYCTX.textBaseline = CanvasTextBaseline.TOP;
 
     for (i in 0 until vis.menu1.submenu_list.size) {
         var sm = vis.menu1.submenu_list[i];
         if (i == vis.menu1.submenu_open) {
-            CTX.fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")";
-            CTX.fillRect(
+            MYCTX.fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")";
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset,
-                vis.menu1.offset_y + vis.menu1.height + 1,
-                sm.dd_width,
-                sm.dd_height
+                (vis.menu1.offset_y + vis.menu1.height + 1).toDouble(),
+                sm.dd_width.toDouble(),
+                sm.dd_height.toDouble()
             );// Options box
 
-            CTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y, sm.width, 1);
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y, 1, vis.menu1.height);
-            CTX.fillRect(
+            MYCTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
+            MYCTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y.toDouble(), sm.width, 1);
+            MYCTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y.toDouble(), 1, vis.menu1.height);
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset + sm.dd_width - 2,
-                vis.menu1.offset_y + vis.menu1.height + 2,
-                1,
-                sm.dd_height - 2
+                (vis.menu1.offset_y + vis.menu1.height + 2).toDouble(),
+                1.0,
+                (sm.dd_height - 2).toDouble()
             );// Options box
-            CTX.fillRect(
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset + 1,
                 vis.menu1.offset_y + vis.menu1.height + sm.dd_height - 1,
                 sm.dd_width - 2,
                 1
             );// Options box
 
-            CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y + vis.menu1.height, sm.width, 1);
-            CTX.fillRect(vis.menu1.offset_x + submenu_offset + sm.width - 1, vis.menu1.offset_y, 1, vis.menu1.height);
-            CTX.fillRect(
+            MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
+            MYCTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y + vis.menu1.height, sm.width, 1);
+            MYCTX.fillRect(vis.menu1.offset_x + submenu_offset + sm.width - 1, vis.menu1.offset_y, 1, vis.menu1.height);
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset + 1,
                 vis.menu1.offset_y + vis.menu1.height + 2,
                 1,
                 sm.dd_height - 3
             );// Options box
-            CTX.fillRect(
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset + 1,
                 vis.menu1.offset_y + vis.menu1.height + 2,
                 sm.dd_width - 3,
                 1
             );// Options box
 
-            CTX.fillStyle = "rgb(" + vis.dark_grey.r + ", " + vis.dark_grey.g + ", " + vis.dark_grey.b + ")";
-            CTX.fillRect(
+            MYCTX.fillStyle = "rgb(" + vis.dark_grey.r + ", " + vis.dark_grey.g + ", " + vis.dark_grey.b + ")";
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset + sm.dd_width - 1,
                 vis.menu1.offset_y + vis.menu1.height + 1,
                 1,
                 sm.dd_height
             );// Options box
-            CTX.fillRect(
+            MYCTX.fillRect(
                 vis.menu1.offset_x + submenu_offset,
                 vis.menu1.offset_y + vis.menu1.height + sm.dd_height,
                 sm.dd_width - 1,
@@ -1419,7 +1424,7 @@ fun kt_render_menu() {
 
             //input.mouse_pos.x
             var option_offset = vis.menu1.offset_y + vis.menu1.height + 4;
-            CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
+            MYCTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
 
             for (j in 0 until sm.options.size) {
                 var next_offset: Int;
@@ -1427,15 +1432,15 @@ fun kt_render_menu() {
                 if (sm.options[j].line) {
                     next_offset = option_offset + sm.offset_line;
 
-                    CTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
-                    CTX.fillRect(
+                    MYCTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
+                    MYCTX.fillRect(
                         vis.menu1.offset_x + submenu_offset + 3,
                         option_offset + 3,
                         sm.dd_width - 6,
                         1
                     );// Separator line
-                    CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
-                    CTX.fillRect(
+                    MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
+                    MYCTX.fillRect(
                         vis.menu1.offset_x + submenu_offset + 3,
                         option_offset + 4,
                         sm.dd_width - 6,
@@ -1449,36 +1454,36 @@ fun kt_render_menu() {
                 if (!sm.options[j].line && input.mouse_pos.x > vis.menu1.offset_x + submenu_offset && input.mouse_pos.x < vis.menu1.offset_x + submenu_offset + sm.dd_width &&
                     input.mouse_pos.y > option_offset && input.mouse_pos.y < next_offset
                 ) {
-                    CTX.fillStyle = "rgb(" + vis.blue.r + ", " + vis.blue.g + ", " + vis.blue.b + ")";
-                    CTX.fillRect(
+                    MYCTX.fillStyle = "rgb(" + vis.blue.r + ", " + vis.blue.g + ", " + vis.blue.b + ")";
+                    MYCTX.fillRect(
                         vis.menu1.offset_x + submenu_offset + 3,
                         option_offset,
                         sm.dd_width - 6,
                         sm.offset_text
                     );// Options box
-                    CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
+                    MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
 
                     check_image = 172;
                 } else if (!sm.options[j].on()) {
-                    CTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
-                    CTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 21, option_offset + 2);
+                    MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")";
+                    MYCTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 21, option_offset + 2);
                 } else {
-                    CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
+                    MYCTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
                 }
 
                 if (sm.options[j].on()) {
-                    CTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1);
+                    MYCTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1);
                 } else {
-                    CTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
-                    CTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1);
+                    MYCTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")";
+                    MYCTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1);
                 }
 
                 if (sm.options[j].check != 0) {
                     if ((sm.options[j].effect_id == 3 && game.paused) || (sm.options[j].effect_id == 4 && game.single_steps) || (sm.options[j].effect_id == 5 && game.sound)) {
-                        CTX.drawImage(
+                        MYCTX.drawImage(
                             res.images[check_image],
                             vis.menu1.offset_x + submenu_offset + 6,
-                            option_offset + 6
+                            (option_offset + 6).toDouble()
                         );// Background
                     }
                 }
@@ -1487,9 +1492,22 @@ fun kt_render_menu() {
 
             }
         }
-        CTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
-        CTX.fillText(sm.name, vis.menu1.offset_x + submenu_offset + 6, vis.menu1.offset_y + 3);
+        MYCTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")";
+        MYCTX.fillText(sm.name, vis.menu1.offset_x + submenu_offset + 6, vis.menu1.offset_y + 3);
         submenu_offset += sm.width as Double;
     }
+
+}
+
+private fun CanvasRenderingContext2D.fillText(text: dynamic, x: Double, y: Int) {
+    fillText(text,x,y.toDouble())
+}
+
+private fun CanvasRenderingContext2D.fillRect(x: Double, y: Double, w: Int, h: Int) {
+    fillRect(x,y,w.toDouble(),h.toDouble())
+}
+
+private fun CanvasRenderingContext2D.fillRect(x: Double, y: Int, w: Int, h: Int) {
+    fillRect(x,y.toDouble(),w.toDouble(),h.toDouble())
 
 }

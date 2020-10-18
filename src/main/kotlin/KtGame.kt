@@ -298,6 +298,22 @@ class KtGame() {
             if (x_offset == diff_x && y_offset == diff_y) {
                 return true;
             }
+            console.log("EXER  " + eye_x)
+            console.log("EXERx_offset  " + x_offset)
+            console.log("EXERy  " + eye_y)
+            console.log("EXERy_offset  " + y_offset)
+            x_offset = if (x_offset < 0) {
+                return false;
+
+            } else {
+                x_offset
+            }
+            y_offset = if (y_offset < 0) {
+                return false;
+
+            } else {
+                y_offset
+            }
             if (game.level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && game.level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !game.level_array[eye_x + x_offset][eye_y + y_offset].is_small) {
                 return false;
             }
