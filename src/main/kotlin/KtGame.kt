@@ -21,7 +21,7 @@ class KtGame() {
 
     var fpsInterval = 1000 / UPS;
     var then = Date.now();
-    lateinit var now: Date;
+    var now: Double=0.0;
 
     var initialized = false;
     var wait_timer = INTRO_DURATION * UPS;
@@ -323,18 +323,18 @@ class KtGame() {
     }
 
 
-    fun set_volume(vol: Int) {
+    fun set_volume(vol: Double) {
         var newVol = vol
         if (vol > 1) {
-            newVol = 1;
+            newVol = 1.0;
         } else if (vol < 0) {
-            newVol = 0;
+            newVol = 0.0;
         }
         vis.vol_bar.volume = newVol;
-        newVol = newVol.toDouble().pow(3.0).roundToInt();// LOGARITHMIC!
+        newVol = newVol.pow(3.0);// LOGARITHMIC!
 
-        for (i in 0 until res.sounds.size ) {
-            res.sounds[i].volume = vol;
+        for (element in res.sounds) {
+            element.volume = vol;
         }
 
     }
@@ -583,7 +583,7 @@ class KtGame() {
     }
 
     // Whether you can walk from a tile in a certain direction, boolean
-    fun walkable(curr_x: Int, curr_y: Int, dir: dynamic): Boolean {
+    fun walkable(curr_x: Int, curr_y: Int, dir: Int): Boolean {
         var dst = dir_to_coords(curr_x, curr_y, dir);
 
         if (!is_in_bounds(dst.x, dst.y)) {// Can't go out of boundaries

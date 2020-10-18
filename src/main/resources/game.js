@@ -28,7 +28,6 @@ var LEV_STOP_DELAY = 2;
 if(DEBUG) LEV_STOP_DELAY = 1;
 var ANIMATION_DURATION = Math.round(8*UPS/60);// How many times the game has to render before the image changes
 
-var DEFAULT_VOLUME = 0.7;
 
 
 var RENDER_FULL = 0;
@@ -154,60 +153,7 @@ var update_entities = function(){
 // Runs with 60 FPS on average (depending on browser).
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-// Render scene
-var render = function () {
-	game.now = Date.now();
-    var elapsed = game.now - game.then;
-	if (elapsed > game.fpsInterval) {
-        game.then = game.now - (elapsed % game.fpsInterval);
-		//update();
-		untitled23.ktupdate();
-	}
-	
-	//CTX.fillStyle="red";
-	//CTX.fillRect(0, 0, SCREEN_WIDTH, MENU_HEIGHT);
-	//CTX.clearRect(0, MENU_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT-MENU_HEIGHT);
-	
-	if (game.update_drawn) {// This prevents the game from rendering the same thing twice
-		window.requestAnimationFrame(render);
-		return;
-	}
-	game.update_drawn = true;
 
-	if (res.ready()) {
-		CTX.drawImage(res.images[0], 0, 0);// Background
-		CTX.drawImage(res.images[9], 22, 41);// Steps
-		CTX.drawImage(res.images[10], 427, 41);// Ladder
-		render_displays();
-		render_buttons();
-		if(game.mode == 0){// Title image
-			CTX.drawImage(res.images[1], LEV_OFFSET_X+4, LEV_OFFSET_Y+4);
-			
-			CTX.fillStyle = "rgb(0, 0, 0)";
-			CTX.font = "bold 12px Helvetica";
-			CTX.textAlign = "left";
-			CTX.textBaseline = "bottom";
-			CTX.fillText("JavaScript remake by " + AUTHOR, 140, 234);
-		}else if(game.mode == 1){
-			render_field();
-		}else if(game.mode == 2){// Won!
-			CTX.drawImage(res.images[170], LEV_OFFSET_X+4, LEV_OFFSET_Y+4);
-		}
-		render_vol_bar();
-		render_menu();
-	}else{
-		CTX.fillStyle = "rgb("+vis.light_grey.r+", "+vis.light_grey.g+", "+vis.light_grey.b+")";
-		CTX.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);// Options box
-		CTX.fillStyle = "rgb(0, 0, 0)";
-		CTX.font = "36px Helvetica";
-		CTX.textAlign = "center";
-		CTX.textBaseline = "middle";
-		CTX.fillText("Loading...", SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
-	}
-	if(DEBUG) render_fps();
-	
-	window.requestAnimationFrame(render);
-};
 
 function render_fps(){
 	var now = Date.now();
@@ -229,30 +175,6 @@ function render_fps(){
 	vis.last_rendered = now;
 };
 
-function render_menu(){
-	untitled23.kt_render_menu();
-}
-
-function render_vol_bar(){
-	untitled23.render_vol_bar();
-};
-
-function render_field(){
-untitled23.render_field()
-}
-
-
-function render_field_subset(consumable){
-	untitled23.render_field_subset(consumable);
-}
-function render_block(x, y, render_option){
-    untitled23.render_block(x,y,render_option)
-}
-
-function render_buttons(){
-untitled23.kt_render_buttons();
-
-}
 
 function render_displays(){
 
@@ -326,4 +248,4 @@ function render_joystick(x, y){
         };
 }());
 
-render();// Render thread
+untitled23.render();// Render thread

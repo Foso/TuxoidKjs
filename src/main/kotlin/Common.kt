@@ -1,4 +1,5 @@
 import kotlinx.browser.document
+import kotlinx.browser.window
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.js.Date
@@ -61,38 +62,91 @@ external var LEV_OFFSET_Y: Int
 external var LEV_STOP_DELAY: Int
 external var ANIMATION_DURATION: Int
 
-external var DEFAULT_VOLUME: dynamic
+var DEFAULT_VOLUME = 0.7;
 external var input: MyInput
 external fun update_entities()
-lateinit var MYCANVAS : HTMLCanvasElement
-lateinit var MYCTX : CanvasRenderingContext2D
+lateinit var MYCANVAS: HTMLCanvasElement
+lateinit var MYCTX: CanvasRenderingContext2D
 
 fun initCanvas() {
-     MYCANVAS= document.createElement("canvas") as HTMLCanvasElement;
+    MYCANVAS = document.createElement("canvas") as HTMLCanvasElement;
     MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
     MYCANVAS.width = SCREEN_WIDTH;
     MYCANVAS.height = SCREEN_HEIGHT;
     MYCANVAS.className = "canv";
     document.body?.appendChild(MYCANVAS);
 }
+
 fun main() {
     initCanvas()
 }
 
-fun initCTX(){
+fun render() {
+    game.now = Date.now();
+    var elapsed = game.now - game.then;
+    if (elapsed > game.fpsInterval) {
+        game.then = game.now - (elapsed % game.fpsInterval);
+        ktupdate()
+    }
 
+    if (game.update_drawn) {// This prevents the game from rendering the same thing twice
+        window.requestAnimationFrame { render() };
+        return;
+    }
+
+    game.update_drawn = true;
+    if (res.ready()) {
+        CTX.drawImage(res.images[0], 0, 0);// Background
+        CTX.drawImage(res.images[9], 22, 41);// Steps
+        CTX.drawImage(res.images[10], 427, 41);// Ladder
+        render_displays();
+        kt_render_buttons();
+
+        if(game.mode == 0) {// Title image
+            CTX.drawImage(res.images[1], LEV_OFFSET_X + 4, LEV_OFFSET_Y + 4);
+            CTX.fillStyle = "rgb(0, 0, 0)";
+            CTX.font = "bold 12px Helvetica";
+            CTX.textAlign = "left";
+            CTX.textBaseline = "bottom";
+            CTX.fillText("JavaScript remake by " , 140, 234);
+        }else if(game.mode == 1){
+            render_field();
+        }else if(game.mode == 2){// Won!
+            CTX.drawImage(res.images[170], LEV_OFFSET_X+4, LEV_OFFSET_Y+4);
+        }
+        render_vol_bar();
+        kt_render_menu();
+    }else{
+        CTX.fillStyle = "rgb("+vis.light_grey.r+", "+vis.light_grey.g+", "+vis.light_grey.b+")";
+        CTX.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);// Options box
+        CTX.fillStyle = "rgb(0, 0, 0)";
+        CTX.font = "36px Helvetica";
+        CTX.textAlign = "center";
+        CTX.textBaseline = "middle";
+        CTX.fillText("Loading...", SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
+    }
+    if(DEBUG) render_fps();
+    window.requestAnimationFrame({ render() });
+   // js("")
 }
 
-class Tile( val x: Int,
-            val y: Int) {
+external fun render_fps()
+
+
+external fun render_displays()
+
+class Tile(
+    val x: Int,
+    val y: Int
+) {
 
 }
 
 
 @JsExport
-fun kt_update_entities(){
-    var tick = (game.update_tick*60/UPS);
-    var synced_move = tick % (12/game.move_speed) //==0 ?
+fun kt_update_entities() {
+    var tick = (game.update_tick * 60 / UPS);
+    var synced_move = tick % (12 / game.move_speed) //==0 ?
 
     // The player moves first at all times to ensure the best response time and remove directional quirks.
 
