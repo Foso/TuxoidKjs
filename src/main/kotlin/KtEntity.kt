@@ -19,7 +19,7 @@ class KtEntity() {
     var sees_berti = false;
     var time_since_noise = 100;
 
-    var gets_removed_in = -1;// Removal timer for doors
+    var gets_removed_in = -1.0;// Removal timer for doors
     var can_push = false;
     var consumable = false;
 
@@ -77,7 +77,7 @@ class KtEntity() {
             }
 
             while (possibilities.size > 0) {
-                var selection = floor(Random.nextDouble() * possibilities.size).toInt();
+                val selection = floor(Random.nextDouble() * possibilities.size).toInt();
                 if (game.walkable(curr_x, curr_y, possibilities[selection])) {
                     game.start_move(curr_x, curr_y, possibilities[selection]);
                     return;
@@ -103,7 +103,7 @@ class KtEntity() {
 
     }
 
-    fun register_input(curr_x: Int, curr_y: Int, just_prime: dynamic) {
+    fun register_input(curr_x: Int, curr_y: Int, just_prime: Boolean) {
         if (!moving) {
             if ((IS_TOUCH_DEVICE && input.joystick_dir == DIR_LEFT) || input.keys_down[37] || (!game.single_steps && game.walk_dir == DIR_LEFT) || (game.prime_movement && game.walk_dir == DIR_LEFT)) {
                 game.prime_movement = just_prime;
@@ -157,7 +157,7 @@ class KtEntity() {
             }
         }
 
-        if (gets_removed_in == 0) {
+        if (gets_removed_in == 0.0) {
             if (moving) {
                 var dst = game.dir_to_coords(curr_x, curr_y, face_dir);
                 game.level_array[dst.x][dst.y].init(0);

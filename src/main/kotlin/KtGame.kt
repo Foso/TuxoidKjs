@@ -36,7 +36,7 @@ class KtGame() {
     var level_ended = 0;// 0 is not ended. 1 is won. 2 is died.
     var wow = true;// true is WOW!, false is Yeah!
 
-    var berti_positions = js("{x: 0, y: 0}");
+    var berti_positions = arrayOf(Tile(0, 0));
 
     var single_steps = true;
     var walk_dir = DIR_NONE;

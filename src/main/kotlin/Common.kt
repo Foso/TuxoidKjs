@@ -1,3 +1,6 @@
+import kotlinx.browser.document
+import org.w3c.dom.CanvasRenderingContext2D
+import org.w3c.dom.HTMLCanvasElement
 import kotlin.js.Date
 
 var soundarray = arrayOf(
@@ -31,12 +34,12 @@ var DBX_CHARTS = 5;
 external var md5: dynamic
 
 external var vis: KtVisual
-external var DIR_LEFT: Int
-external var DIR_UP: Int
-external var DIR_DOWN: Int
 
-external var DIR_RIGHT: Int
-external var DIR_NONE: Int
+var DIR_NONE = -1;
+var DIR_UP = 0;
+var DIR_LEFT = 1;
+var DIR_DOWN = 2;
+var DIR_RIGHT = 3;
 external var LEV_START_DELAY: Int
 external var UPS: Int
 
@@ -44,8 +47,8 @@ external var res: MyRes
 external var game: KtGame
 external var CTX: dynamic//CanvasRenderingContext2D
 
-external var SCREEN_WIDTH: dynamic
-external var SCREEN_HEIGHT: dynamic
+var SCREEN_WIDTH = 537;
+var SCREEN_HEIGHT = 408;
 external var LEV_DIMENSION_Y: Int
 external var LEV_DIMENSION_X: Int
 external var RENDER_FULL: Int
@@ -61,21 +64,30 @@ external var ANIMATION_DURATION: Int
 external var DEFAULT_VOLUME: dynamic
 external var input: MyInput
 external fun update_entities()
+lateinit var MYCANVAS : HTMLCanvasElement
+lateinit var MYCTX : CanvasRenderingContext2D
 
-
-
-external interface Tile {
-    val x: Int
-    val y: Int
+fun initCanvas() {
+     MYCANVAS= document.createElement("canvas") as HTMLCanvasElement;
+    MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
+    MYCANVAS.width = SCREEN_WIDTH;
+    MYCANVAS.height = SCREEN_HEIGHT;
+    MYCANVAS.className = "canv";
+    document.body?.appendChild(MYCANVAS);
+}
+fun main() {
+    initCanvas()
 }
 
+fun initCTX(){
 
-
-external interface Rgb {
-    val r: dynamic
-    val g: dynamic
-    val b: dynamic
 }
+
+class Tile( val x: Int,
+            val y: Int) {
+
+}
+
 
 @JsExport
 fun kt_update_entities(){
@@ -109,14 +121,18 @@ fun ktupdate() {
             }
         } else if (game.mode == 1) {
             if (game.wait_timer <= 0) {
-                if (game.level_ended == 0) {
-                    game.update_tick++;
-                    update_entities();
-                } else if (game.level_ended == 1) {
-                    game.update_savegame(game.level_number, game.steps_taken);
-                    game.next_level();
-                } else if (game.level_ended == 2) {
-                    game.reset_level();
+                when (game.level_ended) {
+                    0 -> {
+                        game.update_tick++;
+                        update_entities();
+                    }
+                    1 -> {
+                        game.update_savegame(game.level_number, game.steps_taken);
+                        game.next_level();
+                    }
+                    2 -> {
+                        game.reset_level();
+                    }
                 }
             } else {
                 game.wait_timer--;

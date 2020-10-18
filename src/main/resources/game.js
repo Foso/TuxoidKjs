@@ -30,43 +30,23 @@ var ANIMATION_DURATION = Math.round(8*UPS/60);// How many times the game has to 
 
 var DEFAULT_VOLUME = 0.7;
 
-var DIR_NONE = -1;
-var DIR_UP = 0;
-var DIR_LEFT = 1;
-var DIR_DOWN = 2;
-var DIR_RIGHT = 3;
 
 var RENDER_FULL = 0;
 var RENDER_TOP = 1;
 var RENDER_BOTTOM = 2;
 var RENDER_BOTTOM_BORDER = 3;
 
-var DBX_CONFIRM = 0;
-var DBX_SAVE = 1;
-var DBX_LOAD = 2;
-var DBX_CHPASS = 3;
-var DBX_LOADLVL = 4;
-var DBX_CHARTS = 5;
 
-var ERR_SUCCESS = 0;
-var ERR_EXISTS = 1;
-var ERR_NOSAVE = 2;
-var ERR_WRONGPW = 3;
-var ERR_NOTFOUND = 4;
-var ERR_EMPTYNAME = 5;
+
 
 // Check storage
 var HAS_STORAGE = (function(){try {return 'localStorage' in window && window['localStorage'] !== null && window['localStorage'] !== undefined;} catch (e) {return false;}})();
 
 // Canvas creation
-var CANVAS = document.createElement("canvas");
-var CTX = CANVAS.getContext("2d");
-CANVAS.width = SCREEN_WIDTH;
-CANVAS.height = SCREEN_HEIGHT;
-CANVAS.true_width = SCREEN_WIDTH;
-CANVAS.true_height = SCREEN_HEIGHT;
-CANVAS.className = "canv";
-document.body.appendChild(CANVAS);
+untitled23.main();
+
+var CANVAS =  untitled23.MYCANVAS;
+var CTX = untitled23.MYCTX;
 
 var JOYSTICK;
 var JOYCTX;

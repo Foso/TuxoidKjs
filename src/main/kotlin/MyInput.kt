@@ -21,10 +21,8 @@ private val HTMLCanvasElement.true_height: Int
     get() {
         return SCREEN_HEIGHT
     }
-private val HTMLCanvasElement.true_width: Any
-    get() {
-        return SCREEN_WIDTH
-    }
+private val HTMLCanvasElement.true_width : Int
+    get() = SCREEN_WIDTH
 external var CANVAS: HTMLCanvasElement
 external var JOYSTICK: JoyStick
 
