@@ -2,8 +2,6 @@ import org.w3c.dom.Audio
 import org.w3c.dom.Image
 
 
-var MENU_HEIGHT = 20;
-
 class MyRes {
     var NUM_RESOURCES = 197;
     var IMAGE_DIR = "images/";
@@ -199,7 +197,7 @@ class MyRes {
         // Sounds: /////////////////////////////////////////////
         ////////////////////////////////////////////////////////
 
-        for(i in 0 until soundarray.size){
+        for(i in soundarray.indices){
             sounds[i] =  Audio();
             sounds[i].oncanplaythrough = on_loaded();
             sounds[i].src = SOUND_DIR+soundarray[i];

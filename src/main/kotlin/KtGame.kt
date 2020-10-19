@@ -1,18 +1,32 @@
+import App.Companion.DIR_DOWN
+import App.Companion.DIR_LEFT
+import App.Companion.DIR_NONE
+import App.Companion.DIR_RIGHT
+import App.Companion.DIR_UP
+import App.Companion.ERR_EMPTYNAME
+import App.Companion.ERR_EXISTS
+import App.Companion.ERR_NOSAVE
+import App.Companion.ERR_NOTFOUND
+import App.Companion.ERR_SUCCESS
+import App.Companion.ERR_WRONGPW
+import App.Companion.LEV_START_DELAY
+import App.Companion.UPS
 import kotlinx.browser.localStorage
 import kotlin.js.Date
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.round
-import kotlin.math.roundToInt
 import kotlin.random.Random
 
-var INTRO_DURATION = 2;// In seconds
 var DEBUG = true;
-
+val GAME_MODE_ENTRY =0
+val GAME_MODE_MENU =1
+val GAME_MODE_PLAY =2
 
 
 @JsExport
-class KtGame() {
+class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
+    var INTRO_DURATION = 2;// In seconds
 
     var savegame = SaveGame();
 
@@ -21,7 +35,7 @@ class KtGame() {
 
     var fpsInterval = 1000 / UPS;
     var then = Date.now();
-    var now: Double=0.0;
+    var now: Double = 0.0;
 
     var initialized = false;
     var wait_timer = INTRO_DURATION * UPS;
@@ -30,7 +44,7 @@ class KtGame() {
 
     var mode = 0;// 0 is entry, 1 is menu and play
     var level_number = 0;
-    var level_array = arrayOf<dynamic>();
+    var level_array = arrayOf(arrayOf<KtEntity>());
 
     var level_unlocked = 0;
     var level_ended = 0;// 0 is not ended. 1 is won. 2 is died.
@@ -70,7 +84,7 @@ class KtGame() {
         steps_taken = 0;
         num_bananas = 0;
         level_ended = 0;
-        level_array = js("new Array()");
+        level_array = js("new Array()")
         level_number = lev_number;
         wait_timer = LEV_START_DELAY * UPS;
         walk_dir = DIR_NONE;
@@ -79,17 +93,9 @@ class KtGame() {
             level_unlocked = lev_number;
         }
 
-        if (lev_number < level_unlocked as Int && lev_number != 0) {
-            buttons_activated[2] = true;
-        } else {
-            buttons_activated[2] = false;
-        }
+        buttons_activated[2] = lev_number < level_unlocked as Int && lev_number != 0
 
-        if (lev_number > 1) {
-            buttons_activated[0] = true;
-        } else {
-            buttons_activated[0] = false;
-        }
+        buttons_activated[0] = lev_number > 1
 
         for (i in 0 until LEV_DIMENSION_X) {
             level_array[i] = js("new Array()")
@@ -100,7 +106,7 @@ class KtGame() {
 
         for (y in 0 until LEV_DIMENSION_Y) {
             for (x in 0 until LEV_DIMENSION_X) {
-                level_array[x][y] = KtEntity();
+                level_array[x][y] = KtEntity(game);
                 level_array[x][y].init(res.levels[lev_number][x][y]);
 
                 if (res.levels[lev_number][x][y] == 4) {
@@ -152,8 +158,8 @@ class KtGame() {
 
 
     fun can_see_tile(eye_x: Int, eye_y: Int, tile_x: Int, tile_y: Int): Boolean {
-        var diff_x = tile_x - eye_x;
-        var diff_y = tile_y - eye_y;
+        val diff_x = tile_x - eye_x;
+        val diff_y = tile_y - eye_y;
 
         var walk1_x: Int;
         var walk1_y: Int;
@@ -161,18 +167,22 @@ class KtGame() {
         var walk2_y: Int;
 
         if (diff_x == 0) {
-            if (diff_y == 0) {
-                return true;
-            } else if (diff_y > 0) {
-                walk1_x = 0;
-                walk1_y = 1;
-                walk2_x = 0;
-                walk2_y = 1;
-            } else {// diff_y < 0
-                walk1_x = 0;
-                walk1_y = -1;
-                walk2_x = 0;
-                walk2_y = -1;
+            when {
+                diff_y == 0 -> {
+                    return true;
+                }
+                diff_y > 0 -> {
+                    walk1_x = 0;
+                    walk1_y = 1;
+                    walk2_x = 0;
+                    walk2_y = 1;
+                }
+                else -> {// diff_y < 0
+                    walk1_x = 0;
+                    walk1_y = -1;
+                    walk2_x = 0;
+                    walk2_y = -1;
+                }
             }
         } else if (diff_x > 0) {
             if (diff_y == 0) {
@@ -181,38 +191,46 @@ class KtGame() {
                 walk2_x = 1;
                 walk2_y = 0;
             } else if (diff_y > 0) {
-                if (diff_y > diff_x) {
-                    walk1_x = 0;
-                    walk1_y = 1;
-                    walk2_x = 1;
-                    walk2_y = 1;
-                } else if (diff_y == diff_x) {
-                    walk1_x = 1;
-                    walk1_y = 1;
-                    walk2_x = 1;
-                    walk2_y = 1;
-                } else {// diff_y < diff_x
-                    walk1_x = 1;
-                    walk1_y = 0;
-                    walk2_x = 1;
-                    walk2_y = 1;
+                when {
+                    diff_y > diff_x -> {
+                        walk1_x = 0;
+                        walk1_y = 1;
+                        walk2_x = 1;
+                        walk2_y = 1;
+                    }
+                    diff_y == diff_x -> {
+                        walk1_x = 1;
+                        walk1_y = 1;
+                        walk2_x = 1;
+                        walk2_y = 1;
+                    }
+                    else -> {// diff_y < diff_x
+                        walk1_x = 1;
+                        walk1_y = 0;
+                        walk2_x = 1;
+                        walk2_y = 1;
+                    }
                 }
             } else {// diff_y < 0
-                if (diff_y * (-1) > diff_x) {
-                    walk1_x = 0;
-                    walk1_y = -1;
-                    walk2_x = 1;
-                    walk2_y = -1;
-                } else if (diff_y * (-1) == diff_x) {
-                    walk1_x = 1;
-                    walk1_y = -1;
-                    walk2_x = 1;
-                    walk2_y = -1;
-                } else {// diff_y < diff_x
-                    walk1_x = 1;
-                    walk1_y = 0;
-                    walk2_x = 1;
-                    walk2_y = -1;
+                when {
+                    diff_y * (-1) > diff_x -> {
+                        walk1_x = 0;
+                        walk1_y = -1;
+                        walk2_x = 1;
+                        walk2_y = -1;
+                    }
+                    diff_y * (-1) == diff_x -> {
+                        walk1_x = 1;
+                        walk1_y = -1;
+                        walk2_x = 1;
+                        walk2_y = -1;
+                    }
+                    else -> {// diff_y < diff_x
+                        walk1_x = 1;
+                        walk1_y = 0;
+                        walk2_x = 1;
+                        walk2_y = -1;
+                    }
                 }
             }
         } else {// diff_x < 0
@@ -325,9 +343,9 @@ class KtGame() {
 
     fun next_level() {
         if (level_number >= 50 || level_number < 0) {
-            game.mode = 2;
-            game.steps_taken = 0;
-            game.play_sound(6);
+            mode = 2;
+            steps_taken = 0;
+            play_sound(6);
             buttons_activated[0] = false;
             buttons_activated[2] = false;
             return;
@@ -346,7 +364,7 @@ class KtGame() {
         } else if (vol < 0) {
             newVol = 0.0;
         }
-        vis.vol_bar.volume = newVol;
+        volumeBar.volume = newVol;
         newVol = newVol.pow(3.0);// LOGARITHMIC!
 
         for (element in res.sounds) {
@@ -375,11 +393,7 @@ class KtGame() {
     }
 
     fun toggle_paused() {
-        if (paused) {
-            paused = false;
-        } else {
-            paused = true;
-        }
+        paused = !paused
     }
 
     // This is necessary because of mobile browsers. These browsers block sound playback
@@ -387,7 +401,7 @@ class KtGame() {
 // then the restriction is lifted for further playbacks.
     fun remove_soundrestriction() {
         if (soundrestriction_removed) return;
-        for (i in 0 until res.sounds.size) {
+        for (i in res.sounds.indices) {
             if (res.sounds[i].paused) {
                 res.sounds[i].play();
                 res.sounds[i].pause();
@@ -410,7 +424,7 @@ class KtGame() {
     fun toggle_sound() {
         if (sound) {
             sound = false;
-            for (i in 0 until res.sounds.size) {
+            for (i in res.sounds.indices) {
                 res.sounds[i].pause();
                 res.sounds[i].currentTime = 0
             }
@@ -437,28 +451,7 @@ class KtGame() {
     }
 
 
-    fun opposite_dir(dir: Int): Int {
-        when (dir) {
-            DIR_UP -> {
-                return DIR_DOWN;
-            }
 
-            DIR_DOWN -> {
-                return DIR_UP;
-
-            }
-            DIR_LEFT -> {
-                return DIR_RIGHT;
-            }
-
-            DIR_RIGHT -> {
-                return DIR_LEFT;
-            }
-            else -> {
-                return DIR_NONE
-            }
-        }
-    }
 
     fun start_move(src_x: Int, src_y: Int, dir: Int) {
         var dst = dir_to_coords(src_x, src_y, dir);
@@ -548,7 +541,7 @@ class KtGame() {
         var before_src = dir_to_coords(src_x, src_y, back_dir);
 
         var possibilities = arrayOf(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT);
-        for (i in 0 until possibilities.size) {
+        for (i in possibilities.indices) {
             if (possibilities[i] == dir || possibilities[i] == back_dir) {
                 //TODO: Find out how this works in Kotlin
                 js(
@@ -612,7 +605,7 @@ class KtGame() {
             if ((level_array[curr_x][curr_y].id == 1 || level_array[curr_x][curr_y].id == 2) && level_array[dst.x][dst.y].consumable) {// Berti and MENU Berti can pick up items.
                 return true;
             } else {
-                if (level_array[curr_x][curr_y].can_push == 1 && level_array[dst.x][dst.y].pushable == 1) {
+                if (level_array[curr_x][curr_y].can_push && level_array[dst.x][dst.y].pushable) {
                     return walkable(dst.x, dst.y, dir);
                 } else {
                     return false;

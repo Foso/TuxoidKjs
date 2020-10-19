@@ -1,6 +1,16 @@
+import App.Companion.DBX_CHARTS
+import App.Companion.DBX_CHPASS
+import App.Companion.DBX_CONFIRM
+import App.Companion.DBX_LOAD
+import App.Companion.DBX_LOADLVL
+import App.Companion.DBX_SAVE
+import App.Companion.DIR_DOWN
+import App.Companion.DIR_LEFT
+import App.Companion.DIR_NONE
+import App.Companion.DIR_RIGHT
+import App.Companion.DIR_UP
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.TouchEvent
@@ -16,9 +26,6 @@ import kotlin.math.sqrt
 import kotlin.properties.Delegates
 
 
-
-
-
 /**
  *
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +33,7 @@ import kotlin.properties.Delegates
 // Everything that has to do with keyboard and mouse input goes here
 //////////////////////////////////////////////////////////////////////////////////////////////////////
  */
-class MyInput {
+class MyInput(val game: KtGame,val MYCANVAS:HTMLCanvasElement) {
     var last_joystick_render by Delegates.notNull<Double>()
     var joystick_dir: Int = DIR_NONE
 
@@ -61,13 +68,13 @@ class MyInput {
         document.addEventListener("touchend", { handle_touchend_global(it as TouchEvent) }, false);
 
         // Handle mouse controls (MYCANVAS)
-        MYCANVAS.addEventListener("mousemove", { handle_mousemove(it as MouseEvent) }, false);
+        App.MYCANVAS.addEventListener("mousemove", { handle_mousemove(it as MouseEvent) }, false);
 
-        MYCANVAS.addEventListener("mousedown", { handle_mousedown(it as MouseEvent) }, false);
+        App.MYCANVAS.addEventListener("mousedown", { handle_mousedown(it as MouseEvent) }, false);
 
-        MYCANVAS.addEventListener("mouseup", { handle_mouseup(it as MouseEvent) }, false);
+        App.MYCANVAS.addEventListener("mouseup", { handle_mouseup(it as MouseEvent) }, false);
 
-        MYCANVAS.addEventListener("mouseout", { handle_mouseout(it as MouseEvent) }, false);
+        App.MYCANVAS.addEventListener("mouseout", { handle_mouseout(it as MouseEvent) }, false);
     }
 
     // Public:

@@ -1,3 +1,9 @@
+import App.Companion.DIR_DOWN
+import App.Companion.DIR_LEFT
+import App.Companion.DIR_NONE
+import App.Companion.DIR_RIGHT
+import App.Companion.DIR_UP
+import App.Companion.UPS
 import kotlinx.browser.window
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -6,7 +12,7 @@ import kotlin.random.Random
 
 
 @JsExport
-class KtEntity() {
+class KtEntity(val game: KtGame) {
 
     var moving = false;
     var face_dir: Int = DIR_NONE;
@@ -60,7 +66,7 @@ class KtEntity() {
     fun move_randomly(curr_x: Int, curr_y: Int) {
         if (!this.moving) {
             var tried_forward = false;
-            var back_dir = game.opposite_dir(this.face_dir);
+            var back_dir = opposite_dir(this.face_dir);
             var possibilities = mutableListOf(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT);
             for (i in 0 until possibilities.size) {
                 if (possibilities[i] == this.face_dir || possibilities[i] == back_dir) {

@@ -1,10 +1,11 @@
+import App.Companion.DEFAULT_VOLUME
 
 @JsExport
 class Option(val line:Boolean,val check:Int,val name:String,val hotkey:String,val effect_id:Int,val on: ()->Boolean)
 
 
 @JsExport
-class SubMenu(val a_width: Int, val a_dd_width: Int, val a_name: String, val a_arr_options: Array<dynamic>) {
+class SubMenu(a_width: Int, val a_dd_width: Int, a_name: String, a_arr_options: Array<dynamic>) {
     val width = a_width
     val offset_line = 9;
     val offset_text = 17;

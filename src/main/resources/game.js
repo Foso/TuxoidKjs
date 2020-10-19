@@ -40,4 +40,4 @@ untitled23.main();
 // Use window.requestAnimationFrame, get rid of browser differences.
 
 
-untitled23.render();// Render thread
+//untitled23.render();// Render thread
