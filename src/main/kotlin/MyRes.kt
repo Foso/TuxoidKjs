@@ -1,29 +1,34 @@
-import kotlinx.browser.window
 import org.w3c.dom.Audio
 import org.w3c.dom.Image
 
-external var EXTERNAL_LEVELS: dynamic
-var NUM_RESOURCES = 197;
-var IMAGE_DIR = "images/";
-var SOUND_DIR = "sound/";
 
 var MENU_HEIGHT = 20;
 
-
-
-
-
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////
-// RESOURCES CLASS
-// Images, sounds, level. Just resources.
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////
- */
-
 class MyRes {
-    var that = this;
+    var NUM_RESOURCES = 197;
+    var IMAGE_DIR = "images/";
+    var SOUND_DIR = "sound/";
+
+    var soundarray = arrayOf(
+        "about.mp3",
+        "argl.mp3",
+        "attack1.mp3",
+        "attack2.mp3",
+        "chart.mp3",
+        "click.mp3",
+        "gameend.mp3",
+        "getpoint.mp3",
+        "newplane.mp3",
+        "opendoor.mp3",
+        "wow.mp3",
+        "yeah.mp3"
+    )
+
+
     var resources_loaded = 0;
     var already_loading = false;
+    var levels = EXTERNAL_LEVELS
+
 
     fun on_loaded() {
         resources_loaded++;
@@ -31,7 +36,9 @@ class MyRes {
 
     var images = arrayOf<dynamic>();
     var sounds = arrayOf<dynamic>();
-    var levels = EXTERNAL_LEVELS;// External loading
+    init {
+        load()
+    }
 
     fun ready(): Boolean {
         return (resources_loaded == NUM_RESOURCES);
@@ -57,15 +64,15 @@ class MyRes {
         images[1].src = IMAGE_DIR + "entry.png";
 
         for (i in 0 until 9) {// From 2 to 10 garbage
-            that.images[2 + i] = Image();
-            that.images[2 + i].onload = on_loaded();
-            that.images[2 + i].src = IMAGE_DIR + "garbage_" + i + ".png";
+            images[2 + i] = Image();
+            images[2 + i].onload = on_loaded();
+            images[2 + i].src = IMAGE_DIR + "garbage_" + i + ".png";
         }
 
         for (i in 0 until 11) {// From 11 to 21 digits
-            that.images[11 + i] = Image();
-            that.images[11 + i].onload = on_loaded();
-            that.images[11 + i].src = IMAGE_DIR + "digits_" + i + ".png";
+            images[11 + i] = Image();
+            images[11 + i].onload = on_loaded();
+            images[11 + i].src = IMAGE_DIR + "digits_" + i + ".png";
         }
 
         for (i in 0 until 3) {// From 22 to 30 buttons
@@ -101,91 +108,91 @@ class MyRes {
 
         for(i in 0 until 9){// From 111 to 146 monster 1(purple)
             for(j in 0 until 4){// Reversed order for ease of access
-                that.images[111+4*i+j] = Image();
-                that.images[111+4*i+j].onload = on_loaded();
-                that.images[111+4*i+j].src = IMAGE_DIR+"monster1_"+j+"-"+i+".png";
+                images[111+4*i+j] = Image();
+                images[111+4*i+j].onload = on_loaded();
+                images[111+4*i+j].src = IMAGE_DIR+"monster1_"+j+"-"+i+".png";
             }
         }
 
         for(i in 0 until 5){// From 147 to 166 monster 2(green)
             for(j in 0 until 4){// Reversed order for ease of access
-                that.images[147+4*i+j] =  Image();
-                that.images[147+4*i+j].onload = on_loaded();
-                that.images[147+4*i+j].src = IMAGE_DIR+"monster2_"+j+"-"+i+".png";
+                images[147+4*i+j] =  Image();
+                images[147+4*i+j].onload = on_loaded();
+                images[147+4*i+j].src = IMAGE_DIR+"monster2_"+j+"-"+i+".png";
             }
         }
 
-        that.images[167] =  Image();
-        that.images[167].onload = on_loaded();
-        that.images[167].src = IMAGE_DIR+"argl.png";
+        images[167] =  Image();
+        images[167].onload = on_loaded();
+        images[167].src = IMAGE_DIR+"argl.png";
 
-        that.images[168] =  Image();
-        that.images[168].onload = on_loaded();
-        that.images[168].src = IMAGE_DIR+"wow.png";
+        images[168] =  Image();
+        images[168].onload = on_loaded();
+        images[168].src = IMAGE_DIR+"wow.png";
 
-        that.images[169] =  Image();
-        that.images[169].onload = on_loaded();
-        that.images[169].src = IMAGE_DIR+"yeah.png";
+        images[169] =  Image();
+        images[169].onload = on_loaded();
+        images[169].src = IMAGE_DIR+"yeah.png";
 
-        that.images[170] =  Image();
-        that.images[170].onload = on_loaded();
-        that.images[170].src = IMAGE_DIR+"exit.png";
+        images[170] =  Image();
+        images[170].onload = on_loaded();
+        images[170].src = IMAGE_DIR+"exit.png";
 
-        that.images[171] =  Image();
-        that.images[171].onload = on_loaded();
-        that.images[171].src = IMAGE_DIR+"check_b.png";
+        images[171] =  Image();
+        images[171].onload = on_loaded();
+        images[171].src = IMAGE_DIR+"check_b.png";
 
-        that.images[172] =  Image();
-        that.images[172].onload = on_loaded();
-        that.images[172].src = IMAGE_DIR+"check_w.png";
+        images[172] =  Image();
+        images[172].onload = on_loaded();
+        images[172].src = IMAGE_DIR+"check_w.png";
 
-        that.images[173] =  Image();
-        that.images[173].onload = on_loaded();
-        that.images[173].src = IMAGE_DIR+"dbx_confirm.png";
+        images[173] =  Image();
+        images[173].onload = on_loaded();
+        images[173].src = IMAGE_DIR+"dbx_confirm.png";
 
-        that.images[174] =  Image();
-        that.images[174].onload = on_loaded();
-        that.images[174].src = IMAGE_DIR+"dbx_saveload.png";
+        images[174] =  Image();
+        images[174].onload = on_loaded();
+        images[174].src = IMAGE_DIR+"dbx_saveload.png";
 
-        that.images[175] =  Image();
-        that.images[175].onload = on_loaded();
-        that.images[175].src = IMAGE_DIR+"dbx_loadlvl.png";
+        images[175] =  Image();
+        images[175].onload = on_loaded();
+        images[175].src = IMAGE_DIR+"dbx_loadlvl.png";
 
-        that.images[176] =  Image();
-        that.images[176].onload = on_loaded();
-        that.images[176].src = IMAGE_DIR+"dbx_charts.png";
+        images[176] =  Image();
+        images[176].onload = on_loaded();
+        images[176].src = IMAGE_DIR+"dbx_charts.png";
 
-        that.images[177] =  Image();
-        that.images[177].onload = on_loaded();
-        that.images[177].src = IMAGE_DIR+"btn_c-up.png";
+        images[177] =  Image();
+        images[177].onload = on_loaded();
+        images[177].src = IMAGE_DIR+"btn_c-up.png";
 
-        that.images[178] =  Image();
-        that.images[178].onload = on_loaded();
-        that.images[178].src = IMAGE_DIR+"btn_c-down.png";
+        images[178] =  Image();
+        images[178].onload = on_loaded();
+        images[178].src = IMAGE_DIR+"btn_c-down.png";
 
-        that.images[179] =  Image();
-        that.images[179].onload = on_loaded();
-        that.images[179].src = IMAGE_DIR+"btn_n-up.png";
+        images[179] =  Image();
+        images[179].onload = on_loaded();
+        images[179].src = IMAGE_DIR+"btn_n-up.png";
 
-        that.images[180] =  Image();
-        that.images[180].onload = on_loaded();
-        that.images[180].src = IMAGE_DIR+"btn_n-down.png";
+        images[180] =  Image();
+        images[180].onload = on_loaded();
+        images[180].src = IMAGE_DIR+"btn_n-down.png";
 
-        that.images[181] =  Image();
-        that.images[181].onload = on_loaded();
-        that.images[181].src = IMAGE_DIR+"btn_o-up.png";
+        images[181] =  Image();
+        images[181].onload = on_loaded();
+        images[181].src = IMAGE_DIR+"btn_o-up.png";
 
-        that.images[182] =  Image();
-        that.images[182].onload = on_loaded();
-        that.images[182].src = IMAGE_DIR+"btn_o-down.png";
+        images[182] =  Image();
+        images[182].onload = on_loaded();
+        images[182].src = IMAGE_DIR+"btn_o-down.png";
 
-        that.images[183] =  Image();
-        that.images[183].onload = on_loaded();
-        that.images[183].src = IMAGE_DIR+"btn_y-up.png";
+        images[183] =  Image();
+        images[183].onload = on_loaded();
+        images[183].src = IMAGE_DIR+"btn_y-up.png";
 
-        that.images[184] =  Image();
-        that.images[184].onload = on_loaded();
-        that.images[184].src = IMAGE_DIR+"btn_y-down.png";
+        images[184] =  Image();
+        images[184].onload = on_loaded();
+        images[184].src = IMAGE_DIR+"btn_y-down.png";
 
 
         ////////////////////////////////////////////////////////
@@ -203,9 +210,7 @@ class MyRes {
         ////////////////////////////////////////////////////////
 
         // levels is now loaded externally
-        if(that.levels !== null){
-            on_loaded();
-        }
+        on_loaded()
     }
 
 

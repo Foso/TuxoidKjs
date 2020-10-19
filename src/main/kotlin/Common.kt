@@ -11,22 +11,14 @@ import org.w3c.dom.MIDDLE
 import org.w3c.dom.RIGHT
 import kotlin.js.Date
 import kotlin.math.min
+import kotlin.math.round
 
-var soundarray = arrayOf(
-    "about.mp3",
-    "argl.mp3",
-    "attack1.mp3",
-    "attack2.mp3",
-    "chart.mp3",
-    "click.mp3",
-    "gameend.mp3",
-    "getpoint.mp3",
-    "newplane.mp3",
-    "opendoor.mp3",
-    "wow.mp3",
-    "yeah.mp3"
-)
+external var md5: dynamic
 
+lateinit var res: MyRes
+
+var vis: KtVisual = KtVisual()
+lateinit var game: KtGame
 var ERR_SUCCESS = 0
 var ERR_EXISTS = 1;
 var ERR_NOSAVE = 2;
@@ -40,20 +32,16 @@ var DBX_LOAD = 2;
 var DBX_CHPASS = 3;
 var DBX_LOADLVL = 4;
 var DBX_CHARTS = 5;
-external var md5: dynamic
 
-external var vis: KtVisual
 
 var DIR_NONE = -1;
 var DIR_UP = 0;
 var DIR_LEFT = 1;
 var DIR_DOWN = 2;
 var DIR_RIGHT = 3;
-external var LEV_START_DELAY: Int
-external var UPS: Int
+var LEV_START_DELAY = 1
+var UPS: Int = 60
 
-external var res: MyRes
-external var game: KtGame
 var AUTHOR = "Benjamin";
 var JOYSTICK_SIZE = 0.4;// In terms of the smaller of the two screen dimensions
 
@@ -68,8 +56,10 @@ var RENDER_BOTTOM_BORDER = 3;
 var LEV_OFFSET_X = 16;
 var LEV_OFFSET_Y = 79;
 
-external var LEV_STOP_DELAY: Int
-external var ANIMATION_DURATION: Int
+var LEV_STOP_DELAY: Int = 1
+var ANIMATION_DURATION: Int =
+    round((8.toDouble() * UPS / 60)).toInt();// How many times the game has to render before the image changes
+
 lateinit var MYJOYCTX: CanvasRenderingContext2D
 
 var DEFAULT_VOLUME = 0.7;
@@ -79,7 +69,9 @@ lateinit var MYCTX: CanvasRenderingContext2D
 var IS_TOUCH_DEVICE: Boolean = false
 var true_width: Double = SCREEN_WIDTH.toDouble()
 var true_height: Double = SCREEN_HEIGHT.toDouble()
-lateinit var MyJOYSTICK : HTMLCanvasElement
+lateinit var MyJOYSTICK: HTMLCanvasElement
+
+
 fun initCanvas() {
     MYCANVAS = document.createElement("canvas") as HTMLCanvasElement;
     MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
@@ -89,42 +81,54 @@ fun initCanvas() {
     document.body?.appendChild(MYCANVAS);
 }
 
-fun main() {
+class Application(){
+        val res = MyRes()
+}
 
+fun main() {
+    val app = Application()
+    res = app.res
+    vis.init_menus()
     requestAnimationFrame()
     initInput()
     initCanvas()
     checkIfTouch()
     if (IS_TOUCH_DEVICE) {
+        UPS = 15
         initTouch()
     }
+    game = KtGame()
+
 }
 
 fun requestAnimationFrame() {
-   js("  var lastTime = 0;\n" +
-           "    var vendors = ['ms', 'moz', 'webkit', 'o'];\n" +
-           "    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {\n" +
-           "        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];\n" +
-           "        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']\n" +
-           "                                   || window[vendors[x]+'CancelRequestAnimationFrame'];\n" +
-           "    }\n" +
-           " \n" +
-           "    if (!window.requestAnimationFrame)\n" +
-           "        window.requestAnimationFrame = function(callback, element) {\n" +
-           "            var currTime = new Date().getTime();\n" +
-           "            var timeToCall = Math.max(0, 16 - (currTime - lastTime));\n" +
-           "            var id = window.setTimeout(function() { callback(currTime + timeToCall); },\n" +
-           "              timeToCall);\n" +
-           "            lastTime = currTime + timeToCall;\n" +
-           "            return id;\n" +
-           "        };\n" +
-           " \n" +
-           "    if (!window.cancelAnimationFrame)\n" +
-           "        window.cancelAnimationFrame = function(id) {\n" +
-           "            clearTimeout(id);\n" +
-           "        };")
+    var lastTime = 0;
+    js(
+        "  \n" +
+                "    var vendors = ['ms', 'moz', 'webkit', 'o'];\n" +
+                "    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {\n" +
+                "        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];\n" +
+                "        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']\n" +
+                "                                   || window[vendors[x]+'CancelRequestAnimationFrame'];\n" +
+                "    }\n" +
+                " \n" +
+                "    if (!window.requestAnimationFrame)\n" +
+                "        window.requestAnimationFrame = function(callback, element) {\n" +
+                "            var currTime = new Date().getTime();\n" +
+                "            var timeToCall = Math.max(0, 16 - (currTime - lastTime));\n" +
+                "            var id = window.setTimeout(function() { callback(currTime + timeToCall); },\n" +
+                "              timeToCall);\n" +
+                "            lastTime = currTime + timeToCall;\n" +
+                "            return id;\n" +
+                "        };\n" +
+                " \n" +
+                "    if (!window.cancelAnimationFrame)\n" +
+                "        window.cancelAnimationFrame = function(id) {\n" +
+                "            clearTimeout(id);\n" +
+                "        };"
+    )
 
-    }
+}
 
 fun initTouch() {
     // Joystick creation
@@ -191,7 +195,8 @@ fun render_fps() {
     MYCTX.font = "12px Helvetica";
     MYCTX.textAlign = CanvasTextAlign.RIGHT;
     MYCTX.textBaseline = CanvasTextBaseline.BOTTOM;
-    MYCTX.fillText("UPS: " + vis.static_ups + " FPS:" + vis.static_fps + " ", SCREEN_WIDTH.toDouble(),
+    MYCTX.fillText(
+        "UPS: " + vis.static_ups + " FPS:" + vis.static_fps + " ", SCREEN_WIDTH.toDouble(),
         SCREEN_HEIGHT.toDouble()
     );
 
@@ -253,11 +258,11 @@ fun render() {
 }
 
 fun CanvasRenderingContext2D.fillRect(x: Int, y: Int, w: Int, h: Int) {
-    fillRect(x.toDouble(),y.toDouble(),w.toDouble(),h.toDouble())
+    fillRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble())
 }
 
 fun CanvasRenderingContext2D.drawImage(image: dynamic, dx: Int, dy: Int) {
-    drawImage(image,dx.toDouble(),dy.toDouble())
+    drawImage(image, dx.toDouble(), dy.toDouble())
 }
 
 

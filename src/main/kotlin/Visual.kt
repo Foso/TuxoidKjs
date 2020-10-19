@@ -24,8 +24,6 @@ class KtVisual() {
 
     var buttons_pressed = arrayOf<dynamic>();
 
-
-
 // Animations:
     var offset_key_x = 3;
     var offset_key_y = 4
@@ -54,6 +52,10 @@ class KtVisual() {
     var white = js("{r:255, g:255, b: 255}");
     var blue = js("{r:10, g:36, b:106}");
     var dbx = document.createElement("div").asDynamic();
+
+    init {
+
+    }
 
     fun HAS_STORAGE(): Boolean {
         return true

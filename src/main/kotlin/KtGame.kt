@@ -6,7 +6,7 @@ import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-var INTRO_DURATION = 6;// In seconds
+var INTRO_DURATION = 2;// In seconds
 var DEBUG = true;
 
 
