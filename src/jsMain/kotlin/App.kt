@@ -1,3 +1,4 @@
+import GameSettings.Companion.JOYSTICK_SIZE
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.BOTTOM
@@ -12,19 +13,13 @@ import org.w3c.dom.RIGHT
 import kotlin.js.Date
 import kotlin.math.min
 
-class App() {
+class App {
 
     val vol_bar = VolumeBar()
     val res = MyRes()
     val game = KtGame(vol_bar, res)
     val input = MyInput(game, MYCANVAS)
-
     val vis = KtVisual(vol_bar, game)
-
-
-    init {
-
-    }
 
 
     fun initTouch() {
@@ -67,6 +62,7 @@ class App() {
         };
         window.onresize = {}
     }
+
     fun render(game: KtGame) {
         fun render_fps() {
             var now = Date.now();
@@ -87,8 +83,8 @@ class App() {
                 textAlign = CanvasTextAlign.RIGHT;
                 textBaseline = CanvasTextBaseline.BOTTOM;
                 fillText(
-                    "UPS: " + vis.static_ups + " FPS:" + vis.static_fps + " ", App.SCREEN_WIDTH.toDouble(),
-                    App.SCREEN_HEIGHT.toDouble()
+                    "UPS: " + vis.static_ups + " FPS:" + vis.static_fps + " ", GameSettings.SCREEN_WIDTH.toDouble(),
+                    GameSettings.SCREEN_HEIGHT.toDouble()
                 );
             }
 
@@ -222,7 +218,7 @@ class App() {
                 drawImage(res.images[9], 22.0, 41.0);// Steps
                 drawImage(res.images[10], 427.0, 41.0);// Ladder
             }
-            render_displays(MYCTX,res);
+            render_displays(MYCTX, res);
             kt_render_buttons();
 
             when (game.mode) {
@@ -238,7 +234,7 @@ class App() {
                     }
                 }
                 GAME_MODE_MENU -> {
-                    render_field();
+                    render_field(game);
                 }
                 GAME_MODE_PLAY -> {// Won!
                     MYCTX.drawImage(res.images[170], LEV_OFFSET_X + 4, LEV_OFFSET_Y + 4);
@@ -249,12 +245,12 @@ class App() {
         } else {
             MYCTX.apply {
                 fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")";
-                fillRect(0, 0, App.SCREEN_WIDTH, App.SCREEN_HEIGHT);// Options box
+                fillRect(0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);// Options box
                 fillStyle = "rgb(0, 0, 0)";
                 font = "36px Helvetica";
                 textAlign = CanvasTextAlign.CENTER
                 textBaseline = CanvasTextBaseline.MIDDLE;
-                fillText("Loading...", (App.SCREEN_WIDTH / 2).toDouble(), (App.SCREEN_HEIGHT / 2).toDouble());
+                fillText("Loading...", (GameSettings.SCREEN_WIDTH / 2).toDouble(), (GameSettings.SCREEN_HEIGHT / 2).toDouble());
             }
         }
         if (DEBUG) render_fps();
@@ -264,8 +260,7 @@ class App() {
 
     companion object {
 
-        var SCREEN_WIDTH = 537;
-        var SCREEN_HEIGHT = 408;
+
         var DEFAULT_VOLUME = 0.7;
         var ERR_SUCCESS = 0
         var ERR_EXISTS = 1;
@@ -294,8 +289,8 @@ class App() {
             MYCANVAS = document.createElement("canvas") as HTMLCanvasElement;
             MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
             MYCANVAS.apply {
-                width = App.SCREEN_WIDTH;
-                height = App.SCREEN_HEIGHT;
+                width = GameSettings.SCREEN_WIDTH;
+                height = GameSettings.SCREEN_HEIGHT;
                 className = "canv";
             }
             document.body?.appendChild(MYCANVAS);

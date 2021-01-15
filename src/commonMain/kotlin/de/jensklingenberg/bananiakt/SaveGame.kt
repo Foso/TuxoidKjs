@@ -1,5 +1,5 @@
-@JsExport
-class SaveGame() {
+package de.jensklingenberg.bananiakt
+class SaveGame {
     var usernumber: Int = -1
     var username: String? = null
     var password: String? = null

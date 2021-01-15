@@ -1,9 +1,6 @@
 import App.Companion.UPS
-import kotlinx.browser.document
-import kotlinx.browser.window
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
-import kotlin.math.min
 import kotlin.math.round
 
 external var md5: dynamic
@@ -12,7 +9,6 @@ lateinit var res: MyRes
 
 lateinit var vis: KtVisual
 lateinit var game: KtGame
-var JOYSTICK_SIZE = 0.4;// In terms of the smaller of the two screen dimensions
 
 
 var LEV_DIMENSION_X = 21;
@@ -33,11 +29,9 @@ lateinit var MYJOYCTX: CanvasRenderingContext2D
 lateinit var input: MyInput
 lateinit var MYCTX: CanvasRenderingContext2D
 var IS_TOUCH_DEVICE: Boolean = false
-var true_width: Double = App.SCREEN_WIDTH.toDouble()
-var true_height: Double = App.SCREEN_HEIGHT.toDouble()
+var true_width: Double = GameSettings.SCREEN_WIDTH.toDouble()
+var true_height: Double = GameSettings.SCREEN_HEIGHT.toDouble()
 lateinit var MyJOYSTICK: HTMLCanvasElement
-
-
 
 
 fun main() {
@@ -47,7 +41,7 @@ fun main() {
     game = app.game
     vis = app.vis
     res = app.res
-   // vis.init_menus()
+    // vis.init_menus()
     requestAnimationFrame()
 
 
@@ -90,7 +84,6 @@ fun requestAnimationFrame() {
 }
 
 
-
 fun checkIfTouch() {
     IS_TOUCH_DEVICE =
         true == js("(\"ontouchstart\" in window || window.DocumentTouch && document instanceof DocumentTouch);")
@@ -100,16 +93,6 @@ fun checkIfTouch() {
 fun Double.toFixed(digits: Int): Double = this.asDynamic().toFixed(digits)
 fun Float.format(digits: Int): String = this.asDynamic().toFixed(digits)
 
-
-
-
-fun CanvasRenderingContext2D.fillRect(x: Int, y: Int, w: Int, h: Int) {
-    fillRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble())
-}
-
-fun CanvasRenderingContext2D.drawImage(image: dynamic, dx: Int, dy: Int) {
-    drawImage(image, dx.toDouble(), dy.toDouble())
-}
 
 
 

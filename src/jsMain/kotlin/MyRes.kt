@@ -27,17 +27,20 @@ class MyRes {
     var resources_loaded = 0;
     var already_loading = false;
     var levels = EXTERNAL_LEVELS
+    var images = arrayOf<dynamic>();
+    var sounds = arrayOf<dynamic>();
+
+    init {
+        load()
+    }
 
 
     fun on_loaded() {
         resources_loaded++;
     }
 
-    var images = arrayOf<dynamic>();
-    var sounds = arrayOf<dynamic>();
-    init {
-        load()
-    }
+
+
 
     fun ready(): Boolean {
         return (resources_loaded == NUM_RESOURCES);
@@ -97,111 +100,111 @@ class MyRes {
             }
         }
 
-        for(i in 0 until 13){// From 59 to 110 player (berti)
-            for(j in 0 until 4){// Reversed order for ease of access
-                images[59+4*i+j] = Image();
-                images[59+4*i+j].onload = on_loaded();
-                images[59+4*i+j].src = IMAGE_DIR+"player_"+j+"-"+i+".png";
+        for (i in 0 until 13) {// From 59 to 110 player (berti)
+            for (j in 0 until 4) {// Reversed order for ease of access
+                images[59 + 4 * i + j] = Image();
+                images[59 + 4 * i + j].onload = on_loaded();
+                images[59 + 4 * i + j].src = IMAGE_DIR + "player_" + j + "-" + i + ".png";
             }
         }
 
-        for(i in 0 until 9){// From 111 to 146 monster 1(purple)
-            for(j in 0 until 4){// Reversed order for ease of access
-                images[111+4*i+j] = Image();
-                images[111+4*i+j].onload = on_loaded();
-                images[111+4*i+j].src = IMAGE_DIR+"monster1_"+j+"-"+i+".png";
+        for (i in 0 until 9) {// From 111 to 146 monster 1(purple)
+            for (j in 0 until 4) {// Reversed order for ease of access
+                images[111 + 4 * i + j] = Image();
+                images[111 + 4 * i + j].onload = on_loaded();
+                images[111 + 4 * i + j].src = IMAGE_DIR + "monster1_" + j + "-" + i + ".png";
             }
         }
 
-        for(i in 0 until 5){// From 147 to 166 monster 2(green)
-            for(j in 0 until 4){// Reversed order for ease of access
-                images[147+4*i+j] =  Image();
-                images[147+4*i+j].onload = on_loaded();
-                images[147+4*i+j].src = IMAGE_DIR+"monster2_"+j+"-"+i+".png";
+        for (i in 0 until 5) {// From 147 to 166 monster 2(green)
+            for (j in 0 until 4) {// Reversed order for ease of access
+                images[147 + 4 * i + j] = Image();
+                images[147 + 4 * i + j].onload = on_loaded();
+                images[147 + 4 * i + j].src = IMAGE_DIR + "monster2_" + j + "-" + i + ".png";
             }
         }
 
-        images[167] =  Image();
+        images[167] = Image();
         images[167].onload = on_loaded();
-        images[167].src = IMAGE_DIR+"argl.png";
+        images[167].src = IMAGE_DIR + "argl.png";
 
-        images[168] =  Image();
+        images[168] = Image();
         images[168].onload = on_loaded();
-        images[168].src = IMAGE_DIR+"wow.png";
+        images[168].src = IMAGE_DIR + "wow.png";
 
-        images[169] =  Image();
+        images[169] = Image();
         images[169].onload = on_loaded();
-        images[169].src = IMAGE_DIR+"yeah.png";
+        images[169].src = IMAGE_DIR + "yeah.png";
 
-        images[170] =  Image();
+        images[170] = Image();
         images[170].onload = on_loaded();
-        images[170].src = IMAGE_DIR+"exit.png";
+        images[170].src = IMAGE_DIR + "exit.png";
 
-        images[171] =  Image();
+        images[171] = Image();
         images[171].onload = on_loaded();
-        images[171].src = IMAGE_DIR+"check_b.png";
+        images[171].src = IMAGE_DIR + "check_b.png";
 
-        images[172] =  Image();
+        images[172] = Image();
         images[172].onload = on_loaded();
-        images[172].src = IMAGE_DIR+"check_w.png";
+        images[172].src = IMAGE_DIR + "check_w.png";
 
-        images[173] =  Image();
+        images[173] = Image();
         images[173].onload = on_loaded();
-        images[173].src = IMAGE_DIR+"dbx_confirm.png";
+        images[173].src = IMAGE_DIR + "dbx_confirm.png";
 
-        images[174] =  Image();
+        images[174] = Image();
         images[174].onload = on_loaded();
-        images[174].src = IMAGE_DIR+"dbx_saveload.png";
+        images[174].src = IMAGE_DIR + "dbx_saveload.png";
 
-        images[175] =  Image();
+        images[175] = Image();
         images[175].onload = on_loaded();
-        images[175].src = IMAGE_DIR+"dbx_loadlvl.png";
+        images[175].src = IMAGE_DIR + "dbx_loadlvl.png";
 
-        images[176] =  Image();
+        images[176] = Image();
         images[176].onload = on_loaded();
-        images[176].src = IMAGE_DIR+"dbx_charts.png";
+        images[176].src = IMAGE_DIR + "dbx_charts.png";
 
-        images[177] =  Image();
+        images[177] = Image();
         images[177].onload = on_loaded();
-        images[177].src = IMAGE_DIR+"btn_c-up.png";
+        images[177].src = IMAGE_DIR + "btn_c-up.png";
 
-        images[178] =  Image();
+        images[178] = Image();
         images[178].onload = on_loaded();
-        images[178].src = IMAGE_DIR+"btn_c-down.png";
+        images[178].src = IMAGE_DIR + "btn_c-down.png";
 
-        images[179] =  Image();
+        images[179] = Image();
         images[179].onload = on_loaded();
-        images[179].src = IMAGE_DIR+"btn_n-up.png";
+        images[179].src = IMAGE_DIR + "btn_n-up.png";
 
-        images[180] =  Image();
+        images[180] = Image();
         images[180].onload = on_loaded();
-        images[180].src = IMAGE_DIR+"btn_n-down.png";
+        images[180].src = IMAGE_DIR + "btn_n-down.png";
 
-        images[181] =  Image();
+        images[181] = Image();
         images[181].onload = on_loaded();
-        images[181].src = IMAGE_DIR+"btn_o-up.png";
+        images[181].src = IMAGE_DIR + "btn_o-up.png";
 
-        images[182] =  Image();
+        images[182] = Image();
         images[182].onload = on_loaded();
-        images[182].src = IMAGE_DIR+"btn_o-down.png";
+        images[182].src = IMAGE_DIR + "btn_o-down.png";
 
-        images[183] =  Image();
+        images[183] = Image();
         images[183].onload = on_loaded();
-        images[183].src = IMAGE_DIR+"btn_y-up.png";
+        images[183].src = IMAGE_DIR + "btn_y-up.png";
 
-        images[184] =  Image();
+        images[184] = Image();
         images[184].onload = on_loaded();
-        images[184].src = IMAGE_DIR+"btn_y-down.png";
+        images[184].src = IMAGE_DIR + "btn_y-down.png";
 
 
         ////////////////////////////////////////////////////////
         // Sounds: /////////////////////////////////////////////
         ////////////////////////////////////////////////////////
 
-        for(i in soundarray.indices){
-            sounds[i] =  Audio();
+        for (i in soundarray.indices) {
+            sounds[i] = Audio();
             sounds[i].oncanplaythrough = on_loaded();
-            sounds[i].src = SOUND_DIR+soundarray[i];
+            sounds[i].src = SOUND_DIR + soundarray[i];
         }
 
         ////////////////////////////////////////////////////////

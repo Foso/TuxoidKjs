@@ -11,7 +11,7 @@ import kotlin.math.floor
 import kotlin.random.Random
 
 
-@JsExport
+
 class KtEntity(val game: KtGame) {
 
     var moving = false;
@@ -35,6 +35,7 @@ class KtEntity(val game: KtGame) {
 
     var fine_offset_x = 0;
     var fine_offset_y = 0;
+
     // end visual
     var pushable = false;
     var is_small = false;
@@ -313,7 +314,7 @@ class KtEntity(val game: KtGame) {
                     } else if (game.walkable(curr_x, curr_y, dir2)) {
                         game.start_move(curr_x, curr_y, dir2);
                     } else {
-                       // move_randomly(curr_x, curr_y);
+                        // move_randomly(curr_x, curr_y);
                     }
                 } else {
                     if (game.walkable(curr_x, curr_y, dir1)) {

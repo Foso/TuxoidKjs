@@ -20,7 +20,7 @@ import kotlin.math.floor
 
 
 @JsExport
-class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
+class KtVisual(val vol_bar: VolumeBar, val game: KtGame) {
 
     var berti_blink_time = 0;
     var last_rendered = 0.0;
@@ -30,7 +30,7 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
 
     var buttons_pressed = arrayOf<dynamic>();
 
-// Animations:
+    // Animations:
     private var offset_key_x = 3;
     var offset_key_y = 4
     var offset_banana_x = 4;
@@ -46,7 +46,7 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
     var offset_argl_y = -44;
 
 
-    lateinit var menu1 : Menu
+    lateinit var menu1: Menu
 
     // Menu stuff:
     var black = js("{r:0, g:0, b: 0}");
@@ -94,12 +94,13 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
         }
         dbx.errfield.innerHTML = err_string;
     }
-    fun init_menus(){
+
+    fun init_menus() {
 
         val arr_options1 = arrayOf(
             Option(false, 0, "New", "F2", 0, { true }),
-            Option(false, 0, "Load Game...","", 1, { HAS_STORAGE() }),
-            Option(false, 0, "Save","", 2, { game.savegame.progressed && HAS_STORAGE()}),
+            Option(false, 0, "Load Game...", "", 1, { HAS_STORAGE() }),
+            Option(false, 0, "Save", "", 2, { game.savegame.progressed && HAS_STORAGE() }),
             Option(false, 1, "Pause", "", 3, { true })
         )
 
@@ -107,12 +108,12 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
             Option(false, 1, "Single steps", "F5", 4, { true }),
             Option(false, 1, "Sound", "", 5, { true }),
             Option(true, 0, "", "", -1, { true }),
-            Option(false, 0, "Load Level", "", 6, { HAS_STORAGE()}),
-            Option(false, 0, "Change Password", "", 7, {game.savegame.username !== null && HAS_STORAGE()}),
+            Option(false, 0, "Load Level", "", 6, { HAS_STORAGE() }),
+            Option(false, 0, "Change Password", "", 7, { game.savegame.username !== null && HAS_STORAGE() }),
             Option(true, 0, "", "", -1, { true }),
             Option(
-                false, 0, "Charts", "", 8, { HAS_STORAGE()})
-            )
+                false, 0, "Charts", "", 8, { HAS_STORAGE() })
+        )
 
         val sub_m1 = SubMenu(43, 100, "Game", arr_options1);
         val sub_m2 = SubMenu(55, 150, "Options", arr_options2);
@@ -200,7 +201,7 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
         dbx.cancelfun = null;
 
         while (dbx.firstChild) {
-        dbx.removeChild(dbx.firstChild);
+            dbx.removeChild(dbx.firstChild);
         }
     }
 
@@ -346,7 +347,7 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
         dbx.style.width = "256px";
         dbx.style.height = "213px";
         dbx.style.left = js("this. Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
-        dbx.style.top =js(" Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
+        dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";")
 
         dbx.style.background = "url(" + res.images[174].src + ')';
 
@@ -377,8 +378,8 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
 
         dbx.style.width = "256px";
         dbx.style.height = "213px";
-        dbx.style.left =js(" Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
-        dbx.style.top =js(" Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";\n")
+        dbx.style.left = js(" Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
+        dbx.style.top = js(" Math.max(Math.floor(window.innerHeight-213)/2, 0)+\"px\";\n")
         dbx.style.background = "url(" + res.images[174].src + ')';
 
         add_text("Player name:", 20, 35);
@@ -409,7 +410,7 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
         dbx.style.width = "256px";
         dbx.style.height = "154px";
         this.dbx.style.left = js("Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";\n")
-        this.dbx.style.top =  js("Math.max(Math.floor(window.innerHeight-154)/2, 0)+\"px\";")
+        this.dbx.style.top = js("Math.max(Math.floor(window.innerHeight-154)/2, 0)+\"px\";")
         dbx.style.background = "url(" + res.images[173].src + ')';
 
         var f_y: () -> Unit = {};
@@ -553,9 +554,9 @@ class KtVisual( val vol_bar :VolumeBar,val game :KtGame) {
         dbx.arr_input[dbx.arr_input.length] = txt;
     }
 
-    fun update_all_animations(){
-        for(y in 0 until LEV_DIMENSION_Y){
-            for (x in 0 until LEV_DIMENSION_X){
+    fun update_all_animations() {
+        for (y in 0 until LEV_DIMENSION_Y) {
+            for (x in 0 until LEV_DIMENSION_X) {
                 update_animation(x, y);
             }
         }

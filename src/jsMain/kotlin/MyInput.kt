@@ -33,7 +33,7 @@ import kotlin.properties.Delegates
 // Everything that has to do with keyboard and mouse input goes here
 //////////////////////////////////////////////////////////////////////////////////////////////////////
  */
-class MyInput(val game: KtGame,val MYCANVAS:HTMLCanvasElement) {
+class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
     var last_joystick_render by Delegates.notNull<Double>()
     var joystick_dir: Int = DIR_NONE
 
@@ -168,7 +168,7 @@ class MyInput(val game: KtGame,val MYCANVAS:HTMLCanvasElement) {
             (evt.clientY - rect.top - style.getPropertyValue("border-top-width").replace("px", "")
                 .toInt()) / true_height * MYCANVAS.height
         )
-       // console.log("HIER   " + x1)
+        // console.log("HIER   " + x1)
 
         mouse_pos = js("{x: x1, y: y1}");
 

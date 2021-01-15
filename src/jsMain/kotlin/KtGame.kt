@@ -11,6 +11,7 @@ import App.Companion.ERR_SUCCESS
 import App.Companion.ERR_WRONGPW
 import App.Companion.LEV_START_DELAY
 import App.Companion.UPS
+import de.jensklingenberg.bananiakt.SaveGame
 import de.jensklingenberg.bananiakt.Tile
 import kotlinx.browser.localStorage
 import kotlin.js.Date
@@ -20,9 +21,9 @@ import kotlin.math.round
 import kotlin.random.Random
 
 var DEBUG = true;
-val GAME_MODE_ENTRY =0
-val GAME_MODE_MENU =1
-val GAME_MODE_PLAY =2
+val GAME_MODE_ENTRY = 0
+val GAME_MODE_MENU = 1
+val GAME_MODE_PLAY = 2
 
 
 @JsExport
@@ -450,8 +451,6 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
 
         return result.toTypedArray()
     }
-
-
 
 
     fun start_move(src_x: Int, src_y: Int, dir: Int) {

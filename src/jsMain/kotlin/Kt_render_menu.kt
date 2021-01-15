@@ -2,7 +2,6 @@ import App.Companion.DIR_DOWN
 import App.Companion.DIR_LEFT
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
-import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.CanvasTextAlign
 import org.w3c.dom.CanvasTextBaseline
 import org.w3c.dom.LEFT
@@ -12,54 +11,6 @@ import kotlin.math.floor
 import kotlin.math.round
 import kotlin.random.Random
 
-@JsExport
-fun render_vol_bar() {
-    var vb = vis.vol_bar;
-    var switcher = false;
-
-    for (i in 0 until vb.width) {
-        var line_height: Int = 0
-
-        if (switcher) {
-            switcher = false;
-            MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
-        } else {
-            switcher = true;
-            var ratio2 = i / vb.width.toDouble();
-            line_height = round((vb.height * ratio2).toDouble()).toInt();
-
-            if (i < ceil(vb.volume * vb.width)) {
-                if (game.sound) {
-                    var ratio1 = 1 - ratio2;
-                    MYCTX.fillStyle =
-                        "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
-                            vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
-                        ) + ")";
-                } else {
-                    MYCTX.fillStyle = "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
-                }
-            } else {
-                MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
-            }
-
-        }
-        MYCTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
-
-    }
-}
-
-fun CanvasRenderingContext2D.fillText(text: dynamic, x: Double, y: Int) {
-    fillText(text,x,y.toDouble())
-}
-
-fun CanvasRenderingContext2D.fillRect(x: Double, y: Double, w: Int, h: Int) {
-    fillRect(x,y,w.toDouble(),h.toDouble())
-}
-
-fun CanvasRenderingContext2D.fillRect(x: Double, y: Int, w: Int, h: Int) {
-    fillRect(x,y.toDouble(),w.toDouble(),h.toDouble())
-
-}
 
 
 
@@ -125,8 +76,7 @@ fun kt_render_buttons() {
 }
 
 
-@JsExport
-fun render_field() {
+fun render_field(game: KtGame) {
     render_field_subset(true);// Consumables in the background
     render_field_subset(false);// The rest in the foreground
 
@@ -153,37 +103,38 @@ fun render_field() {
         (391 - LEV_OFFSET_Y).toDouble()
     );// Right border covering blocks
 
-    if (game.level_ended == 1) {// Berti cheering, wow or yeah
-        for (i in game.berti_positions.indices) {
-            if (game.wow) {
-                MYCTX.drawImage(
-                    res.images[168],
-                    LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_wow_x,
-                    LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_wow_y
-                );
-            } else {
-                MYCTX.drawImage(
-                    res.images[169],
-                    LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_yeah_x,
-                    LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_yeah_y
-                );
+    when (game.level_ended) {
+        1 -> {// Berti cheering, wow or yeah
+            for (i in game.berti_positions.indices) {
+                if (game.wow) {
+                    MYCTX.drawImage(
+                        res.images[168],
+                        LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_wow_x,
+                        LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_wow_y
+                    );
+                } else {
+                    MYCTX.drawImage(
+                        res.images[169],
+                        LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_yeah_x,
+                        LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_yeah_y
+                    );
+                }
             }
         }
-    } else if (game.level_ended == 2) {// Berti dies in a pool of blood
-        for (i in game.berti_positions.indices) {
-            MYCTX.drawImage(
-                res.images[167],
-                LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_argl_x,
-                LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_argl_y
-            );
+        2 -> {// Berti dies in a pool of blood
+            for (i in game.berti_positions.indices) {
+                MYCTX.drawImage(
+                    res.images[167],
+                    LEV_OFFSET_X + 24 * game.berti_positions[i].x + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.x as Int + vis.offset_argl_x,
+                    LEV_OFFSET_Y + 24 * game.berti_positions[i].y + game.level_array[game.berti_positions[i].x][game.berti_positions[i].y].moving_offset.y as Int + vis.offset_argl_y
+                );
+            }
         }
     }
 }
 
 
 
-
-@JsExport
 fun render_block(x: Int, y: Int, render_option: dynamic) {
     var block = game.level_array[x][y] as Block;
 
@@ -436,7 +387,7 @@ fun render_block(x: Int, y: Int, render_option: dynamic) {
 
 }
 
-@JsExport
+
 fun render_field_subset(consumable: dynamic) {
     for (y in 0 until LEV_DIMENSION_Y) {
         for (x in 0 until LEV_DIMENSION_X) {
@@ -469,9 +420,6 @@ fun render_field_subset(consumable: dynamic) {
 }
 
 
-
-
-@JsExport
 fun kt_render_menu() {
     var submenu_offset = 0.0;
     // The font is the same for the whole menu... Segoe UI is also nice
