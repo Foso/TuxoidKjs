@@ -1,3 +1,5 @@
+package de.jensklingenberg.bananiakt
+
 var firstLevel = arrayOf(
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -22,7 +24,6 @@ var firstLevel = arrayOf(
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 )
 
-
 var level0 = arrayOf(
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     arrayOf(0, 3, 3, 3, 3, 0, 0, 0, 3, 3, 3, 3, 0),
@@ -46,6 +47,8 @@ var level0 = arrayOf(
     arrayOf(0, 3, 3, 3, 3, 0, 0, 0, 3, 3, 3, 3, 0),
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 )
+
+
 
 var level2 = arrayOf(
     arrayOf(0, 0, 0, 0, 3, 4, 4, 4, 3, 0, 0, 0, 0),
@@ -143,8 +146,6 @@ var level5 = arrayOf(
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 )
-
-var EXTERNAL_LEVELS = arrayOf(level0,firstLevel,level2,level3,level4)
 
 
 var level6 = arrayOf(
@@ -1228,3 +1229,13 @@ var level50 = arrayOf(
     arrayOf(0, 6, 6, 0, 6, 6, 0, 6, 6, 0, 6, 6, 0),
     arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 )
+
+var EXTERNAL_LEVELS =
+    arrayOf(
+        level0, firstLevel, level2, level3, level4, level5, level6, level7, level8, level9,
+        level10, level11, level12, level13, level14, level15, level16, level17, level18, level19,
+        level20, level21, level22, level23, level24, level25, level26, level27, level28, level29,
+        level30, level33, level32, level33, level34, level35, level36, level37, level38, level39,
+        level40, level44, level42, level43, level44, level45, level46, level47, level48, level49,
+        level50
+    )

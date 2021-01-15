@@ -62,7 +62,7 @@ fun CanvasRenderingContext2D.fillRect(x: Double, y: Int, w: Int, h: Int) {
 }
 
 
-@JsExport
+
 fun kt_render_buttons() {
     var over_button = false;
     if (input.mouse_down) {

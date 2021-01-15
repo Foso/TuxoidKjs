@@ -1,8 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="untitled23-1.0-SNAPSHOT">
     <output-path>$PROJECT_DIR$/build/libs</output-path>
-    <root id="archive" name="untitled23-1.0-SNAPSHOT.jar">
-      <element id="module-output" name="untitled23.main" />
-    </root>
+    <root id="archive" name="untitled23-1.0-SNAPSHOT.jar" />
   </artifact>
 </component>

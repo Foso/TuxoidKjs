@@ -11,6 +11,7 @@ import App.Companion.ERR_SUCCESS
 import App.Companion.ERR_WRONGPW
 import App.Companion.LEV_START_DELAY
 import App.Companion.UPS
+import de.jensklingenberg.bananiakt.Tile
 import kotlinx.browser.localStorage
 import kotlin.js.Date
 import kotlin.math.abs

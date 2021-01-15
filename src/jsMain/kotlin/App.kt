@@ -182,7 +182,7 @@ class App() {
                 if (game.mode == GAME_MODE_ENTRY) {
                     game.wait_timer--;
                     if (game.wait_timer <= 0) {
-                        game.load_level(3);
+                        game.load_level(10);
                     }
                 } else if (game.mode == 1) {
                     if (game.wait_timer <= 0) {

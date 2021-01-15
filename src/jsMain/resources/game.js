@@ -22,13 +22,13 @@ var md5 = new CLASS_md5();
 // Game
 
 // Resources
-//var res = new untitled23.MyRes();
+//var res = new BananiaKt.MyRes();
 //res.load();
 
 
 // Visual
 
-untitled23.main();
+BananiaKt.main();
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////
 // RENDERING PROCESS
@@ -40,4 +40,4 @@ untitled23.main();
 // Use window.requestAnimationFrame, get rid of browser differences.
 
 
-//untitled23.render();// Render thread
+//BananiaKt.render();// Render thread
