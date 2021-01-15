@@ -25,6 +25,15 @@ import kotlin.math.round
 import kotlin.math.sqrt
 import kotlin.properties.Delegates
 
+enum class Key(val value: Int) {
+    ARROWLEFT(37),
+    ARROWUP(38),
+    ARROWRIGHT(39),
+    ARROWDWN(40),
+    ENTER(13),
+    ESCAPE(27)
+
+}
 
 /**
  *
@@ -91,21 +100,29 @@ class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
     fun handle_keydown_global(evt: KeyboardEvent) {
         game.remove_soundrestriction();
         keys_down[evt.keyCode] = true;
-        if (keys_down[37]) {
-            game.walk_dir = DIR_LEFT;
-        } else if (keys_down[38]) {
-            game.walk_dir = DIR_UP;
-        } else if (keys_down[39]) {
-            game.walk_dir = DIR_RIGHT;
-        } else if (keys_down[40]) {
-            game.walk_dir = DIR_DOWN;
+        when (evt.keyCode) {
+            Key.ARROWLEFT.value -> {
+                game.walk_dir = DIR_LEFT;
+            }
+            Key.ARROWUP.value -> {
+                game.walk_dir = DIR_UP;
+            }
+            Key.ARROWRIGHT.value -> {
+                game.walk_dir = DIR_RIGHT;
+            }
+            Key.ARROWDWN.value -> {
+                game.walk_dir = DIR_DOWN;
+            }
         }
 
         if (vis.dbx.firstChild) {// If a dialog box is open
-            if (keys_down[13]) {// Enter
-                vis.dbx.enterfun();
-            } else if (keys_down[27]) {// Esc
-                vis.dbx.cancelfun();
+            when(evt.keyCode) {
+                Key.ENTER.value -> {// Enter
+                    vis.dbx.enterfun();
+                }
+                Key.ESCAPE.value -> {// Esc
+                    vis.dbx.cancelfun();
+                }
             }
         }
     }
@@ -233,15 +250,19 @@ class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
 
     fun handle_mouseup(evt: MouseEvent) {
         if (mouse_pos.y >= 35 && mouse_pos.y <= 65) {
-            if (mouse_pos.x >= 219 && mouse_pos.x <= 249 && lastclick_button == 0 && game.buttons_activated[0]) {
-                //alert("<<");
-                game.prev_level();
-            } else if (mouse_pos.x >= 253 && mouse_pos.x <= 283 && lastclick_button == 1 && game.buttons_activated[1]) {
-                //alert("Berti");
-                game.reset_level();
-            } else if (mouse_pos.x >= 287 && mouse_pos.x <= 317 && lastclick_button == 2 && game.buttons_activated[2]) {
-                //alert(">>");
-                game.next_level();
+            when {
+                mouse_pos.x >= 219 && mouse_pos.x <= 249 && lastclick_button == 0 && game.buttons_activated[0] -> {
+                    //alert("<<");
+                    game.prev_level();
+                }
+                mouse_pos.x >= 253 && mouse_pos.x <= 283 && lastclick_button == 1 && game.buttons_activated[1] -> {
+                    //alert("Berti");
+                    game.reset_level();
+                }
+                mouse_pos.x >= 287 && mouse_pos.x <= 317 && lastclick_button == 2 && game.buttons_activated[2] -> {
+                    //alert(">>");
+                    game.next_level();
+                }
             }
         }
 

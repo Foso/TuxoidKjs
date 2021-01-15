@@ -1,4 +1,5 @@
 import GameSettings.Companion.JOYSTICK_SIZE
+import de.jensklingenberg.bananiakt.MyImage
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.BOTTOM
@@ -268,9 +269,9 @@ class App {
         game.update_drawn = true;
         if (res.ready()) {
             MYCTX.apply {
-                drawImage(res.images[0], 0.0, 0.0);// Background
-                drawImage(res.images[9], 22.0, 41.0);// Steps
-                drawImage(res.images[10], 427.0, 41.0);// Ladder
+                drawImage(res.images[MyImage.Background], 0.0, 0.0);// Background
+                drawImage(res.images[MyImage.Steps], 22.0, 41.0);// Steps
+                drawImage(res.images[MyImage.Ladder], 427.0, 41.0);// Ladder
             }
             render_displays(MYCTX, res);
             kt_render_buttons(MYCTX);
