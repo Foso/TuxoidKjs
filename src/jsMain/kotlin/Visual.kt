@@ -16,6 +16,10 @@ import App.Companion.ERR_WRONGPW
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.w3c.dom.events.MouseEvent
+import model.Block
+import ui.menu.Menu
+import ui.menu.Option
+import ui.menu.SubMenu
 import kotlin.math.floor
 
 
@@ -48,7 +52,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame) {
 
     lateinit var menu1: Menu
 
-    // Menu stuff:
+    // ui.menu.Menu stuff:
     var black = js("{r:0, g:0, b: 0}");
     var dark_grey = js("{r:64, g:64, b:64}");
     var med_grey = js("{r:128, g:128, b:128}");
@@ -575,7 +579,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame) {
                     }
                     1, 2 -> {
                         // 1: Berti (entry point)
-                        // 2: AUTO Menu Berti
+                        // 2: AUTO ui.menu.Menu Berti
                         block.animation_frame = 59;
                         break
                     }

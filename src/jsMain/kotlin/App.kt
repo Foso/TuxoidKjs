@@ -10,8 +10,13 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.LEFT
 import org.w3c.dom.MIDDLE
 import org.w3c.dom.RIGHT
+import ui.menu.kt_render_buttons
+import ui.menu.kt_render_menu
+import ui.menu.render_field
 import kotlin.js.Date
+import kotlin.math.ceil
 import kotlin.math.min
+import kotlin.math.round
 
 class App {
 
@@ -36,8 +41,10 @@ class App {
             val ratio_1 = window.innerWidth / true_width;
             val ratio_2 = window.innerHeight / true_height;
             if (ratio_1 < ratio_2) {
-                MYCANVAS.style.height = "";
-                MYCANVAS.style.width = "100%";
+                MYCANVAS.style.apply {
+                    height = "";
+                    width = "100%";
+                }
             } else {
                 MYCANVAS.style.height = "100%";
                 MYCANVAS.style.width = "";
@@ -105,10 +112,13 @@ class App {
                 // NPC logic and stop walking logic.
                 for (y in 0 until LEV_DIMENSION_Y) {
                     for (x in 0 until LEV_DIMENSION_X) {
-                        if (game.level_array[x][y].id == 2) {// MENU Berti
-                            game.level_array[x][y].move_randomly(x, y);
-                        } else if (game.level_array[x][y].id == 7 || game.level_array[x][y].id == 10) {// Purple and green monster
-                            game.level_array[x][y].chase_berti(x, y);
+                        when (game.level_array[x][y].id) {
+                            2 -> {// MENU Berti
+                                game.level_array[x][y].move_randomly(x, y);
+                            }
+                            7, 10 -> {// Purple and green monster
+                                game.level_array[x][y].chase_berti(x, y);
+                            }
                         }
 
                         if (game.level_array[x][y].just_moved) {
@@ -132,6 +142,42 @@ class App {
             }
         }
 
+        fun render_vol_bar() {
+            var vb = vis.vol_bar;
+            var switcher = false;
+
+            for (i in 0 until vb.width) {
+                var line_height: Int = 0
+
+                if (switcher) {
+                    switcher = false;
+                    MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
+                } else {
+                    switcher = true;
+                    var ratio2 = i / vb.width.toDouble();
+                    line_height = round((vb.height * ratio2).toDouble()).toInt();
+
+                    if (i < ceil(vb.volume * vb.width)) {
+                        if (game.sound) {
+                            var ratio1 = 1 - ratio2;
+                            MYCTX.fillStyle =
+                                "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
+                                    vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
+                                ) + ")";
+                        } else {
+                            MYCTX.fillStyle =
+                                "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
+                        }
+                    } else {
+                        MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
+                    }
+
+                }
+                MYCTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
+
+            }
+        }
+
 
         fun render_displays(MYCTX: CanvasRenderingContext2D, res: MyRes) {
 
@@ -139,8 +185,10 @@ class App {
             val steps_length = min(steps_string.length - 1, 4);
 
             for (i in steps_length downTo 0) {
+                val newChar = steps_string[i].toString()
+                val imageId2 = 11 + newChar.toInt()//newChar
                 val imageId = js("11+parseInt(steps_string.charAt(i))")
-                MYCTX.drawImage(res.images[imageId], (101 - (steps_length - i) * 13).toDouble(), 41.0);
+                MYCTX.drawImage(res.images[imageId2], (101 - (steps_length - i) * 13).toDouble(), 41.0);
             }
 
             for (i in (steps_length + 1) until 5) {
@@ -151,9 +199,12 @@ class App {
             val level_length = min(level_string.length - 1, 4);
 
             for (i in level_length downTo 0) {
+
+                val newChar = level_string[i].toString()
+                val imageId2 = 11 + newChar.toInt()//newChar
                 val imageId = js("11+parseInt(level_string.charAt(i))")
 
-                MYCTX.drawImage(res.images[imageId], (506 - (level_length - i) * 13).toDouble(), 41.0);
+                MYCTX.drawImage(res.images[imageId2], (506 - (level_length - i) * 13).toDouble(), 41.0);
             }
 
             for (i in (level_length + 1) until 5) {
@@ -175,28 +226,31 @@ class App {
                 }
             }
             if (!game.paused) {
-                if (game.mode == GAME_MODE_ENTRY) {
-                    game.wait_timer--;
-                    if (game.wait_timer <= 0) {
-                        game.load_level(10);
-                    }
-                } else if (game.mode == 1) {
-                    if (game.wait_timer <= 0) {
-                        when (game.level_ended) {
-                            GAME_MODE_ENTRY -> {
-                                game.update_tick++;
-                                kt_update_entities();
-                            }
-                            GAME_MODE_MENU -> {
-                                game.update_savegame(game.level_number, game.steps_taken);
-                                game.next_level();
-                            }
-                            GAME_MODE_PLAY -> {
-                                game.reset_level();
-                            }
-                        }
-                    } else {
+                when (game.mode) {
+                    GAME_MODE_ENTRY -> {
                         game.wait_timer--;
+                        if (game.wait_timer <= 0) {
+                            game.load_level(10);
+                        }
+                    }
+                    1 -> {
+                        if (game.wait_timer <= 0) {
+                            when (game.level_ended) {
+                                GAME_MODE_ENTRY -> {
+                                    game.update_tick++;
+                                    kt_update_entities();
+                                }
+                                GAME_MODE_MENU -> {
+                                    game.update_savegame(game.level_number, game.steps_taken);
+                                    game.next_level();
+                                }
+                                GAME_MODE_PLAY -> {
+                                    game.reset_level();
+                                }
+                            }
+                        } else {
+                            game.wait_timer--;
+                        }
                     }
                 }
             }
@@ -219,7 +273,7 @@ class App {
                 drawImage(res.images[10], 427.0, 41.0);// Ladder
             }
             render_displays(MYCTX, res);
-            kt_render_buttons();
+            kt_render_buttons(MYCTX);
 
             when (game.mode) {
                 GAME_MODE_ENTRY -> {// Title image
@@ -250,7 +304,11 @@ class App {
                 font = "36px Helvetica";
                 textAlign = CanvasTextAlign.CENTER
                 textBaseline = CanvasTextBaseline.MIDDLE;
-                fillText("Loading...", (GameSettings.SCREEN_WIDTH / 2).toDouble(), (GameSettings.SCREEN_HEIGHT / 2).toDouble());
+                fillText(
+                    "Loading...",
+                    (GameSettings.SCREEN_WIDTH / 2).toDouble(),
+                    (GameSettings.SCREEN_HEIGHT / 2).toDouble()
+                );
             }
         }
         if (DEBUG) render_fps();

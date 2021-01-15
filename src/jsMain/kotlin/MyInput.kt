@@ -131,7 +131,7 @@ class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
         }
     }
 
-    fun handle_mousedown_global(evt: MouseEvent) {
+    private fun handle_mousedown_global(evt: MouseEvent) {
         game.remove_soundrestriction();
         mouse_down = true;
         if (vis !== null && vis.dbx !== null && vis.dbx.style.display != "none") {
@@ -155,7 +155,7 @@ class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
         }
     }
 
-    fun handle_mousemove(evt: MouseEvent) {
+    private fun handle_mousemove(evt: MouseEvent) {
         var rect = MYCANVAS.getBoundingClientRect();
         var style = window.getComputedStyle(MYCANVAS);
 

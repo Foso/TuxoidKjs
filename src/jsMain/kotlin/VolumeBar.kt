@@ -29,38 +29,3 @@ class VolumeBar : IVolumeBar {
 
     override val colour_5 = js("{r:50, g:50, b:50}");// "off" colour, some grey...
 }
-
-fun render_vol_bar() {
-    var vb = vis.vol_bar;
-    var switcher = false;
-
-    for (i in 0 until vb.width) {
-        var line_height: Int = 0
-
-        if (switcher) {
-            switcher = false;
-            MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
-        } else {
-            switcher = true;
-            var ratio2 = i / vb.width.toDouble();
-            line_height = round((vb.height * ratio2).toDouble()).toInt();
-
-            if (i < ceil(vb.volume * vb.width)) {
-                if (game.sound) {
-                    var ratio1 = 1 - ratio2;
-                    MYCTX.fillStyle =
-                        "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
-                            vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
-                        ) + ")";
-                } else {
-                    MYCTX.fillStyle = "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
-                }
-            } else {
-                MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
-            }
-
-        }
-        MYCTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
-
-    }
-}

@@ -1,3 +1,5 @@
+package model
+
 external interface Block {
 
     val just_moved: Boolean

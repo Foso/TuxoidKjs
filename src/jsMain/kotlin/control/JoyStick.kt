@@ -1,3 +1,5 @@
+package control
+
 external interface JoyStick {
     fun getBoundingClientRect(): dynamic
     val width: Double

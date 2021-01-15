@@ -45,21 +45,30 @@ class KtEntity(val game: KtGame) {
 
         face_dir = DIR_DOWN
 
-        if (id == 1 || id == 2 || id == 5 || id == 7) {// Those are the guys who can push blocks, Berti, MENU Berti, light block, purple monster
-            can_push = true;
+        when (id) {
+            1, 2, 5, 7 -> {// Those are the guys who can push blocks, Berti, MENU Berti, light block, purple monster
+                can_push = true;
+            }
+
         }
 
-        if (id == 5 || id == 6) {// Those are the guys who can be pushed, namely light block and heavy block
-            pushable = true;
+        when (id) {
+            5, 6 -> {// Those are the guys who can be pushed, namely light block and heavy block
+                pushable = true;
+            }
         }
 
 
-        if (id == 4 || (id in 13..18)) {// Those are the guys who are consumable, namely banana and the 6 keys
-            consumable = true;
+        when (id) {
+            4, in 13..18 -> {// Those are the guys who are consumable, namely banana and the 6 keys
+                consumable = true;
+            }
         }
-        if (id == 1 || id == 2 || id == 7 || id == 10) {// Those are small entities, Berti, MENU Berti, purple monster, green monster
-            is_small =
-                true;// This is a technical attribute. Small entities can go into occupied, moving places from all directions. Monsters can see through small entities
+        when (id) {
+            1, 2, 7, 10 -> {// Those are small entities, Berti, MENU Berti, purple monster, green monster
+                is_small =
+                    true;// This is a technical attribute. Small entities can go into occupied, moving places from all directions. Monsters can see through small entities
+            }
         }
     }
 
@@ -265,38 +274,50 @@ class KtEntity(val game: KtGame) {
                 var dir2: Int;
 
                 if (diff_x == 0) {
-                    if (diff_y == 0) {// This should NEVER happen.
-                        window.alert("001: Something went mighty wrong! Blame the programmer!");
-                        move_randomly(curr_x, curr_y);
-                        return;
-                    } else if (diff_y > 0) {
-                        dir1 = DIR_DOWN
-                        dir2 = DIR_DOWN;
-                    } else {// diff_y < 0
-                        dir1 = DIR_UP
-                        dir2 = DIR_UP;
+                    when {
+                        diff_y == 0 -> {// This should NEVER happen.
+                            window.alert("001: Something went mighty wrong! Blame the programmer!");
+                            move_randomly(curr_x, curr_y);
+                            return;
+                        }
+                        diff_y > 0 -> {
+                            dir1 = DIR_DOWN
+                            dir2 = DIR_DOWN;
+                        }
+                        else -> {// diff_y < 0
+                            dir1 = DIR_UP
+                            dir2 = DIR_UP;
+                        }
                     }
                 } else if (diff_x > 0) {
-                    if (diff_y == 0) {
-                        dir1 = DIR_RIGHT
-                        dir2 = DIR_RIGHT;
-                    } else if (diff_y > 0) {
-                        dir1 = DIR_RIGHT;
-                        dir2 = DIR_DOWN;
-                    } else {// diff_y < 0
-                        dir1 = DIR_RIGHT
-                        dir2 = DIR_UP;
+                    when {
+                        diff_y == 0 -> {
+                            dir1 = DIR_RIGHT
+                            dir2 = DIR_RIGHT;
+                        }
+                        diff_y > 0 -> {
+                            dir1 = DIR_RIGHT;
+                            dir2 = DIR_DOWN;
+                        }
+                        else -> {// diff_y < 0
+                            dir1 = DIR_RIGHT
+                            dir2 = DIR_UP;
+                        }
                     }
                 } else {// diff_x < 0
-                    if (diff_y == 0) {
-                        dir1 = DIR_LEFT
-                        dir2 = DIR_LEFT;
-                    } else if (diff_y > 0) {
-                        dir1 = DIR_LEFT;
-                        dir2 = DIR_DOWN;
-                    } else {// diff_y < 0
-                        dir1 = DIR_LEFT
-                        dir2 = DIR_UP;
+                    when {
+                        diff_y == 0 -> {
+                            dir1 = DIR_LEFT
+                            dir2 = DIR_LEFT;
+                        }
+                        diff_y > 0 -> {
+                            dir1 = DIR_LEFT;
+                            dir2 = DIR_DOWN;
+                        }
+                        else -> {// diff_y < 0
+                            dir1 = DIR_LEFT
+                            dir2 = DIR_UP;
+                        }
                     }
                 }
 
@@ -309,18 +330,25 @@ class KtEntity(val game: KtGame) {
                         dir2 = swapper;
                     }
 
-                    if (game.walkable(curr_x, curr_y, dir1)) {
-                        game.start_move(curr_x, curr_y, dir1);
-                    } else if (game.walkable(curr_x, curr_y, dir2)) {
-                        game.start_move(curr_x, curr_y, dir2);
-                    } else {
-                        // move_randomly(curr_x, curr_y);
+                    when {
+                        game.walkable(curr_x, curr_y, dir1) -> {
+                            game.start_move(curr_x, curr_y, dir1);
+                        }
+                        game.walkable(curr_x, curr_y, dir2) -> {
+                            game.start_move(curr_x, curr_y, dir2);
+                        }
+                        else -> {
+                            // move_randomly(curr_x, curr_y);
+                        }
                     }
                 } else {
-                    if (game.walkable(curr_x, curr_y, dir1)) {
-                        game.start_move(curr_x, curr_y, dir1);
-                    } else {
-                        move_randomly(curr_x, curr_y);
+                    when {
+                        game.walkable(curr_x, curr_y, dir1) -> {
+                            game.start_move(curr_x, curr_y, dir1);
+                        }
+                        else -> {
+                            move_randomly(curr_x, curr_y);
+                        }
                     }
                 }
 

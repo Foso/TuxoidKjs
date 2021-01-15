@@ -1,32 +1,56 @@
+package ui.menu
+
+import ANIMATION_DURATION
 import App.Companion.DIR_DOWN
 import App.Companion.DIR_LEFT
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
+import KtGame
+import LEV_DIMENSION_X
+import LEV_DIMENSION_Y
+import LEV_OFFSET_X
+import LEV_OFFSET_Y
+import MYCTX
+import RENDER_BOTTOM
+import RENDER_BOTTOM_BORDER
+import RENDER_FULL
+import RENDER_TOP
+import drawImage
+import fillRect
+import fillText
+import game
+import input
 import org.w3c.dom.CanvasTextAlign
 import org.w3c.dom.CanvasTextBaseline
 import org.w3c.dom.LEFT
 import org.w3c.dom.TOP
-import kotlin.math.ceil
+import model.Block
+import org.w3c.dom.CanvasRenderingContext2D
+import res
+import vis
 import kotlin.math.floor
-import kotlin.math.round
 import kotlin.random.Random
 
 
 
 
-fun kt_render_buttons() {
+fun kt_render_buttons(MYCTX: CanvasRenderingContext2D) {
     var over_button = false;
     if (input.mouse_down) {
         if (input.mouse_pos.y >= 35 && input.mouse_pos.y <= 65) {
-            if (input.mouse_pos.x >= 219 && input.mouse_pos.x <= 249 && input.lastclick_button == 0) {
-                vis.buttons_pressed[0] = true;
-                over_button = true;
-            } else if (input.mouse_pos.x >= 253 && input.mouse_pos.x <= 283 && input.lastclick_button == 1) {
-                vis.buttons_pressed[1] = true;
-                over_button = true;
-            } else if (input.mouse_pos.x >= 287 && input.mouse_pos.x <= 317 && input.lastclick_button == 2) {
-                vis.buttons_pressed[2] = true;
-                over_button = true;
+            when {
+                input.mouse_pos.x >= 219 && input.mouse_pos.x <= 249 && input.lastclick_button == 0 -> {
+                    vis.buttons_pressed[0] = true;
+                    over_button = true;
+                }
+                input.mouse_pos.x >= 253 && input.mouse_pos.x <= 283 && input.lastclick_button == 1 -> {
+                    vis.buttons_pressed[1] = true;
+                    over_button = true;
+                }
+                input.mouse_pos.x >= 287 && input.mouse_pos.x <= 317 && input.lastclick_button == 2 -> {
+                    vis.buttons_pressed[2] = true;
+                    over_button = true;
+                }
             }
         }
     }
@@ -156,7 +180,7 @@ fun render_block(x: Int, y: Int, render_option: dynamic) {
 
             1, 2 -> {
                 // 1: Berti
-                // 2: AUTO Menu Berti
+                // 2: AUTO ui.menu.Menu Berti
                 when (block.animation_frame) {
                     in 63..65 -> {
                         block.animation_frame += 1;

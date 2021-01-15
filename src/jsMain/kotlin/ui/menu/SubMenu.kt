@@ -1,3 +1,5 @@
+package ui.menu
+
 @JsExport
 class Option(
     val line: Boolean,
