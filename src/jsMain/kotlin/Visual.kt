@@ -14,6 +14,7 @@ import App.Companion.ERR_NOSAVE
 import App.Companion.ERR_NOTFOUND
 import App.Companion.ERR_SUCCESS
 import App.Companion.ERR_WRONGPW
+import App.Companion.ktGame
 import data.savegame.SaveGameDataSource
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
@@ -266,7 +267,7 @@ class KtVisual(
         when (opt) {
             0 -> {// "Save game"
                 f_o = {
-                    if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                    if (ktGame.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
                         close_dbx();
                     }
                 };
@@ -274,15 +275,15 @@ class KtVisual(
             }
             1 -> {// "New Game" -> yes, save
                 f_o = {
-                    if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                        game.createNewGame();close_dbx();
+                    if (ktGame.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                        ktGame.createNewGame();close_dbx();
                     }
                 };
-                f_c = { game.createNewGame();close_dbx(); };
+                f_c = { ktGame.createNewGame();close_dbx(); };
             }
             2 -> {// "Load Game" -> yes, save
                 f_o = {
-                    if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                    if (ktGame.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
                         open_dbx(DBX_LOAD);
                     }
                 };
@@ -301,7 +302,7 @@ class KtVisual(
 
 
     fun dbx_charts() {
-        game.soundDataSource.play_sound(4);
+        ktGame.soundDataSource.play_sound(4);
 
         add_title("Charts");
 
@@ -361,7 +362,7 @@ class KtVisual(
 
         var f_o = {
             if (dbx.lvlselect.value > 0) {
-                game.load_level(dbx.lvlselect.value);
+                ktGame.load_level(dbx.lvlselect.value);
                 close_dbx();
             }
         };
@@ -374,10 +375,10 @@ class KtVisual(
         add_button(177, 105, 220, f_c);// cancel
 
         add_text("Player name:", 20, 30);
-        if (game.savegame.username == null) {
+        if (ktGame.savegame.username == null) {
             add_text("- none -", 100, 30);
         } else {
-            add_text(game.savegame.username, 100, 30);
+            add_text(ktGame.savegame.username, 100, 30);
         }
 
         add_text("Level, steps:", 20, 50);
@@ -451,7 +452,7 @@ class KtVisual(
         add_input(100, 60, 120, 15, "password");
 
         var f_o = {
-            if (game.dbxcall_load(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+            if (ktGame.dbxcall_load(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
                 close_dbx();
             }
         };
@@ -482,7 +483,7 @@ class KtVisual(
 
         if (opt == 0) {// "New Game"
             f_y = { open_dbx(DBX_SAVE, 1); };
-            f_n = { game.createNewGame();close_dbx(); };
+            f_n = { ktGame.createNewGame();close_dbx(); };
         } else if (opt == 1) {// "Load Game"
             f_y = { open_dbx(DBX_SAVE, 2); };
             f_n = { open_dbx(DBX_LOAD); };
@@ -542,11 +543,11 @@ class KtVisual(
         select.size = 2;
 
         select.innerHTML = "";
-        for (i in 1 until game.savegame.reached_level) {
-            select.innerHTML += "<option value=\"" + i + "\">\n" + i + ", " + game.savegame.arr_steps[i] + "</option>";
+        for (i in 1 until ktGame.savegame.reached_level) {
+            select.innerHTML += "<option value=\"" + i + "\">\n" + i + ", " + ktGame.savegame.arr_steps[i] + "</option>";
         }
-        if (game.savegame.reached_level <= 50) {
-            select.innerHTML += "<option value=\"" + game.savegame.reached_level + "\">\n" + game.savegame.reached_level + ", -</option>";
+        if (ktGame.savegame.reached_level <= 50) {
+            select.innerHTML += "<option value=\"" + ktGame.savegame.reached_level + "\">\n" + ktGame.savegame.reached_level + ", -</option>";
         }
 
 
@@ -630,7 +631,7 @@ class KtVisual(
         for (y in 0 until LEV_DIMENSION_Y) {
             // console.log("HALLO"+y+" "+LEV_DIMENSION_Y)
             for (x in 0 until LEV_DIMENSION_X) {
-                val block = game.level_array[x][y] as Block;
+                val block = ktGame.level_array[x][y] as Block;
                 when (block.id) {
                     -1 -> {
                         // DUMMY BLOCK (invisible). Prevents entities from moving to already occupied spaces.
@@ -765,7 +766,7 @@ class KtVisual(
 
     fun kt_update_animation_case2(x: Int, y: Int, block: Block) {
         block.fine_offset_x = 0;
-        if (game.level_ended == 0) {
+        if (ktGame.level_ended == 0) {
             if (block.moving) {
                 block.fine_offset_x = -1;
                 if (block.pushing) {
@@ -818,9 +819,9 @@ class KtVisual(
             } else {
                 block.animation_frame = 59;
             }
-        } else if (game.level_ended == 1) {
+        } else if (ktGame.level_ended == 1) {
             block.animation_frame = 61;
-        } else if (game.level_ended == 2) {
+        } else if (ktGame.level_ended == 2) {
             block.animation_frame = 62;
         }
 
@@ -828,7 +829,7 @@ class KtVisual(
 
     fun update_animation(x: Int, y: Int) {
 
-        var block = game.level_array[x][y] as Block;
+        var block = ktGame.level_array[x][y] as Block;
         when (block.id) {
             1, 2 -> {
                 kt_update_animation_case2(x, y, block)
@@ -836,7 +837,7 @@ class KtVisual(
             7 -> {
                 // Purple monster (Monster 2)
                 block.fine_offset_x = 0
-                if (game.level_ended == 0) {
+                if (ktGame.level_ended == 0) {
                     if (block.moving) {
                         block.fine_offset_x = -1;
                         if (block.pushing) {
@@ -907,7 +908,7 @@ class KtVisual(
             10 -> {
                 // Green monster (Monster 2)
                 block.fine_offset_x = 0
-                if (game.level_ended == 0) {
+                if (ktGame.level_ended == 0) {
                     if (block.moving) {
                         block.fine_offset_x = -1;
                         when (block.face_dir) {
@@ -946,36 +947,36 @@ class KtVisual(
             19 -> {
                 // Door 1
                 if (block.gets_removed_in >= 0) {
-                    block.animation_frame = 43 - floor(block.gets_removed_in / game.door_removal_delay * 2).toInt();
+                    block.animation_frame = 43 - floor(block.gets_removed_in / ktGame.door_removal_delay * 2).toInt();
                 }
             }
             20 -> {
                 // Door 2
                 if (block.gets_removed_in >= 0) {
-                    block.animation_frame = 46 - floor(block.gets_removed_in / game.door_removal_delay * 2).toInt();
+                    block.animation_frame = 46 - floor(block.gets_removed_in / ktGame.door_removal_delay * 2).toInt();
                 }
             }
             21 -> {
                 // Door 3
                 if (block.gets_removed_in >= 0) {
-                    block.animation_frame = 49 - floor(block.gets_removed_in / game.door_removal_delay * 2).toInt();
+                    block.animation_frame = 49 - floor(block.gets_removed_in / ktGame.door_removal_delay * 2).toInt();
                 }
             }
             22 -> {
                 // Door 4
                 if (block.gets_removed_in >= 0) {
-                    block.animation_frame = 52 - floor(block.gets_removed_in / game.door_removal_delay * 2).toInt();
+                    block.animation_frame = 52 - floor(block.gets_removed_in / ktGame.door_removal_delay * 2).toInt();
                 }
             }
             23 -> {
                 // Door 5
                 if (block.gets_removed_in >= 0) {
-                    block.animation_frame = 55 - floor(block.gets_removed_in / game.door_removal_delay * 2).toInt();
+                    block.animation_frame = 55 - floor(block.gets_removed_in / ktGame.door_removal_delay * 2).toInt();
                 }
             }
             24 -> {
                 if (block.gets_removed_in >= 0) {
-                    block.animation_frame = 58 - floor(block.gets_removed_in / game.door_removal_delay * 2).toInt();
+                    block.animation_frame = 58 - floor(block.gets_removed_in / ktGame.door_removal_delay * 2).toInt();
                 }
             }
 

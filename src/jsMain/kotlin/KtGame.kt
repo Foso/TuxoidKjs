@@ -103,7 +103,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
 
         for (y in 0 until LEV_DIMENSION_Y) {
             for (x in 0 until LEV_DIMENSION_X) {
-                level_array[x][y] = KtEntity(game);
+                level_array[x][y] = KtEntity(this);
                 level_array[x][y].init(res.levels[lev_number][x][y]);
 
                 if (res.levels[lev_number][x][y] == 4) {
@@ -329,7 +329,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
             } else {
                 y_offset
             }
-            if (game.level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && game.level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !game.level_array[eye_x + x_offset][eye_y + y_offset].is_small) {
+            if (level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !level_array[eye_x + x_offset][eye_y + y_offset].is_small) {
                 return false;
             }
         }
@@ -477,10 +477,10 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
                         wait_timer = LEV_STOP_DELAY * UPS;
                         level_ended = 1;
                         if (Random.nextDouble() < 0.50) {
-                            game.wow = true;
+                            wow = true;
                             soundDataSource.play_sound(10);// wow
                         } else {
-                            game.wow = false;
+                            wow = false;
                             soundDataSource.play_sound(11);// yeah
                         }
                         vis.update_all_animations();

@@ -53,13 +53,19 @@ class App : KeyListener {
         var LEV_START_DELAY = 1
         var UPS: Int = 60
         lateinit var MYCTX: CanvasRenderingContext2D
+        lateinit var ktGame: KtGame
 
     }
 
 
     private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
-
+    private val vol_bar = VolumeBar()
+    private  val res = MyRes()
+    private  val saveGameDataSource: SaveGameDataSource = SaveGameDataRepository()
+    private val soundDataSource : SoundDataSource = SoundRepository(res)
+    val game = KtGame(vol_bar, res, saveGameDataSource,soundDataSource)
     init {
+        ktGame=game
         initCanvas()
         checkIfTouch()
         if (IS_TOUCH_DEVICE) {
@@ -69,13 +75,9 @@ class App : KeyListener {
     }
 
 
-    val vol_bar = VolumeBar()
-    val res = MyRes()
-    val saveGameDataSource: SaveGameDataSource = SaveGameDataRepository()
-    val soundDataSource : SoundDataSource = SoundRepository(res)
-    val game = KtGame(vol_bar, res, saveGameDataSource,soundDataSource)
-    val input: MyInput = MyInput(MYCANVAS, saveGameDataSource)
-    val vis = KtVisual(vol_bar, input, res, saveGameDataSource)
+
+    private val input: MyInput = MyInput(MYCANVAS, saveGameDataSource)
+     val vis = KtVisual(vol_bar, input, res, saveGameDataSource)
 
     fun initCanvas() {
 

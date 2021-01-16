@@ -9,6 +9,7 @@ import App.Companion.DIR_LEFT
 import App.Companion.DIR_NONE
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
+import App.Companion.ktGame
 import data.savegame.SaveGameDataSource
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -129,7 +130,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
     }
 
     private fun handle_mousedown_global(evt: MouseEvent) {
-        game.remove_soundrestriction();
+        App.ktGame.remove_soundrestriction();
         mouse_down = true;
         if (vis !== null && vis.dbx !== null && vis.dbx.style.display != "none") {
             val x1 = mouse_pos_global.x - vis.dbx.style.left as Int
@@ -171,7 +172,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
 
 
         if (lastclick_button == 3) {
-            game.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
+            App.ktGame.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
         }
 
         if (menu_pressed == 0) {
@@ -197,7 +198,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
         if (mouse_pos.x >= vis.vol_bar.offset_x && mouse_pos.y >= vis.vol_bar.offset_y &&
             mouse_pos.x <= vis.vol_bar.offset_x + vis.vol_bar.width && mouse_pos.y <= vis.vol_bar.offset_y + vis.vol_bar.height
         ) {
-            game.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
+            App.ktGame.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
             lastclick_button = 3;
         }
 
@@ -232,17 +233,17 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
         listener?.onMouseUp(evt,mouse_pos)
         if (mouse_pos.y >= 35 && mouse_pos.y <= 65) {
             when {
-                mouse_pos.x >= 219 && mouse_pos.x <= 249 && lastclick_button == 0 && game.buttons_activated[0] -> {
+                mouse_pos.x >= 219 && mouse_pos.x <= 249 && lastclick_button == 0 &&  App.ktGame.buttons_activated[0] -> {
                     //alert("<<");
-                    game.prev_level();
+                    App.ktGame.prev_level();
                 }
-                mouse_pos.x >= 253 && mouse_pos.x <= 283 && lastclick_button == 1 && game.buttons_activated[1] -> {
+                mouse_pos.x >= 253 && mouse_pos.x <= 283 && lastclick_button == 1 &&  App.ktGame.buttons_activated[1] -> {
                     //alert("Berti");
-                    game.reset_level();
+                    App.ktGame.reset_level();
                 }
-                mouse_pos.x >= 287 && mouse_pos.x <= 317 && lastclick_button == 2 && game.buttons_activated[2] -> {
+                mouse_pos.x >= 287 && mouse_pos.x <= 317 && lastclick_button == 2 && ktGame.buttons_activated[2] -> {
                     //alert(">>");
-                    game.next_level();
+                    ktGame.next_level();
                 }
             }
         }
@@ -252,34 +253,34 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
             if (up_option === lastklick_option && lastklick_option.on()) {
                 when (lastklick_option.effect_id) {
                     0 -> {
-                        if (game.savegame.progressed) {
+                        if (ktGame.savegame.progressed) {
                             vis.open_dbx(DBX_CONFIRM, 0);
                         } else {
-                            game.createNewGame();
+                            ktGame.createNewGame();
                         }
                     }
                     1 -> {
-                        if (game.savegame.progressed) {
+                        if (ktGame.savegame.progressed) {
                             vis.open_dbx(DBX_CONFIRM, 1);
                         } else {
                             vis.open_dbx(DBX_LOAD);
                         }
                     }
                     2 -> {
-                        if (game.savegame.username !== null) {
+                        if (ktGame.savegame.username !== null) {
                             saveGameDataSource.store_savegame();
                         } else {
                             vis.open_dbx(DBX_SAVE);
                         }
                     }
                     3 -> {
-                        game.toggle_paused();
+                        ktGame.toggle_paused();
                     }
                     4 -> {
-                        game.toggle_single_steps();
+                        ktGame.toggle_single_steps();
                     }
                     5 -> {
-                        game.soundDataSource.toggle_sound();
+                        ktGame.soundDataSource.toggle_sound();
                     }
                     6 -> {
                         vis.open_dbx(DBX_LOADLVL);
@@ -355,7 +356,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
     }
 
     fun handle_touch_global(evt: TouchEvent) {
-        game.remove_soundrestriction();
+        ktGame.remove_soundrestriction();
         //evt.preventDefault();
         var touches = evt.changedTouches;
         var rect = (MyJOYSTICK as HTMLCanvasElement).getBoundingClientRect();

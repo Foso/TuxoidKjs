@@ -6,6 +6,7 @@ import App.Companion.DIR_LEFT
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
 import App.Companion.MYCTX
+import App.Companion.ktGame
 import KtGame
 import LEV_DIMENSION_X
 import LEV_DIMENSION_Y
@@ -21,7 +22,6 @@ import RENDER_TOP
 import drawImage
 import fillRect
 import fillText
-import game
 
 import org.w3c.dom.CanvasTextAlign
 import org.w3c.dom.CanvasTextBaseline
@@ -61,7 +61,7 @@ fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRe
         vis.buttons_pressed[0] = vis.buttons_pressed[1] == vis.buttons_pressed[2] == false;
     }
 
-    if (game.buttons_activated[0]) {
+    if (ktGame.buttons_activated[0]) {
         if (vis.buttons_pressed[0]) {
             MYCTX.drawImage(res.images[26], 219, 35);// << pressed
         } else {
@@ -91,7 +91,7 @@ fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRe
         }
     }
 
-    if (game.buttons_activated[2]) {
+    if (ktGame.buttons_activated[2]) {
         if (vis.buttons_pressed[2]) {
             MYCTX.drawImage(res.images[27], 287, 35);// >> pressed
         } else {
@@ -163,7 +163,7 @@ fun render_field(game: KtGame, res: MyRes) {
 
 
 fun render_block(x: Int, y: Int, render_option: dynamic, res: MyRes) {
-    var block = game.level_array[x][y] as Block;
+    var block = ktGame.level_array[x][y] as Block;
 
     var offset_x = block.moving_offset.x as Int;
     var offset_y = block.moving_offset.y as Int;
@@ -174,10 +174,10 @@ fun render_block(x: Int, y: Int, render_option: dynamic, res: MyRes) {
         needs_update = true;
     }
 
-    if (game.level_array[x][y].id <= 0) return;// Optimization (empty and dummy block can't be drawn)
+    if (ktGame.level_array[x][y].id <= 0) return;// Optimization (empty and dummy block can't be drawn)
 
     if (needs_update) {
-        when (game.level_array[x][y].id) {
+        when (ktGame.level_array[x][y].id) {
             /*case -1://DUMMY BLOCK (invisible). Prevents entities from moving to already occupied spaces.
                 break;*/
 
@@ -418,13 +418,13 @@ fun render_block(x: Int, y: Int, render_option: dynamic, res: MyRes) {
 fun render_field_subset(consumable: dynamic, res: MyRes) {
     for (y in 0 until LEV_DIMENSION_Y) {
         for (x in 0 until LEV_DIMENSION_X) {
-            var block = game.level_array[x][y];
-            if (y > 0 && game.level_array[x][y - 1].moving && game.level_array[x][y - 1].face_dir == DIR_DOWN && game.level_array[x][y - 1].consumable == consumable) {
+            var block = ktGame.level_array[x][y];
+            if (y > 0 && ktGame.level_array[x][y - 1].moving && ktGame.level_array[x][y - 1].face_dir == DIR_DOWN && ktGame.level_array[x][y - 1].consumable == consumable) {
                 render_block(x, y - 1, RENDER_BOTTOM, res);
             }
 
-            if (y > 0 && (!game.level_array[x][y - 1].moving) && game.level_array[x][y - 1].consumable == consumable) {
-                if (x > 0 && game.level_array[x - 1][y].face_dir != DIR_RIGHT) {
+            if (y > 0 && (!ktGame.level_array[x][y - 1].moving) && ktGame.level_array[x][y - 1].consumable == consumable) {
+                if (x > 0 && ktGame.level_array[x - 1][y].face_dir != DIR_RIGHT) {
                     render_block(x, y - 1, RENDER_BOTTOM_BORDER,res);
                 }
             }
@@ -439,7 +439,7 @@ fun render_field_subset(consumable: dynamic, res: MyRes) {
                 }
             }
 
-            if (y + 1 < LEV_DIMENSION_Y && game.level_array[x][y + 1].moving && game.level_array[x][y + 1].face_dir == DIR_UP && game.level_array[x][y + 1].consumable == consumable) {
+            if (y + 1 < LEV_DIMENSION_Y && ktGame.level_array[x][y + 1].moving && ktGame.level_array[x][y + 1].face_dir == DIR_UP && ktGame.level_array[x][y + 1].consumable == consumable) {
                 render_block(x, y + 1, RENDER_TOP, res);
             }
         }
@@ -568,7 +568,7 @@ fun kt_render_menu(input: MyInput, res: MyRes) {
                 }
 
                 if (sm.options[j].check != 0) {
-                    if ((sm.options[j].effect_id == 3 && game.paused) || (sm.options[j].effect_id == 4 && game.single_steps) || (sm.options[j].effect_id == 5 && game.sound)) {
+                    if ((sm.options[j].effect_id == 3 && ktGame.paused) || (sm.options[j].effect_id == 4 && ktGame.single_steps) || (sm.options[j].effect_id == 5 && ktGame.sound)) {
                         MYCTX.drawImage(
                             res.images[check_image],
                             vis.menu1.offset_x + submenu_offset + 6,

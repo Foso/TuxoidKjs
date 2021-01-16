@@ -7,7 +7,6 @@ external var md5: dynamic
 
 
 lateinit var vis: KtVisual
-lateinit var game: KtGame
 
 
 var LEV_DIMENSION_X = 21;
@@ -33,7 +32,7 @@ lateinit var MyJOYSTICK: HTMLCanvasElement
 
 fun main() {
     val app = App()
-    game = app.game
+
     vis = app.vis
     requestAnimationFrame()
 
