@@ -36,6 +36,7 @@ enum class Key(val value: Int) {
 
 interface KeyListener {
     fun onKeyDown(evt: KeyboardEvent)
+    fun onMouseUp(evt: MouseEvent, mousePos: dynamic)
 }
 
 /**
@@ -48,8 +49,6 @@ interface KeyListener {
 class MyInput( val MYCANVAS: HTMLCanvasElement) {
     var last_joystick_render by Delegates.notNull<Double>()
     var joystick_dir: Int = DIR_NONE
-
-    val that = this
 
     var listener: KeyListener? = null
 
@@ -229,6 +228,7 @@ class MyInput( val MYCANVAS: HTMLCanvasElement) {
     }
 
     fun handle_mouseup(evt: MouseEvent) {
+        listener?.onMouseUp(evt,mouse_pos)
         if (mouse_pos.y >= 35 && mouse_pos.y <= 65) {
             when {
                 mouse_pos.x >= 219 && mouse_pos.x <= 249 && lastclick_button == 0 && game.buttons_activated[0] -> {

@@ -12,6 +12,7 @@ import org.w3c.dom.LEFT
 import org.w3c.dom.MIDDLE
 import org.w3c.dom.RIGHT
 import org.w3c.dom.events.KeyboardEvent
+import org.w3c.dom.events.MouseEvent
 import ui.menu.kt_render_buttons
 import ui.menu.kt_render_menu
 import ui.menu.render_field
@@ -20,7 +21,7 @@ import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.round
 
-class App {
+class App : KeyListener {
     companion object {
 
 
@@ -46,8 +47,11 @@ class App {
         var DIR_RIGHT = 3;
         var LEV_START_DELAY = 1
         var UPS: Int = 60
+        lateinit var MYCTX: CanvasRenderingContext2D
 
     }
+
+
 
     private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
@@ -275,13 +279,7 @@ class App {
             if (res.ready()) {
                 if (!game.initialized) {
                     game.set_volume(DEFAULT_VOLUME);
-                    input.init(object : KeyListener {
-                        override fun onKeyDown(evt: KeyboardEvent) {
-                            handleOnKeyDown(game, evt)
-
-                        }
-
-                    });// Only init inputs after everything is loaded.
+                    input.init(this);// Only init inputs after everything is loaded.
                     game.play_sound(0);
                     game.initialized = true;
                 }
@@ -405,6 +403,15 @@ class App {
                 }
             }
         }
+    }
+
+    override fun onKeyDown(evt: KeyboardEvent) {
+        handleOnKeyDown(game, evt)
+    }
+
+    override fun onMouseUp(evt: MouseEvent, mousePos: dynamic) {
+
+
     }
 
 

@@ -5,12 +5,13 @@ import App.Companion.DIR_DOWN
 import App.Companion.DIR_LEFT
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
+import App.Companion.MYCTX
 import KtGame
 import LEV_DIMENSION_X
 import LEV_DIMENSION_Y
 import LEV_OFFSET_X
 import LEV_OFFSET_Y
-import MYCTX
+
 import MyInput
 import MyRes
 import RENDER_BOTTOM
@@ -116,7 +117,7 @@ fun render_field(game: KtGame, res: MyRes) {
         (LEV_OFFSET_Y + 24 * LEV_DIMENSION_Y).toDouble(),
         537.0,
         4.0
-    );// Bottom border covering blocks
+    )// Bottom border covering blocks
     MYCTX.drawImage(
         res.images[0],
         520.0,
@@ -127,7 +128,7 @@ fun render_field(game: KtGame, res: MyRes) {
         LEV_OFFSET_Y.toDouble(),
         4.0,
         (391 - LEV_OFFSET_Y).toDouble()
-    );// Right border covering blocks
+    )// Right border covering blocks
 
     when (game.level_ended) {
         1 -> {// Berti cheering, wow or yeah

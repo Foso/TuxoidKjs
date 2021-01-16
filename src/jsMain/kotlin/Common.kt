@@ -25,7 +25,6 @@ var ANIMATION_DURATION: Int =
 
 lateinit var MYJOYCTX: CanvasRenderingContext2D
 
-lateinit var MYCTX: CanvasRenderingContext2D
 var IS_TOUCH_DEVICE: Boolean = false
 var true_width: Double = GameSettings.SCREEN_WIDTH.toDouble()
 var true_height: Double = GameSettings.SCREEN_HEIGHT.toDouble()
