@@ -210,7 +210,7 @@ class KtEntity(val game: KtGame) {
                 // Got caught!
                 game.soundDataSource.play_sound(1);
                 game.wait_timer = LEV_STOP_DELAY * UPS;
-                game.level_ended = 2;
+                game.level_ended = GameState.DIED;
                 vis.update_all_animations();
                 return;
             }

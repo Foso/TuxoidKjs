@@ -9,6 +9,7 @@ import App.Companion.LEV_START_DELAY
 import App.Companion.UPS
 import data.savegame.SaveGameDataSource
 import data.sound.SoundDataSource
+import data.sound.VolumeChangeListener
 import de.jensklingenberg.bananiakt.Tile
 import ui.volumebar.VolumeBar
 import kotlin.js.Date
@@ -18,11 +19,10 @@ import kotlin.math.round
 import kotlin.random.Random
 
 var DEBUG = true;
-val GAME_MODE_ENTRY = 0
-val GAME_MODE_MENU = 1
-val GAME_MODE_PLAY = 2
 
-class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: SaveGameDataSource, val soundDataSource: SoundDataSource) {
+
+class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: SaveGameDataSource, val soundDataSource: SoundDataSource) :
+    VolumeChangeListener {
     var INTRO_DURATION = 2;// In seconds
 
     var savegame = saveGameDataSource.getSaveGame()
@@ -39,12 +39,12 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
     var paused = false;
     var update_drawn = false;
 
-    var mode = 0;// 0 is entry, 1 is menu and play
+    var mode : GameMode = GameMode.ENTRY;// 0 is entry, 1 is menu and play
     var level_number = 0;
     var level_array = arrayOf(arrayOf<KtEntity>());
 
     var level_unlocked = 0;
-    var level_ended = 0;// 0 is not ended. 1 is won. 2 is died.
+    var level_ended : GameState = GameState.RUNNING;// 0 is not ended. 1 is won. 2 is died.
     var wow = true;// true is WOW!, false is Yeah!
 
     var berti_positions = arrayOf(Tile(0, 0));
@@ -63,7 +63,6 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
     // var buttons_activated[1] = true;
 
     var sound = !DEBUG;
-    var soundrestriction_removed = false;
 
     var update_tick = 0;
     var prime_movement = false;
@@ -71,16 +70,17 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
     init {
         buttons_activated[0] = buttons_activated[2] == false;
         buttons_activated[1] = true;
+        soundDataSource.addVolumeChangeListener(this)
     }
 
 
     fun load_level(lev_number: Int) {
-        mode = 1;
+        mode = GameMode.MENU;
         update_tick = 0;
 
         steps_taken = 0;
         num_bananas = 0;
-        level_ended = 0;
+        level_ended = GameState.RUNNING;
         level_array = js("new Array()")
         level_number = lev_number;
         wait_timer = LEV_START_DELAY * UPS;
@@ -340,7 +340,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
 
     fun next_level() {
         if (level_number >= 50 || level_number < 0) {
-            mode = 2;
+            mode = GameMode.PLAY;
             steps_taken = 0;
             soundDataSource.play_sound(6);
             buttons_activated[0] = false;
@@ -354,21 +354,6 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
     }
 
 
-    fun set_volume(vol: Double) {
-        var newVol = vol
-        if (vol > 1) {
-            newVol = 1.0;
-        } else if (vol < 0) {
-            newVol = 0.0;
-        }
-        volumeBar.volume = newVol;
-        newVol = newVol.pow(3.0);// LOGARITHMIC!
-
-        for (element in res.sounds) {
-            element.volume = vol;
-        }
-
-    }
 
     fun prev_level() {
         if (level_number >= 1) {
@@ -378,9 +363,9 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
 
 
     fun reset_level() {
-        if (mode == 0) {
+        if (mode == GameMode.ENTRY) {
             load_level(3);
-        } else if (mode == 1) {
+        } else if (mode == GameMode.MENU) {
             if (level_number == 0) {
                 load_level(1);
             } else {
@@ -393,20 +378,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
         paused = !paused
     }
 
-    // This is necessary because of mobile browsers. These browsers block sound playback
-// unless it is triggered by a user input event. Play all sounds at the first input,
-// then the restriction is lifted for further playbacks.
-    fun remove_soundrestriction() {
-        if (soundrestriction_removed) return;
-        for (i in res.sounds.indices) {
-            if (res.sounds[i].paused) {
-                res.sounds[i].play();
-                res.sounds[i].pause();
-                res.sounds[i].currentTime = 0
-            }
-        }
-        soundrestriction_removed = true;
-    }
+
 
 
     fun toggle_single_steps() {
@@ -475,7 +447,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
                     num_bananas--;
                     if (num_bananas <= 0) {
                         wait_timer = LEV_STOP_DELAY * UPS;
-                        level_ended = 1;
+                        level_ended = GameState.WON;
                         if (Random.nextDouble() < 0.50) {
                             wow = true;
                             soundDataSource.play_sound(10);// wow
@@ -660,6 +632,15 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
         saveGameDataSource.clear_savegame()
         level_unlocked = 1;
         load_level(level_unlocked);
+    }
+
+    override fun onSoundChanged(vol: Double) {
+        volumeBar.volume = vol;
+        val newVol = vol.pow(3.0);// LOGARITHMIC!
+
+        for (element in res.sounds) {
+            element.volume = newVol;
+        }
     }
 
 }

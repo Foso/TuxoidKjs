@@ -11,6 +11,7 @@ import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
 import App.Companion.ktGame
 import data.savegame.SaveGameDataSource
+import data.sound.SoundDataSource
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
@@ -48,7 +49,11 @@ interface KeyListener {
 // Everything that has to do with keyboard and mouse input goes here
 //////////////////////////////////////////////////////////////////////////////////////////////////////
  */
-class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameDataSource) {
+class MyInput(
+    val MYCANVAS: HTMLCanvasElement,
+    val saveGameDataSource: SaveGameDataSource,
+   val soundDataSource: SoundDataSource
+) {
     var last_joystick_render by Delegates.notNull<Double>()
     var joystick_dir: Int = DIR_NONE
 
@@ -130,7 +135,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
     }
 
     private fun handle_mousedown_global(evt: MouseEvent) {
-        App.ktGame.remove_soundrestriction();
+        soundDataSource.remove_soundrestriction()
         mouse_down = true;
         if (vis !== null && vis.dbx !== null && vis.dbx.style.display != "none") {
             val x1 = mouse_pos_global.x - vis.dbx.style.left as Int
@@ -172,7 +177,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
 
 
         if (lastclick_button == 3) {
-            App.ktGame.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
+            soundDataSource.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
         }
 
         if (menu_pressed == 0) {
@@ -198,7 +203,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
         if (mouse_pos.x >= vis.vol_bar.offset_x && mouse_pos.y >= vis.vol_bar.offset_y &&
             mouse_pos.x <= vis.vol_bar.offset_x + vis.vol_bar.width && mouse_pos.y <= vis.vol_bar.offset_y + vis.vol_bar.height
         ) {
-            App.ktGame.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
+            soundDataSource.set_volume((mouse_pos.x - vis.vol_bar.offset_x) / vis.vol_bar.width);
             lastclick_button = 3;
         }
 
@@ -356,7 +361,7 @@ class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameD
     }
 
     fun handle_touch_global(evt: TouchEvent) {
-        ktGame.remove_soundrestriction();
+        soundDataSource.remove_soundrestriction();
         //evt.preventDefault();
         var touches = evt.changedTouches;
         var rect = (MyJOYSTICK as HTMLCanvasElement).getBoundingClientRect();

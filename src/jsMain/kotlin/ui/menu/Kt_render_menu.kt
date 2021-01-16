@@ -8,6 +8,7 @@ import App.Companion.DIR_UP
 import App.Companion.MYCTX
 import App.Companion.ktGame
 import KtGame
+import KtVisual
 import LEV_DIMENSION_X
 import LEV_DIMENSION_Y
 import LEV_OFFSET_X
@@ -37,7 +38,7 @@ import kotlin.random.Random
 
 
 
-fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRes) {
+fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRes, game: KtGame, vis: KtVisual) {
     var over_button = false;
     if (input.mouse_down) {
         if (input.mouse_pos.y >= 35 && input.mouse_pos.y <= 65) {
@@ -61,7 +62,7 @@ fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRe
         vis.buttons_pressed[0] = vis.buttons_pressed[1] == vis.buttons_pressed[2] == false;
     }
 
-    if (ktGame.buttons_activated[0]) {
+    if (game.buttons_activated[0]) {
         if (vis.buttons_pressed[0]) {
             MYCTX.drawImage(res.images[26], 219, 35);// << pressed
         } else {
@@ -91,7 +92,7 @@ fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRe
         }
     }
 
-    if (ktGame.buttons_activated[2]) {
+    if (game.buttons_activated[2]) {
         if (vis.buttons_pressed[2]) {
             MYCTX.drawImage(res.images[27], 287, 35);// >> pressed
         } else {
@@ -131,7 +132,7 @@ fun render_field(game: KtGame, res: MyRes) {
     )// Right border covering blocks
 
     when (game.level_ended) {
-        1 -> {// Berti cheering, wow or yeah
+        GameState.WON -> {// Berti cheering, wow or yeah
             for (i in game.berti_positions.indices) {
                 if (game.wow) {
                     MYCTX.drawImage(
@@ -148,7 +149,7 @@ fun render_field(game: KtGame, res: MyRes) {
                 }
             }
         }
-        2 -> {// Berti dies in a pool of blood
+        GameState.DIED -> {// Berti dies in a pool of blood
             for (i in game.berti_positions.indices) {
                 MYCTX.drawImage(
                     res.images[167],

@@ -22,9 +22,15 @@ import ui.menu.kt_render_menu
 import ui.menu.render_field
 import ui.volumebar.VolumeBar
 import kotlin.js.Date
-import kotlin.math.ceil
 import kotlin.math.min
-import kotlin.math.round
+
+enum class GameMode(val value:Int){
+    ENTRY(0),MENU(1),PLAY(2)
+}
+
+enum class GameState(val value:Int){
+    RUNNING(0),WON(1),DIED(2)
+}
 
 class App : KeyListener {
     companion object {
@@ -76,12 +82,12 @@ class App : KeyListener {
 
 
 
-    private val input: MyInput = MyInput(MYCANVAS, saveGameDataSource)
-     val vis = KtVisual(vol_bar, input, res, saveGameDataSource)
+    private val input: MyInput = MyInput(MYCANVAS, saveGameDataSource,soundDataSource)
+     val vis = KtVisual(vol_bar, input, res, saveGameDataSource,soundDataSource)
 
     fun initCanvas() {
 
-        MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
+        MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D
         MYCANVAS.apply {
             width = GameSettings.SCREEN_WIDTH;
             height = GameSettings.SCREEN_HEIGHT;
@@ -209,41 +215,7 @@ class App : KeyListener {
             }
         }
 
-        fun render_vol_bar() {
-            var vb = vis.vol_bar;
-            var switcher = false;
 
-            for (i in 0 until vb.width) {
-                var line_height: Int = 0
-
-                if (switcher) {
-                    switcher = false;
-                    MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
-                } else {
-                    switcher = true;
-                    var ratio2 = i / vb.width.toDouble();
-                    line_height = round((vb.height * ratio2).toDouble()).toInt();
-
-                    if (i < ceil(vb.volume * vb.width)) {
-                        if (soundDataSource.isSoundOn()) {
-                            var ratio1 = 1 - ratio2;
-                            MYCTX.fillStyle =
-                                "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
-                                    vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
-                                ) + ")";
-                        } else {
-                            MYCTX.fillStyle =
-                                "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
-                        }
-                    } else {
-                        MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
-                    }
-
-                }
-                MYCTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
-
-            }
-        }
 
 
         fun render_displays(MYCTX: CanvasRenderingContext2D, res: MyRes) {
@@ -286,7 +258,7 @@ class App : KeyListener {
             game.then = game.now - (elapsed % game.fpsInterval);
             if (res.ready()) {
                 if (!game.initialized) {
-                    game.set_volume(DEFAULT_VOLUME);
+                    soundDataSource.set_volume(DEFAULT_VOLUME);
                     input.init(this);// Only init inputs after everything is loaded.
                     soundDataSource.play_sound(0);
                     game.initialized = true;
@@ -294,24 +266,24 @@ class App : KeyListener {
             }
             if (!game.paused) {
                 when (game.mode) {
-                    GAME_MODE_ENTRY -> {
+                    GameMode.ENTRY -> {
                         game.wait_timer--;
                         if (game.wait_timer <= 0) {
                             game.load_level(10);
                         }
                     }
-                    1 -> {
+                    GameMode.MENU -> {
                         if (game.wait_timer <= 0) {
                             when (game.level_ended) {
-                                GAME_MODE_ENTRY -> {
+                                GameState.RUNNING -> {
                                     game.update_tick++;
                                     kt_update_entities();
                                 }
-                                GAME_MODE_MENU -> {
+                                GameState.WON -> {
                                     saveGameDataSource.update_savegame(game.level_number, game.steps_taken);
                                     game.next_level();
                                 }
-                                GAME_MODE_PLAY -> {
+                                GameState.DIED -> {
                                     game.reset_level();
                                 }
                             }
@@ -340,10 +312,10 @@ class App : KeyListener {
                 drawImage(res.images[MyImage.Ladder], 427.0, 41.0);// Ladder
             }
             render_displays(MYCTX, res);
-            kt_render_buttons(MYCTX, input, res);
+            kt_render_buttons(MYCTX, input, res,game,vis);
 
             when (game.mode) {
-                GAME_MODE_ENTRY -> {// Title image
+                GameMode.ENTRY -> {// Title image
 
                     MYCTX.apply {
                         drawImage(res.images[1], (LEV_OFFSET_X + 4).toDouble(), (LEV_OFFSET_Y + 4).toDouble());
@@ -354,14 +326,14 @@ class App : KeyListener {
                         fillText("JavaScript remake by ", 140.0, 234.0);
                     }
                 }
-                GAME_MODE_MENU -> {
+                GameMode.MENU -> {
                     render_field(game, res);
                 }
-                GAME_MODE_PLAY -> {// Won!
+                GameMode.PLAY -> {// Won!
                     MYCTX.drawImage(res.images[170], LEV_OFFSET_X + 4, LEV_OFFSET_Y + 4);
                 }
             }
-            render_vol_bar();
+            vis.render_vol_bar();
             kt_render_menu(input, res);
         } else {
             MYCTX.apply {
@@ -383,8 +355,8 @@ class App : KeyListener {
         // js("")
     }
 
-    private fun handleOnKeyDown(game: KtGame, evt: KeyboardEvent) {
-        game.remove_soundrestriction();
+    private fun handleOnKeyDown( evt: KeyboardEvent) {
+        soundDataSource.remove_soundrestriction();
 
         when (evt.keyCode) {
             Key.ARROWLEFT.value -> {
@@ -414,7 +386,7 @@ class App : KeyListener {
     }
 
     override fun onKeyDown(evt: KeyboardEvent) {
-        handleOnKeyDown(game, evt)
+        handleOnKeyDown( evt)
     }
 
     override fun onMouseUp(evt: MouseEvent, mousePos: dynamic) {

@@ -14,17 +14,20 @@ import App.Companion.ERR_NOSAVE
 import App.Companion.ERR_NOTFOUND
 import App.Companion.ERR_SUCCESS
 import App.Companion.ERR_WRONGPW
+import App.Companion.MYCTX
 import App.Companion.ktGame
 import data.savegame.SaveGameDataSource
+import data.sound.SoundDataSource
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import model.Block
 import org.w3c.dom.events.MouseEvent
 import ui.menu.Menu
-import ui.menu.Option
 import ui.menu.SubMenu
 import ui.volumebar.VolumeBar
+import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.round
 
 
 interface Contract{
@@ -38,56 +41,12 @@ interface Contract{
 }
 
 
-class Presenter(val view: Contract.View, val saveGameDataSource: SaveGameDataSource):Contract.Presenter{
-
-    fun HAS_STORAGE(): Boolean {
-        return true
-    }
-
-    override fun init() {
-
-        val arr_options1 = arrayOf(
-            Option(false, 0, "New", "F2", 0, { true }),
-            Option(false, 0, "Load Game...", "", 1, { HAS_STORAGE() }),
-            Option(false, 0, "Save", "", 2, { saveGameDataSource.getSaveGame().progressed && HAS_STORAGE() }),
-            Option(false, 1, "Pause", "", 3, { true })
-        )
-
-        val arr_options2 = arrayOf(
-            Option(false, 1, "Single steps", "F5", 4, { true }),
-            Option(false, 1, "Sound", "", 5, { true }),
-            Option(true, 0, "", "", -1, { true }),
-            Option(false, 0, "Load Level", "", 6, { HAS_STORAGE() }),
-            Option(
-                false,
-                0,
-                "Change Password",
-                "",
-                7,
-                { saveGameDataSource.getSaveGame().username !== null && HAS_STORAGE() }),
-            Option(true, 0, "", "", -1, { true }),
-            Option(
-                false, 0, "Charts", "", 8, { HAS_STORAGE() })
-        )
-
-        val sub_m1 = SubMenu(43, 100, "Game", arr_options1);
-        val sub_m2 = SubMenu(55, 150, "Options", arr_options2);
-
-        view.setupMenu(arrayOf(sub_m1, sub_m2))
-    }
-
-    override fun shutdown() {
-
-
-    }
-
-}
-
 class KtVisual(
     val vol_bar: VolumeBar,
     val input: MyInput,
     val res: MyRes,
-    private val saveGameDataSource: SaveGameDataSource
+    private val saveGameDataSource: SaveGameDataSource,
+   val soundDataSource: SoundDataSource
 ) :Contract.View{
     val presenter : Contract.Presenter = Presenter(this,saveGameDataSource)
     val savegame = saveGameDataSource.getSaveGame()
@@ -763,10 +722,45 @@ class KtVisual(
         }
     }
 
+    fun render_vol_bar() {
+        var vb = vis.vol_bar;
+        var switcher = false;
+
+        for (i in 0 until vb.width) {
+            var line_height: Int = 0
+
+            if (switcher) {
+                switcher = false;
+                MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")";
+            } else {
+                switcher = true;
+                var ratio2 = i / vb.width.toDouble();
+                line_height = round((vb.height * ratio2).toDouble()).toInt();
+
+                if (i < ceil(vb.volume * vb.width)) {
+                    if (soundDataSource.isSoundOn()) {
+                        var ratio1 = 1 - ratio2;
+                        MYCTX.fillStyle =
+                            "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
+                                vb.colour_1.b * ratio1 + vb.colour_2.b * ratio2
+                            ) + ")";
+                    } else {
+                        MYCTX.fillStyle =
+                            "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")";
+                    }
+                } else {
+                    MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")";
+                }
+
+            }
+            MYCTX.fillRect(vb.offset_x + i, vb.offset_y + vb.height - line_height, 1, line_height);
+
+        }
+    }
 
     fun kt_update_animation_case2(x: Int, y: Int, block: Block) {
         block.fine_offset_x = 0;
-        if (ktGame.level_ended == 0) {
+        if (ktGame.level_ended == GameState.RUNNING) {
             if (block.moving) {
                 block.fine_offset_x = -1;
                 if (block.pushing) {
@@ -819,9 +813,9 @@ class KtVisual(
             } else {
                 block.animation_frame = 59;
             }
-        } else if (ktGame.level_ended == 1) {
+        } else if (ktGame.level_ended == GameState.WON) {
             block.animation_frame = 61;
-        } else if (ktGame.level_ended == 2) {
+        } else if (ktGame.level_ended == GameState.DIED) {
             block.animation_frame = 62;
         }
 
@@ -837,7 +831,7 @@ class KtVisual(
             7 -> {
                 // Purple monster (Monster 2)
                 block.fine_offset_x = 0
-                if (ktGame.level_ended == 0) {
+                if (ktGame.level_ended == GameState.RUNNING) {
                     if (block.moving) {
                         block.fine_offset_x = -1;
                         if (block.pushing) {
@@ -908,7 +902,7 @@ class KtVisual(
             10 -> {
                 // Green monster (Monster 2)
                 block.fine_offset_x = 0
-                if (ktGame.level_ended == 0) {
+                if (ktGame.level_ended == GameState.RUNNING) {
                     if (block.moving) {
                         block.fine_offset_x = -1;
                         when (block.face_dir) {
