@@ -5,7 +5,6 @@ import kotlin.math.round
 
 external var md5: dynamic
 
-lateinit var res: MyRes
 
 lateinit var vis: KtVisual
 lateinit var game: KtGame
@@ -26,7 +25,6 @@ var ANIMATION_DURATION: Int =
 
 lateinit var MYJOYCTX: CanvasRenderingContext2D
 
-lateinit var input: MyInput
 lateinit var MYCTX: CanvasRenderingContext2D
 var IS_TOUCH_DEVICE: Boolean = false
 var true_width: Double = GameSettings.SCREEN_WIDTH.toDouble()
@@ -35,23 +33,12 @@ lateinit var MyJOYSTICK: HTMLCanvasElement
 
 
 fun main() {
-    App.initCanvas()
     val app = App()
-    input = app.input
     game = app.game
     vis = app.vis
-    res = app.res
-    // vis.init_menus()
     requestAnimationFrame()
 
-
-    checkIfTouch()
-    if (IS_TOUCH_DEVICE) {
-        UPS = 15
-        app.initTouch()
-    }
-
-    app.render(app.game)
+    app.render()
 }
 
 fun requestAnimationFrame() {

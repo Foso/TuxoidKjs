@@ -24,7 +24,7 @@ import kotlin.math.floor
 
 
 @JsExport
-class KtVisual(val vol_bar: VolumeBar, val game: KtGame) {
+class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val res: MyRes) {
 
     var berti_blink_time = 0;
     var last_rendered = 0.0;

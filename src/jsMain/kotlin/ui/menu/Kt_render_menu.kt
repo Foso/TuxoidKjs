@@ -11,6 +11,8 @@ import LEV_DIMENSION_Y
 import LEV_OFFSET_X
 import LEV_OFFSET_Y
 import MYCTX
+import MyInput
+import MyRes
 import RENDER_BOTTOM
 import RENDER_BOTTOM_BORDER
 import RENDER_FULL
@@ -19,14 +21,14 @@ import drawImage
 import fillRect
 import fillText
 import game
-import input
+
 import org.w3c.dom.CanvasTextAlign
 import org.w3c.dom.CanvasTextBaseline
 import org.w3c.dom.LEFT
 import org.w3c.dom.TOP
 import model.Block
 import org.w3c.dom.CanvasRenderingContext2D
-import res
+
 import vis
 import kotlin.math.floor
 import kotlin.random.Random
@@ -34,7 +36,7 @@ import kotlin.random.Random
 
 
 
-fun kt_render_buttons(MYCTX: CanvasRenderingContext2D) {
+fun kt_render_buttons(MYCTX: CanvasRenderingContext2D, input: MyInput, res: MyRes) {
     var over_button = false;
     if (input.mouse_down) {
         if (input.mouse_pos.y >= 35 && input.mouse_pos.y <= 65) {
@@ -100,9 +102,9 @@ fun kt_render_buttons(MYCTX: CanvasRenderingContext2D) {
 }
 
 
-fun render_field(game: KtGame) {
-    render_field_subset(true);// Consumables in the background
-    render_field_subset(false);// The rest in the foreground
+fun render_field(game: KtGame, res: MyRes) {
+    render_field_subset(true,res);// Consumables in the background
+    render_field_subset(false,res);// The rest in the foreground
 
     MYCTX.drawImage(
         res.images[0],
@@ -159,7 +161,7 @@ fun render_field(game: KtGame) {
 
 
 
-fun render_block(x: Int, y: Int, render_option: dynamic) {
+fun render_block(x: Int, y: Int, render_option: dynamic, res: MyRes) {
     var block = game.level_array[x][y] as Block;
 
     var offset_x = block.moving_offset.x as Int;
@@ -412,39 +414,39 @@ fun render_block(x: Int, y: Int, render_option: dynamic) {
 }
 
 
-fun render_field_subset(consumable: dynamic) {
+fun render_field_subset(consumable: dynamic, res: MyRes) {
     for (y in 0 until LEV_DIMENSION_Y) {
         for (x in 0 until LEV_DIMENSION_X) {
             var block = game.level_array[x][y];
             if (y > 0 && game.level_array[x][y - 1].moving && game.level_array[x][y - 1].face_dir == DIR_DOWN && game.level_array[x][y - 1].consumable == consumable) {
-                render_block(x, y - 1, RENDER_BOTTOM);
+                render_block(x, y - 1, RENDER_BOTTOM, res);
             }
 
             if (y > 0 && (!game.level_array[x][y - 1].moving) && game.level_array[x][y - 1].consumable == consumable) {
                 if (x > 0 && game.level_array[x - 1][y].face_dir != DIR_RIGHT) {
-                    render_block(x, y - 1, RENDER_BOTTOM_BORDER);
+                    render_block(x, y - 1, RENDER_BOTTOM_BORDER,res);
                 }
             }
 
             if (block.consumable == consumable) {
                 if (!block.moving || block.face_dir == DIR_LEFT || block.face_dir == DIR_RIGHT) {
-                    render_block(x, y, RENDER_FULL);
+                    render_block(x, y, RENDER_FULL, res);
                 } else if (block.face_dir == DIR_DOWN) {
-                    render_block(x, y, RENDER_TOP);
+                    render_block(x, y, RENDER_TOP, res);
                 } else if (block.face_dir == DIR_UP) {
-                    render_block(x, y, RENDER_BOTTOM);
+                    render_block(x, y, RENDER_BOTTOM, res);
                 }
             }
 
             if (y + 1 < LEV_DIMENSION_Y && game.level_array[x][y + 1].moving && game.level_array[x][y + 1].face_dir == DIR_UP && game.level_array[x][y + 1].consumable == consumable) {
-                render_block(x, y + 1, RENDER_TOP);
+                render_block(x, y + 1, RENDER_TOP, res);
             }
         }
     }
 }
 
 
-fun kt_render_menu() {
+fun kt_render_menu(input: MyInput, res: MyRes) {
     var submenu_offset = 0.0;
     // The font is the same for the whole menu... Segoe UI is also nice
     MYCTX.font = "11px Tahoma";

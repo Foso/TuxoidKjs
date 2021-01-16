@@ -119,7 +119,7 @@ class KtEntity(val game: KtGame) {
 
     }
 
-    fun register_input(curr_x: Int, curr_y: Int, just_prime: Boolean) {
+    fun register_input(curr_x: Int, curr_y: Int, just_prime: Boolean, input: MyInput) {
         if (!moving) {
             if ((IS_TOUCH_DEVICE && input.joystick_dir == DIR_LEFT) || input.keys_down[37] || (!game.single_steps && game.walk_dir == DIR_LEFT) || (game.prime_movement && game.walk_dir == DIR_LEFT)) {
                 game.prime_movement = just_prime;

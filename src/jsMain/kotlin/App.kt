@@ -11,6 +11,7 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.LEFT
 import org.w3c.dom.MIDDLE
 import org.w3c.dom.RIGHT
+import org.w3c.dom.events.KeyboardEvent
 import ui.menu.kt_render_buttons
 import ui.menu.kt_render_menu
 import ui.menu.render_field
@@ -20,22 +21,75 @@ import kotlin.math.min
 import kotlin.math.round
 
 class App {
+    companion object {
+
+
+        var DEFAULT_VOLUME = 0.7;
+        var ERR_SUCCESS = 0
+        var ERR_EXISTS = 1;
+        var ERR_NOSAVE = 2;
+        var ERR_WRONGPW = 3;
+        var ERR_NOTFOUND = 4;
+        var ERR_EMPTYNAME = 5;
+
+        var DBX_CONFIRM = 0;
+        var DBX_SAVE = 1;
+        var DBX_LOAD = 2;
+        var DBX_CHPASS = 3;
+        var DBX_LOADLVL = 4;
+        var DBX_CHARTS = 5;
+
+        var DIR_NONE = -1;
+        var DIR_UP = 0;
+        var DIR_LEFT = 1;
+        var DIR_DOWN = 2;
+        var DIR_RIGHT = 3;
+        var LEV_START_DELAY = 1
+        var UPS: Int = 60
+
+    }
+
+    private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    init {
+        initCanvas()
+        checkIfTouch()
+        if (IS_TOUCH_DEVICE) {
+            UPS = 15
+            initTouch()
+        }
+    }
+
 
     val vol_bar = VolumeBar()
     val res = MyRes()
     val game = KtGame(vol_bar, res)
-    val input = MyInput(game, MYCANVAS)
-    val vis = KtVisual(vol_bar, game)
+    val input: MyInput = MyInput(MYCANVAS)
+    val vis = KtVisual(vol_bar, game, input, res)
 
+    fun initCanvas() {
+
+        MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
+        MYCANVAS.apply {
+            width = GameSettings.SCREEN_WIDTH;
+            height = GameSettings.SCREEN_HEIGHT;
+            className = "canv";
+        }
+        document.body?.appendChild(MYCANVAS);
+
+
+    }
 
     fun initTouch() {
         // Joystick creation
         MyJOYSTICK = document.createElement("canvas") as HTMLCanvasElement;
         MYJOYCTX = MyJOYSTICK.getContext("2d") as CanvasRenderingContext2D;
         var mindim = min(window.innerWidth, window.innerHeight);
-        MyJOYSTICK.width = (mindim * JOYSTICK_SIZE).toInt();
-        MyJOYSTICK.height = (mindim * JOYSTICK_SIZE).toInt();
-        MyJOYSTICK.className = "joystick";
+        MyJOYSTICK.apply {
+            width = (mindim * JOYSTICK_SIZE).toInt();
+            height = (mindim * JOYSTICK_SIZE).toInt();
+            className = "joystick";
+        }
         document.body?.appendChild(MyJOYSTICK);
 
         window.onresize = {// On mobile, make game fullscreen
@@ -71,7 +125,7 @@ class App {
         window.onresize = {}
     }
 
-    fun render(game: KtGame) {
+    fun render() {
         fun render_fps() {
             var now = Date.now();
 
@@ -106,7 +160,7 @@ class App {
             // The player moves first at all times to ensure the best response time and remove directional quirks.
 // The player moves first at all times to ensure the best response time and remove directional quirks.
             for (position in game.berti_positions) {
-                game.level_array[position.x][position.y].register_input(position.x, position.y, !synced_move);
+                game.level_array[position.x][position.y].register_input(position.x, position.y, !synced_move, input);
             }
 
             if (synced_move) {
@@ -221,7 +275,13 @@ class App {
             if (res.ready()) {
                 if (!game.initialized) {
                     game.set_volume(DEFAULT_VOLUME);
-                    input.init();// Only init inputs after everything is loaded.
+                    input.init(object : KeyListener {
+                        override fun onKeyDown(evt: KeyboardEvent) {
+                            handleOnKeyDown(game, evt)
+
+                        }
+
+                    });// Only init inputs after everything is loaded.
                     game.play_sound(0);
                     game.initialized = true;
                 }
@@ -262,7 +322,7 @@ class App {
         }
 
         if (game.update_drawn) {// This prevents the game from rendering the same thing twice
-            window.requestAnimationFrame { render(game) };
+            window.requestAnimationFrame { render() };
             return;
         }
 
@@ -274,7 +334,7 @@ class App {
                 drawImage(res.images[MyImage.Ladder], 427.0, 41.0);// Ladder
             }
             render_displays(MYCTX, res);
-            kt_render_buttons(MYCTX);
+            kt_render_buttons(MYCTX, input, res);
 
             when (game.mode) {
                 GAME_MODE_ENTRY -> {// Title image
@@ -289,14 +349,14 @@ class App {
                     }
                 }
                 GAME_MODE_MENU -> {
-                    render_field(game);
+                    render_field(game, res);
                 }
                 GAME_MODE_PLAY -> {// Won!
                     MYCTX.drawImage(res.images[170], LEV_OFFSET_X + 4, LEV_OFFSET_Y + 4);
                 }
             }
             render_vol_bar();
-            kt_render_menu();
+            kt_render_menu(input, res);
         } else {
             MYCTX.apply {
                 fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")";
@@ -313,46 +373,39 @@ class App {
             }
         }
         if (DEBUG) render_fps();
-        window.requestAnimationFrame { render(game) };
+        window.requestAnimationFrame { render() };
         // js("")
     }
 
-    companion object {
+    private fun handleOnKeyDown(game: KtGame, evt: KeyboardEvent) {
+        game.remove_soundrestriction();
 
-
-        var DEFAULT_VOLUME = 0.7;
-        var ERR_SUCCESS = 0
-        var ERR_EXISTS = 1;
-        var ERR_NOSAVE = 2;
-        var ERR_WRONGPW = 3;
-        var ERR_NOTFOUND = 4;
-        var ERR_EMPTYNAME = 5;
-
-        var DBX_CONFIRM = 0;
-        var DBX_SAVE = 1;
-        var DBX_LOAD = 2;
-        var DBX_CHPASS = 3;
-        var DBX_LOADLVL = 4;
-        var DBX_CHARTS = 5;
-
-        var DIR_NONE = -1;
-        var DIR_UP = 0;
-        var DIR_LEFT = 1;
-        var DIR_DOWN = 2;
-        var DIR_RIGHT = 3;
-        var LEV_START_DELAY = 1
-        var UPS: Int = 60
-        lateinit var MYCANVAS: HTMLCanvasElement
-
-        fun initCanvas() {
-            MYCANVAS = document.createElement("canvas") as HTMLCanvasElement;
-            MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D;
-            MYCANVAS.apply {
-                width = GameSettings.SCREEN_WIDTH;
-                height = GameSettings.SCREEN_HEIGHT;
-                className = "canv";
+        when (evt.keyCode) {
+            Key.ARROWLEFT.value -> {
+                game.walk_dir = DIR_LEFT;
             }
-            document.body?.appendChild(MYCANVAS);
+            Key.ARROWUP.value -> {
+                game.walk_dir = DIR_UP;
+            }
+            Key.ARROWRIGHT.value -> {
+                game.walk_dir = DIR_RIGHT;
+            }
+            Key.ARROWDWN.value -> {
+                game.walk_dir = DIR_DOWN;
+            }
+        }
+
+        if (vis.dbx.firstChild) {// If a dialog box is open
+            when (evt.keyCode) {
+                Key.ENTER.value -> {// Enter
+                    vis.dbx.enterfun();
+                }
+                Key.ESCAPE.value -> {// Esc
+                    vis.dbx.cancelfun();
+                }
+            }
         }
     }
+
+
 }

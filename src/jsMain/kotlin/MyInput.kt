@@ -18,7 +18,6 @@ import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.get
 import kotlin.js.Date
-import kotlin.js.json
 import kotlin.math.PI
 import kotlin.math.pow
 import kotlin.math.round
@@ -35,6 +34,10 @@ enum class Key(val value: Int) {
 
 }
 
+interface KeyListener {
+    fun onKeyDown(evt: KeyboardEvent)
+}
+
 /**
  *
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,14 +45,16 @@ enum class Key(val value: Int) {
 // Everything that has to do with keyboard and mouse input goes here
 //////////////////////////////////////////////////////////////////////////////////////////////////////
  */
-class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
+class MyInput( val MYCANVAS: HTMLCanvasElement) {
     var last_joystick_render by Delegates.notNull<Double>()
     var joystick_dir: Int = DIR_NONE
 
     val that = this
 
+    var listener: KeyListener? = null
 
-    fun init() {
+    fun init(listener: KeyListener) {
+        this.listener = listener
 
         if (IS_TOUCH_DEVICE) {
             this.joystick_dir = DIR_NONE;
@@ -77,13 +82,13 @@ class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
         document.addEventListener("touchend", { handle_touchend_global(it as TouchEvent) }, false);
 
         // Handle mouse controls (MYCANVAS)
-        App.MYCANVAS.addEventListener("mousemove", { handle_mousemove(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mousemove", { handle_mousemove(it as MouseEvent) }, false);
 
-        App.MYCANVAS.addEventListener("mousedown", { handle_mousedown(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mousedown", { handle_mousedown(it as MouseEvent) }, false);
 
-        App.MYCANVAS.addEventListener("mouseup", { handle_mouseup(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mouseup", { handle_mouseup(it as MouseEvent) }, false);
 
-        App.MYCANVAS.addEventListener("mouseout", { handle_mouseout(it as MouseEvent) }, false);
+        MYCANVAS.addEventListener("mouseout", { handle_mouseout(it as MouseEvent) }, false);
     }
 
     // Public:
@@ -95,36 +100,11 @@ class MyInput(val game: KtGame, val MYCANVAS: HTMLCanvasElement) {
     var lastclick_button = -1;
     var menu_pressed = -1;
     var lastklick_option: dynamic = null;
-    val test = json(Pair("x", "Hallo"))
 
     fun handle_keydown_global(evt: KeyboardEvent) {
-        game.remove_soundrestriction();
         keys_down[evt.keyCode] = true;
-        when (evt.keyCode) {
-            Key.ARROWLEFT.value -> {
-                game.walk_dir = DIR_LEFT;
-            }
-            Key.ARROWUP.value -> {
-                game.walk_dir = DIR_UP;
-            }
-            Key.ARROWRIGHT.value -> {
-                game.walk_dir = DIR_RIGHT;
-            }
-            Key.ARROWDWN.value -> {
-                game.walk_dir = DIR_DOWN;
-            }
-        }
+        listener?.onKeyDown(evt)
 
-        if (vis.dbx.firstChild) {// If a dialog box is open
-            when(evt.keyCode) {
-                Key.ENTER.value -> {// Enter
-                    vis.dbx.enterfun();
-                }
-                Key.ESCAPE.value -> {// Esc
-                    vis.dbx.cancelfun();
-                }
-            }
-        }
     }
 
     fun handle_keyup_global(evt: KeyboardEvent) {
