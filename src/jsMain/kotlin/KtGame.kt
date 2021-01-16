@@ -4,16 +4,13 @@ import App.Companion.DIR_NONE
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
 import App.Companion.ERR_EMPTYNAME
-import App.Companion.ERR_EXISTS
-import App.Companion.ERR_NOSAVE
-import App.Companion.ERR_NOTFOUND
 import App.Companion.ERR_SUCCESS
-import App.Companion.ERR_WRONGPW
 import App.Companion.LEV_START_DELAY
 import App.Companion.UPS
-import de.jensklingenberg.bananiakt.SaveGame
+import data.savegame.SaveGameDataSource
+import data.sound.SoundDataSource
 import de.jensklingenberg.bananiakt.Tile
-import kotlinx.browser.localStorage
+import ui.volumebar.VolumeBar
 import kotlin.js.Date
 import kotlin.math.abs
 import kotlin.math.pow
@@ -25,12 +22,10 @@ val GAME_MODE_ENTRY = 0
 val GAME_MODE_MENU = 1
 val GAME_MODE_PLAY = 2
 
-
-@JsExport
-class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
+class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: SaveGameDataSource, val soundDataSource: SoundDataSource) {
     var INTRO_DURATION = 2;// In seconds
 
-    var savegame = SaveGame();
+    var savegame = saveGameDataSource.getSaveGame()
 
     var move_speed = round((1 * 60 / UPS).toDouble());
     var door_removal_delay = round((8 * UPS / 60).toDouble());
@@ -124,16 +119,12 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
         vis.init_animation();
 
         if (berti_counter > 0) {
-            play_sound(8);
+            soundDataSource.play_sound(8);
         }
     }
 
 
-    fun play_sound(id: Int) {
-        if (!sound) return;
-        if (res.sounds[id].currentTime != 0) res.sounds[id].currentTime = 0;
-        res.sounds[id].play();
-    }
+
 
     fun dir_to_coords(curr_x: Int, curr_y: Int, dir: Int): dynamic {
         var new_x = curr_x;
@@ -187,51 +178,55 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
                 }
             }
         } else if (diff_x > 0) {
-            if (diff_y == 0) {
-                walk1_x = 1;
-                walk1_y = 0;
-                walk2_x = 1;
-                walk2_y = 0;
-            } else if (diff_y > 0) {
-                when {
-                    diff_y > diff_x -> {
-                        walk1_x = 0;
-                        walk1_y = 1;
-                        walk2_x = 1;
-                        walk2_y = 1;
-                    }
-                    diff_y == diff_x -> {
-                        walk1_x = 1;
-                        walk1_y = 1;
-                        walk2_x = 1;
-                        walk2_y = 1;
-                    }
-                    else -> {// diff_y < diff_x
-                        walk1_x = 1;
-                        walk1_y = 0;
-                        walk2_x = 1;
-                        walk2_y = 1;
+            when {
+                diff_y == 0 -> {
+                    walk1_x = 1;
+                    walk1_y = 0;
+                    walk2_x = 1;
+                    walk2_y = 0;
+                }
+                diff_y > 0 -> {
+                    when {
+                        diff_y > diff_x -> {
+                            walk1_x = 0;
+                            walk1_y = 1;
+                            walk2_x = 1;
+                            walk2_y = 1;
+                        }
+                        diff_y == diff_x -> {
+                            walk1_x = 1;
+                            walk1_y = 1;
+                            walk2_x = 1;
+                            walk2_y = 1;
+                        }
+                        else -> {// diff_y < diff_x
+                            walk1_x = 1;
+                            walk1_y = 0;
+                            walk2_x = 1;
+                            walk2_y = 1;
+                        }
                     }
                 }
-            } else {// diff_y < 0
-                when {
-                    diff_y * (-1) > diff_x -> {
-                        walk1_x = 0;
-                        walk1_y = -1;
-                        walk2_x = 1;
-                        walk2_y = -1;
-                    }
-                    diff_y * (-1) == diff_x -> {
-                        walk1_x = 1;
-                        walk1_y = -1;
-                        walk2_x = 1;
-                        walk2_y = -1;
-                    }
-                    else -> {// diff_y < diff_x
-                        walk1_x = 1;
-                        walk1_y = 0;
-                        walk2_x = 1;
-                        walk2_y = -1;
+                else -> {// diff_y < 0
+                    when {
+                        diff_y * (-1) > diff_x -> {
+                            walk1_x = 0;
+                            walk1_y = -1;
+                            walk2_x = 1;
+                            walk2_y = -1;
+                        }
+                        diff_y * (-1) == diff_x -> {
+                            walk1_x = 1;
+                            walk1_y = -1;
+                            walk2_x = 1;
+                            walk2_y = -1;
+                        }
+                        else -> {// diff_y < diff_x
+                            walk1_x = 1;
+                            walk1_y = 0;
+                            walk2_x = 1;
+                            walk2_y = -1;
+                        }
                     }
                 }
             }
@@ -347,7 +342,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
         if (level_number >= 50 || level_number < 0) {
             mode = 2;
             steps_taken = 0;
-            play_sound(6);
+            soundDataSource.play_sound(6);
             buttons_activated[0] = false;
             buttons_activated[2] = false;
             return;
@@ -423,17 +418,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
         }
     }
 
-    fun toggle_sound() {
-        if (sound) {
-            sound = false;
-            for (i in res.sounds.indices) {
-                res.sounds[i].pause();
-                res.sounds[i].currentTime = 0
-            }
-        } else {
-            sound = true;
-        }
-    }
+
 
     fun get_adjacent_tiles(tile_x: Int, tile_y: Int): Array<Tile> {
 
@@ -493,14 +478,14 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
                         level_ended = 1;
                         if (Random.nextDouble() < 0.50) {
                             game.wow = true;
-                            play_sound(10);// wow
+                            soundDataSource.play_sound(10);// wow
                         } else {
                             game.wow = false;
-                            play_sound(11);// yeah
+                            soundDataSource.play_sound(11);// yeah
                         }
                         vis.update_all_animations();
                     } else {
-                        play_sound(7);// Om nom nom
+                        soundDataSource.play_sound(7);// Om nom nom
                     }
                 }
                 13 -> {
@@ -529,7 +514,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
             if ((level_array[src_x][src_y].id == 5 || level_array[src_x][src_y].id == 6) &&
                 (!is_in_bounds(dst2.x, dst2.y) || level_array[dst2.x][dst2.y].id == 3)
             ) {
-                play_sound(5);
+                soundDataSource.play_sound(5);
             }
         }
 
@@ -580,7 +565,7 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
     }
 
     fun remove_door(id: Int) {
-        play_sound(9);
+        soundDataSource.play_sound(9);
         for (y in 0 until LEV_DIMENSION_Y) {
             for (x in 0 until LEV_DIMENSION_X) {
                 if (level_array[x][y].id == id) {
@@ -622,15 +607,6 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
         return (tile_x >= 0 && tile_y >= 0 && tile_x < LEV_DIMENSION_X && tile_y < LEV_DIMENSION_Y)
     }
 
-    fun dbxcall_chpass(pass: String, newpass: String): Boolean {
-        var result = change_password(pass, newpass);
-        if (result != ERR_SUCCESS) {
-            vis.error_dbx(result);
-            return false;
-        }
-
-        return true;
-    }
 
     fun dbxcall_load(uname: String?, pass: String): Boolean {
         if (uname === null || uname == "") {
@@ -638,8 +614,15 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
             return false;
         }
 
-        var result = retrieve_savegame(uname, pass);
-        if (result != ERR_SUCCESS) {
+        var result = saveGameDataSource.retrieve_savegame(uname, pass);
+        if (result == ERR_SUCCESS) {
+            level_unlocked = savegame.reached_level;
+            if (level_unlocked >= 50) {
+                load_level(50);
+            } else {
+                load_level(level_unlocked);
+            }
+        } else {
             vis.error_dbx(result);
             return false;
         }
@@ -657,14 +640,14 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
         }
 
         if (savegame.username === null) {
-            result = name_savegame(uname, pass);
+            result = saveGameDataSource.name_savegame(uname, pass);
             if (result != ERR_SUCCESS) {
                 vis.error_dbx(result);
                 return false;
             }
         }
 
-        result = store_savegame();
+        result = saveGameDataSource.store_savegame();
         if (result != ERR_SUCCESS) {
             vis.error_dbx(result);
             return false;
@@ -673,110 +656,10 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes) {
         return true;
     }
 
-    fun change_password(pass: String, newpass: String): Int {
-        val md5pass = md5.digest(pass);
-        if (savegame.password === md5pass) {
-            savegame.password = md5.digest(newpass);
-            localStorage.setItem("player" + savegame.usernumber + "_password", savegame.password!!);
-            return ERR_SUCCESS;// Worked
-        }
-        return ERR_WRONGPW;// Wrong pass
-    }
-
-    fun update_savegame(lev: Int, steps: Int) {
-        if (savegame.reached_level <= lev) {
-            savegame.reached_level = lev + 1;
-            savegame.progressed = true;
-        }
-        if (savegame.arr_steps[lev] == 0 || savegame.arr_steps[lev] > steps) {
-            savegame.arr_steps[lev] = steps;
-            savegame.progressed = true;
-        }
-    }
-
-    fun clear_savegame() {
-        savegame = SaveGame();
+    fun createNewGame() {
+        saveGameDataSource.clear_savegame()
         level_unlocked = 1;
         load_level(level_unlocked);
-    }
-
-
-    fun store_savegame(): Int {
-        if (localStorage.getItem("user_count") == null) {
-            localStorage.setItem("user_count", "1");
-            savegame.usernumber = 0
-        } else if (savegame.usernumber == -1) {
-            savegame.usernumber = localStorage.getItem("user_count")?.toInt() ?: -1;
-            localStorage.setItem("user_count", (savegame.usernumber + 1).toString())
-        }
-
-        var prefix = "player" + savegame.usernumber + "_";
-        savegame.username?.let { localStorage.setItem(prefix + "username", it) };
-        savegame.password?.let { localStorage.setItem(prefix + "password", it) };
-        localStorage.setItem(prefix + "reached_level", savegame.reached_level.toString());
-
-        for (i in 1 until 50) {
-            localStorage.setItem(prefix + "steps_lv" + i, savegame.arr_steps[i].toString());
-        }
-
-        savegame.progressed = false
-        return ERR_SUCCESS
-
-    }
-
-    fun name_savegame(uname: String, pass: String): Int {
-        var user_count = localStorage.getItem("user_count");
-        if (user_count != null) {
-            val userCountNum = user_count.toInt()
-            for (i in 0 until userCountNum) {
-                var prefix = "player" + i + "_";
-                if (localStorage.getItem(prefix + "username") == uname) {
-                    return ERR_EXISTS;// Failed already exists
-                }
-            }
-        }
-        savegame.username = uname;
-        savegame.password = md5.digest(pass)
-        return ERR_SUCCESS;// Worked
-    }
-
-    fun retrieve_savegame(uname: String, pass: String): Int {
-        var user_count = localStorage.getItem("user_count")?.toIntOrNull() ?: 0;
-        if (user_count == 0) {
-            return ERR_NOSAVE;// There are no save games
-        }
-
-        val md5pass = md5.digest(pass);
-
-        for (i in 0 until user_count) {
-            var prefix = "player" + i + "_";
-            if (localStorage.getItem(prefix + "username") == uname) {
-                if (localStorage.getItem(prefix + "password") == md5pass) {
-                    savegame = SaveGame();
-                    savegame.usernumber = i;0
-                    savegame.username = uname;
-                    savegame.password = md5pass;
-                    savegame.reached_level = localStorage.getItem(prefix + "reached_level")!!.toInt();
-
-                    for (i in 1 until 50) {
-                        savegame.arr_steps[i] = localStorage.getItem(prefix + "steps_lv" + i)!!.toInt();
-                    }
-                    savegame.progressed = false;
-
-                    level_unlocked = savegame.reached_level;
-                    if (level_unlocked >= 50) {
-                        load_level(50);
-                    } else {
-                        load_level(level_unlocked);
-                    }
-
-                    return ERR_SUCCESS;// Success!
-                } else {
-                    return ERR_WRONGPW;// Wrong password!
-                }
-            }
-        }
-        return ERR_NOTFOUND;// There's no such name
     }
 
 }

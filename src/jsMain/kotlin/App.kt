@@ -1,4 +1,8 @@
 import GameSettings.Companion.JOYSTICK_SIZE
+import data.savegame.SaveGameDataRepository
+import data.savegame.SaveGameDataSource
+import data.sound.SoundDataSource
+import data.sound.SoundRepository
 import de.jensklingenberg.bananiakt.MyImage
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -16,6 +20,7 @@ import org.w3c.dom.events.MouseEvent
 import ui.menu.kt_render_buttons
 import ui.menu.kt_render_menu
 import ui.menu.render_field
+import ui.volumebar.VolumeBar
 import kotlin.js.Date
 import kotlin.math.ceil
 import kotlin.math.min
@@ -52,7 +57,6 @@ class App : KeyListener {
     }
 
 
-
     private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
     init {
@@ -67,9 +71,11 @@ class App : KeyListener {
 
     val vol_bar = VolumeBar()
     val res = MyRes()
-    val game = KtGame(vol_bar, res)
-    val input: MyInput = MyInput(MYCANVAS)
-    val vis = KtVisual(vol_bar, game, input, res)
+    val saveGameDataSource: SaveGameDataSource = SaveGameDataRepository()
+    val soundDataSource : SoundDataSource = SoundRepository(res)
+    val game = KtGame(vol_bar, res, saveGameDataSource,soundDataSource)
+    val input: MyInput = MyInput(MYCANVAS, saveGameDataSource)
+    val vis = KtVisual(vol_bar, input, res, saveGameDataSource)
 
     fun initCanvas() {
 
@@ -217,7 +223,7 @@ class App : KeyListener {
                     line_height = round((vb.height * ratio2).toDouble()).toInt();
 
                     if (i < ceil(vb.volume * vb.width)) {
-                        if (game.sound) {
+                        if (soundDataSource.isSoundOn()) {
                             var ratio1 = 1 - ratio2;
                             MYCTX.fillStyle =
                                 "rgb(" + round(vb.colour_1.r * ratio1 + vb.colour_2.r * ratio2) + ", " + round(vb.colour_1.g * ratio1 + vb.colour_2.g * ratio2) + ", " + round(
@@ -280,7 +286,7 @@ class App : KeyListener {
                 if (!game.initialized) {
                     game.set_volume(DEFAULT_VOLUME);
                     input.init(this);// Only init inputs after everything is loaded.
-                    game.play_sound(0);
+                    soundDataSource.play_sound(0);
                     game.initialized = true;
                 }
             }
@@ -300,7 +306,7 @@ class App : KeyListener {
                                     kt_update_entities();
                                 }
                                 GAME_MODE_MENU -> {
-                                    game.update_savegame(game.level_number, game.steps_taken);
+                                    saveGameDataSource.update_savegame(game.level_number, game.steps_taken);
                                     game.next_level();
                                 }
                                 GAME_MODE_PLAY -> {

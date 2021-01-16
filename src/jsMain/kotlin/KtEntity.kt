@@ -208,7 +208,7 @@ class KtEntity(val game: KtGame) {
                 }
 
                 // Got caught!
-                game.play_sound(1);
+                game.soundDataSource.play_sound(1);
                 game.wait_timer = LEV_STOP_DELAY * UPS;
                 game.level_ended = 2;
                 vis.update_all_animations();
@@ -260,9 +260,9 @@ class KtEntity(val game: KtGame) {
                     if (time_since_noise > ceil(Random.nextDouble() * 10) + 3) {
                         time_since_noise = 0;
                         if (id == 7) {
-                            game.play_sound(2);
+                            game.soundDataSource.play_sound(2);
                         } else if (id == 10) {
-                            game.play_sound(3);
+                            game.soundDataSource.play_sound(3);
                         }
                     }
                 }

@@ -12,20 +12,84 @@ import App.Companion.ERR_EMPTYNAME
 import App.Companion.ERR_EXISTS
 import App.Companion.ERR_NOSAVE
 import App.Companion.ERR_NOTFOUND
+import App.Companion.ERR_SUCCESS
 import App.Companion.ERR_WRONGPW
+import data.savegame.SaveGameDataSource
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
-import org.w3c.dom.events.MouseEvent
 import model.Block
+import org.w3c.dom.events.MouseEvent
 import ui.menu.Menu
 import ui.menu.Option
 import ui.menu.SubMenu
+import ui.volumebar.VolumeBar
 import kotlin.math.floor
 
 
-@JsExport
-class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val res: MyRes) {
+interface Contract{
+    interface Presenter{
+        fun init()
+        fun shutdown()
+    }
+    interface View{
+        fun setupMenu(subMenus : Array<SubMenu>)
+    }
+}
 
+
+class Presenter(val view: Contract.View, val saveGameDataSource: SaveGameDataSource):Contract.Presenter{
+
+    fun HAS_STORAGE(): Boolean {
+        return true
+    }
+
+    override fun init() {
+
+        val arr_options1 = arrayOf(
+            Option(false, 0, "New", "F2", 0, { true }),
+            Option(false, 0, "Load Game...", "", 1, { HAS_STORAGE() }),
+            Option(false, 0, "Save", "", 2, { saveGameDataSource.getSaveGame().progressed && HAS_STORAGE() }),
+            Option(false, 1, "Pause", "", 3, { true })
+        )
+
+        val arr_options2 = arrayOf(
+            Option(false, 1, "Single steps", "F5", 4, { true }),
+            Option(false, 1, "Sound", "", 5, { true }),
+            Option(true, 0, "", "", -1, { true }),
+            Option(false, 0, "Load Level", "", 6, { HAS_STORAGE() }),
+            Option(
+                false,
+                0,
+                "Change Password",
+                "",
+                7,
+                { saveGameDataSource.getSaveGame().username !== null && HAS_STORAGE() }),
+            Option(true, 0, "", "", -1, { true }),
+            Option(
+                false, 0, "Charts", "", 8, { HAS_STORAGE() })
+        )
+
+        val sub_m1 = SubMenu(43, 100, "Game", arr_options1);
+        val sub_m2 = SubMenu(55, 150, "Options", arr_options2);
+
+        view.setupMenu(arrayOf(sub_m1, sub_m2))
+    }
+
+    override fun shutdown() {
+
+
+    }
+
+}
+
+class KtVisual(
+    val vol_bar: VolumeBar,
+    val input: MyInput,
+    val res: MyRes,
+    private val saveGameDataSource: SaveGameDataSource
+) :Contract.View{
+    val presenter : Contract.Presenter = Presenter(this,saveGameDataSource)
+    val savegame = saveGameDataSource.getSaveGame()
     var berti_blink_time = 0;
     var last_rendered = 0.0;
     var fps_delay = 0.0;
@@ -61,13 +125,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
     var blue = js("{r:10, g:36, b:106}");
     var dbx = document.createElement("div").asDynamic();
 
-    init {
-        init_menus()
-    }
 
-    fun HAS_STORAGE(): Boolean {
-        return true
-    }
 
     fun error_dbx(errno: Int) {
         if (dbx.errfield === null) return;
@@ -98,36 +156,14 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
         }
         dbx.errfield.innerHTML = err_string;
     }
-
-    fun init_menus() {
-
-        val arr_options1 = arrayOf(
-            Option(false, 0, "New", "F2", 0, { true }),
-            Option(false, 0, "Load Game...", "", 1, { HAS_STORAGE() }),
-            Option(false, 0, "Save", "", 2, { game.savegame.progressed && HAS_STORAGE() }),
-            Option(false, 1, "Pause", "", 3, { true })
-        )
-
-        val arr_options2 = arrayOf(
-            Option(false, 1, "Single steps", "F5", 4, { true }),
-            Option(false, 1, "Sound", "", 5, { true }),
-            Option(true, 0, "", "", -1, { true }),
-            Option(false, 0, "Load Level", "", 6, { HAS_STORAGE() }),
-            Option(false, 0, "Change Password", "", 7, { game.savegame.username !== null && HAS_STORAGE() }),
-            Option(true, 0, "", "", -1, { true }),
-            Option(
-                false, 0, "Charts", "", 8, { HAS_STORAGE() })
-        )
-
-        val sub_m1 = SubMenu(43, 100, "Game", arr_options1);
-        val sub_m2 = SubMenu(55, 150, "Options", arr_options2);
-
-
-        menu1 = Menu(1, 2, 17, arrayOf(sub_m1, sub_m2));
+    override fun setupMenu(subMenus: Array<SubMenu>) {
+        menu1 = Menu(1, 2, 17, subMenus);
 
     }
 
+
     init {
+        presenter.init()
         buttons_pressed[2] == false
         buttons_pressed[1] == false
         buttons_pressed[0] == false
@@ -227,27 +263,31 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
         var f_o: () -> Unit = {};
         var f_c: () -> Unit = {};
 
-        if (opt == 0) {// "Save game"
-            f_o = {
-                if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                    close_dbx();
-                }
-            };
-            f_c = { close_dbx(); };
-        } else if (opt == 1) {// "New Game" -> yes, save
-            f_o = {
-                if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                    game.clear_savegame();close_dbx();
-                }
-            };
-            f_c = { game.clear_savegame();close_dbx(); };
-        } else if (opt == 2) {// "Load Game" -> yes, save
-            f_o = {
-                if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                    open_dbx(DBX_LOAD);
-                }
-            };
-            f_c = { open_dbx(DBX_LOAD); };
+        when (opt) {
+            0 -> {// "Save game"
+                f_o = {
+                    if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                        close_dbx();
+                    }
+                };
+                f_c = { close_dbx(); };
+            }
+            1 -> {// "New Game" -> yes, save
+                f_o = {
+                    if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                        game.createNewGame();close_dbx();
+                    }
+                };
+                f_c = { game.createNewGame();close_dbx(); };
+            }
+            2 -> {// "Load Game" -> yes, save
+                f_o = {
+                    if (game.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+                        open_dbx(DBX_LOAD);
+                    }
+                };
+                f_c = { open_dbx(DBX_LOAD); };
+            }
         }
 
         dbx.enterfun = f_o;
@@ -261,7 +301,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
 
 
     fun dbx_charts() {
-        game.play_sound(4);
+        game.soundDataSource.play_sound(4);
 
         add_title("Charts");
 
@@ -361,7 +401,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
         add_input(100, 60, 120, 15, "password");
 
         var f_o = {
-            if (game.dbxcall_chpass(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
+            if (dbxcall_chpass(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
                 close_dbx();
             }
         };
@@ -376,6 +416,25 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
         add_errfield(20, 85);
     }
 
+    fun dbxcall_chpass(pass: String, newpass: String): Boolean {
+        var result = change_password(pass, newpass);
+        if (result != ERR_SUCCESS) {
+            vis.error_dbx(result);
+            return false;
+        }
+
+        return true;
+    }
+
+    fun change_password(pass: String, newpass: String): Int {
+        val md5pass = md5.digest(pass);
+        if (savegame.password === md5pass) {
+            savegame.password = md5.digest(newpass);
+            localStorage.setItem("player" + savegame.usernumber + "_password", savegame.password!!);
+            return ERR_SUCCESS;// Worked
+        }
+        return ERR_WRONGPW;// Wrong pass
+    }
 
     fun dbx_load() {
         add_title("Load game");
@@ -423,7 +482,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
 
         if (opt == 0) {// "New Game"
             f_y = { open_dbx(DBX_SAVE, 1); };
-            f_n = { game.clear_savegame();close_dbx(); };
+            f_n = { game.createNewGame();close_dbx(); };
         } else if (opt == 1) {// "Load Game"
             f_y = { open_dbx(DBX_SAVE, 2); };
             f_n = { open_dbx(DBX_LOAD); };
@@ -922,5 +981,7 @@ class KtVisual(val vol_bar: VolumeBar, val game: KtGame, val input: MyInput, val
 
         }
     }
+
+
 }
 

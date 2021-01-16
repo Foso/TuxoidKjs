@@ -9,6 +9,7 @@ import App.Companion.DIR_LEFT
 import App.Companion.DIR_NONE
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
+import data.savegame.SaveGameDataSource
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
@@ -46,7 +47,7 @@ interface KeyListener {
 // Everything that has to do with keyboard and mouse input goes here
 //////////////////////////////////////////////////////////////////////////////////////////////////////
  */
-class MyInput( val MYCANVAS: HTMLCanvasElement) {
+class MyInput(val MYCANVAS: HTMLCanvasElement, val saveGameDataSource: SaveGameDataSource) {
     var last_joystick_render by Delegates.notNull<Double>()
     var joystick_dir: Int = DIR_NONE
 
@@ -254,7 +255,7 @@ class MyInput( val MYCANVAS: HTMLCanvasElement) {
                         if (game.savegame.progressed) {
                             vis.open_dbx(DBX_CONFIRM, 0);
                         } else {
-                            game.clear_savegame();
+                            game.createNewGame();
                         }
                     }
                     1 -> {
@@ -266,7 +267,7 @@ class MyInput( val MYCANVAS: HTMLCanvasElement) {
                     }
                     2 -> {
                         if (game.savegame.username !== null) {
-                            game.store_savegame();
+                            saveGameDataSource.store_savegame();
                         } else {
                             vis.open_dbx(DBX_SAVE);
                         }
@@ -278,7 +279,7 @@ class MyInput( val MYCANVAS: HTMLCanvasElement) {
                         game.toggle_single_steps();
                     }
                     5 -> {
-                        game.toggle_sound();
+                        game.soundDataSource.toggle_sound();
                     }
                     6 -> {
                         vis.open_dbx(DBX_LOADLVL);
