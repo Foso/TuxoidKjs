@@ -2,7 +2,7 @@ import data.savegame.SaveGameDataSource
 import ui.menu.Option
 import ui.menu.SubMenu
 
-class Presenter(val view: Contract.View, val saveGameDataSource: SaveGameDataSource): Contract.Presenter {
+class Presenter(val view: Contract.View, val saveGameDataSource: SaveGameDataSource) : Contract.Presenter {
 
     fun HAS_STORAGE(): Boolean {
         return true

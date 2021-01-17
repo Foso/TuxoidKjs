@@ -2,7 +2,7 @@ package data.savegame
 
 import de.jensklingenberg.bananiakt.SaveGame
 
-interface SaveGameDataSource{
+interface SaveGameDataSource {
 
     fun update_savegame(lev: Int, steps: Int)
     fun getSaveGame(): SaveGame
@@ -11,4 +11,4 @@ interface SaveGameDataSource{
     fun store_savegame(): Int
     fun name_savegame(uname: String, pass: String): Int
     fun retrieve_savegame(uname: String, pass: String): Int
-    }
+}

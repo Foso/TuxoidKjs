@@ -3,10 +3,10 @@ import App.Companion.DIR_LEFT
 import App.Companion.DIR_NONE
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
-import App.Companion.ERR_EMPTYNAME
-import App.Companion.ERR_SUCCESS
 import App.Companion.LEV_START_DELAY
 import App.Companion.UPS
+import KtVisual.Companion.ERR_EMPTYNAME
+import KtVisual.Companion.ERR_SUCCESS
 import data.savegame.SaveGameDataSource
 import data.sound.SoundDataSource
 import data.sound.VolumeChangeListener
@@ -18,76 +18,136 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.random.Random
 
-var DEBUG = true;
+var DEBUG = true
+
+interface GameHandler {
 
 
-class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: SaveGameDataSource, val soundDataSource: SoundDataSource) :
+    fun increaseBanana()
+    fun decreaseBanana()
+    fun getBananas(): Int
+    fun resetBanas()
+    fun getStepsTaken(): Int
+    fun resetSteps()
+    fun increaseSteps()
+    fun isPaused(): Boolean
+    fun setPause(pause: Boolean)
+    fun toggle_paused()
+}
+
+
+class GameHandlerImpl() : GameHandler {
+
+    var num_bananas = 0
+
+    var steps_taken = 0
+    var paused = false
+
+
+    override fun increaseBanana() {
+        num_bananas++
+    }
+
+    override fun decreaseBanana() {
+        num_bananas--
+    }
+
+    override fun getBananas(): Int {
+        return num_bananas
+    }
+
+    override fun resetBanas() {
+        num_bananas = 0
+    }
+
+    override fun getStepsTaken(): Int {
+        return steps_taken
+    }
+
+    override fun resetSteps() {
+        steps_taken = 0
+    }
+
+    override fun increaseSteps() {
+        steps_taken++
+    }
+
+    override fun isPaused(): Boolean {
+        return paused
+    }
+
+    override fun setPause(pause: Boolean) {
+        paused = pause
+    }
+
+    override fun toggle_paused() {
+        paused = !paused
+    }
+
+}
+
+class KtGame(
+    val volumeBar: VolumeBar,
+    val res: MyRes,
+    val saveGameDataSource: SaveGameDataSource,
+    val soundDataSource: SoundDataSource,
+    val gameHandler: GameHandler
+) :
     VolumeChangeListener {
-    var INTRO_DURATION = 2;// In seconds
+
+    var INTRO_DURATION = 2// In seconds
+    var single_steps = true
 
     var savegame = saveGameDataSource.getSaveGame()
+    val move_speed = round((1 * 60 / UPS).toDouble())
+    var door_removal_delay = round((8 * UPS / 60).toDouble())
+    var fpsInterval = 1000 / UPS
+    var then = Date.now()
+    var now: Double = 0.0
+    var initialized = false
+    var wait_timer = INTRO_DURATION * UPS
+    var update_drawn = false
+    var mode: GameMode = GameMode.ENTRY// 0 is entry, 1 is menu and play
+    var level_number = 0
+    var level_array = arrayOf(arrayOf<KtEntity>())
+    private var level_unlocked = 0
+    var levelState: GameState = GameState.RUNNING// 0 is not ended. 1 is won. 2 is died.
+    var wow = true// true is WOW!, false is Yeah!
+    var berti_positions = arrayOf(Tile(0, 0))
+    var walk_dir = DIR_NONE
+    var last_updated = Date.now()
+    var delta_updated = Date.now()
 
-    var move_speed = round((1 * 60 / UPS).toDouble());
-    var door_removal_delay = round((8 * UPS / 60).toDouble());
-
-    var fpsInterval = 1000 / UPS;
-    var then = Date.now();
-    var now: Double = 0.0;
-
-    var initialized = false;
-    var wait_timer = INTRO_DURATION * UPS;
-    var paused = false;
-    var update_drawn = false;
-
-    var mode : GameMode = GameMode.ENTRY;// 0 is entry, 1 is menu and play
-    var level_number = 0;
-    var level_array = arrayOf(arrayOf<KtEntity>());
-
-    var level_unlocked = 0;
-    var level_ended : GameState = GameState.RUNNING;// 0 is not ended. 1 is won. 2 is died.
-    var wow = true;// true is WOW!, false is Yeah!
-
-    var berti_positions = arrayOf(Tile(0, 0));
-
-    var single_steps = true;
-    var walk_dir = DIR_NONE;
-
-    var steps_taken = 0;
-    var num_bananas = 0;
-
-    var last_updated = Date.now();
-    var delta_updated = Date.now();
-
-    var buttons_activated = Array<Boolean>(5) { false };
+    var buttons_activated = Array<Boolean>(5) { false }
     // var buttons_activated[0] = buttons_activated[2] == false;
     // var buttons_activated[1] = true;
 
-    var sound = !DEBUG;
+    var sound = !DEBUG
 
-    var update_tick = 0;
-    var prime_movement = false;
+    var update_tick = 0
+    var prime_movement = false
 
     init {
-        buttons_activated[0] = buttons_activated[2] == false;
-        buttons_activated[1] = true;
+        buttons_activated[0] = buttons_activated[2] == false
+        buttons_activated[1] = true
         soundDataSource.addVolumeChangeListener(this)
     }
 
 
     fun load_level(lev_number: Int) {
-        mode = GameMode.MENU;
-        update_tick = 0;
+        mode = GameMode.MENU
+        update_tick = 0
 
-        steps_taken = 0;
-        num_bananas = 0;
-        level_ended = GameState.RUNNING;
+        gameHandler.resetSteps()
+        gameHandler.resetBanas()
+        levelState = GameState.RUNNING
         level_array = js("new Array()")
-        level_number = lev_number;
-        wait_timer = LEV_START_DELAY * UPS;
-        walk_dir = DIR_NONE;
+        level_number = lev_number
+        wait_timer = LEV_START_DELAY * UPS
+        walk_dir = DIR_NONE
 
         if (level_unlocked < lev_number) {
-            level_unlocked = lev_number;
+            level_unlocked = lev_number
         }
 
         buttons_activated[2] = lev_number < level_unlocked as Int && lev_number != 0
@@ -98,298 +158,148 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
             level_array[i] = js("new Array()")
         }
 
-        var berti_counter = 0;
+        var berti_counter = 0
         berti_positions = js("new Array()")
 
         for (y in 0 until LEV_DIMENSION_Y) {
             for (x in 0 until LEV_DIMENSION_X) {
-                level_array[x][y] = KtEntity(this);
-                level_array[x][y].init(res.levels[lev_number][x][y]);
+                level_array[x][y] = KtEntity(this)
+                level_array[x][y].init(res.levels[lev_number][x][y])
 
                 if (res.levels[lev_number][x][y] == 4) {
-                    num_bananas++;
+                    gameHandler.increaseBanana()
                 } else if (res.levels[lev_number][x][y] == 1) {
-                    level_array[x][y].berti_id = berti_counter;
-                    berti_positions[berti_counter] = js("{x: x, y: y}");
-                    berti_counter++;
+                    level_array[x][y].berti_id = berti_counter
+                    berti_positions[berti_counter] = js("{x: x, y: y}")
+                    berti_counter++
                 }
             }
         }
 
-        vis.init_animation();
+        vis.init_animation()
 
         if (berti_counter > 0) {
-            soundDataSource.play_sound(8);
+            soundDataSource.play_sound(8)
         }
     }
-
-
 
 
     fun dir_to_coords(curr_x: Int, curr_y: Int, dir: Int): dynamic {
-        var new_x = curr_x;
-        var new_y = curr_y;
+        var new_x = curr_x
+        var new_y = curr_y
 
         when (dir) {
             DIR_UP -> {
-                new_y--;
+                new_y--
             }
             DIR_DOWN -> {
-                new_y++;
+                new_y++
             }
             DIR_LEFT -> {
-                new_x--;
+                new_x--
             }
             DIR_RIGHT -> {
-                new_x++;
+                new_x++
             }
         }
 
-        return js("{x: new_x, y: new_y}");
+        return js("{x: new_x, y: new_y}")
 
     }
 
 
-    fun can_see_tile(eye_x: Int, eye_y: Int, tile_x: Int, tile_y: Int): Boolean {
-        val diff_x = tile_x - eye_x;
-        val diff_y = tile_y - eye_y;
 
-        var walk1_x: Int;
-        var walk1_y: Int;
-        var walk2_x: Int;
-        var walk2_y: Int;
-
-        if (diff_x == 0) {
-            when {
-                diff_y == 0 -> {
-                    return true;
-                }
-                diff_y > 0 -> {
-                    walk1_x = 0;
-                    walk1_y = 1;
-                    walk2_x = 0;
-                    walk2_y = 1;
-                }
-                else -> {// diff_y < 0
-                    walk1_x = 0;
-                    walk1_y = -1;
-                    walk2_x = 0;
-                    walk2_y = -1;
-                }
-            }
-        } else if (diff_x > 0) {
-            when {
-                diff_y == 0 -> {
-                    walk1_x = 1;
-                    walk1_y = 0;
-                    walk2_x = 1;
-                    walk2_y = 0;
-                }
-                diff_y > 0 -> {
-                    when {
-                        diff_y > diff_x -> {
-                            walk1_x = 0;
-                            walk1_y = 1;
-                            walk2_x = 1;
-                            walk2_y = 1;
-                        }
-                        diff_y == diff_x -> {
-                            walk1_x = 1;
-                            walk1_y = 1;
-                            walk2_x = 1;
-                            walk2_y = 1;
-                        }
-                        else -> {// diff_y < diff_x
-                            walk1_x = 1;
-                            walk1_y = 0;
-                            walk2_x = 1;
-                            walk2_y = 1;
-                        }
-                    }
-                }
-                else -> {// diff_y < 0
-                    when {
-                        diff_y * (-1) > diff_x -> {
-                            walk1_x = 0;
-                            walk1_y = -1;
-                            walk2_x = 1;
-                            walk2_y = -1;
-                        }
-                        diff_y * (-1) == diff_x -> {
-                            walk1_x = 1;
-                            walk1_y = -1;
-                            walk2_x = 1;
-                            walk2_y = -1;
-                        }
-                        else -> {// diff_y < diff_x
-                            walk1_x = 1;
-                            walk1_y = 0;
-                            walk2_x = 1;
-                            walk2_y = -1;
-                        }
-                    }
-                }
-            }
-        } else {// diff_x < 0
-            if (diff_y == 0) {
-                walk1_x = -1;
-                walk1_y = 0;
-                walk2_x = -1;
-                walk2_y = 0;
-            } else if (diff_y > 0) {
-                if (diff_y > diff_x * (-1)) {
-                    walk1_x = 0;
-                    walk1_y = 1;
-                    walk2_x = -1;
-                    walk2_y = 1;
-                } else if (diff_y == diff_x * (-1)) {
-                    walk1_x = -1;
-                    walk1_y = 1;
-                    walk2_x = -1;
-                    walk2_y = 1;
-                } else {// diff_y < diff_x
-                    walk1_x = -1;
-                    walk1_y = 0;
-                    walk2_x = -1;
-                    walk2_y = 1;
-                }
-            } else {// diff_y < 0
-                if (diff_y > diff_x) {
-                    walk1_x = -1;
-                    walk1_y = 0;
-                    walk2_x = -1;
-                    walk2_y = -1;
-                } else if (diff_y == diff_x) {
-                    walk1_x = -1;
-                    walk1_y = -1;
-                    walk2_x = -1;
-                    walk2_y = -1;
-                } else {// diff_y < diff_x
-                    walk1_x = 0;
-                    walk1_y = -1;
-                    walk2_x = -1;
-                    walk2_y = -1;
-                }
-            }
-        }
-
-
-        var x_offset = 0;
-        var y_offset = 0;
-        var x_ratio1: Int;
-        var y_ratio1: Int;
-        var x_ratio2: Int;
-        var y_ratio2: Int;
-        var diff1: Int;
-        var diff2: Int;
-
-        while (true) {
-            if (diff_x != 0) {
-                x_ratio1 = (x_offset + walk1_x) / diff_x;
-                x_ratio2 = (x_offset + walk2_x) / diff_x;
-            } else {
-                x_ratio1 = 1;
-                x_ratio2 = 1;
-            }
-            if (diff_y != 0) {
-                y_ratio1 = (y_offset + walk1_y) / diff_y;
-                y_ratio2 = (y_offset + walk2_y) / diff_y;
-            } else {
-                y_ratio1 = 1;
-                y_ratio2 = 1;
-            }
-
-            diff1 = abs(x_ratio1 - y_ratio1);
-            diff2 = abs(x_ratio2 - y_ratio2);
-
-            if (diff1 <= diff2) {
-                x_offset += walk1_x;
-                y_offset += walk1_y;
-            } else {
-                x_offset += walk2_x;
-                y_offset += walk2_y;
-            }
-
-            if (x_offset == diff_x && y_offset == diff_y) {
-                return true;
-            }
-            console.log("EXER  " + eye_x)
-            console.log("EXERx_offset  " + x_offset)
-            console.log("EXERy  " + eye_y)
-            console.log("EXERy_offset  " + y_offset)
-            x_offset = if (x_offset < 0) {
-                return false;
-
-            } else {
-                x_offset
-            }
-            y_offset = if (y_offset < 0) {
-                return false;
-
-            } else {
-                y_offset
-            }
-            if (level_array[eye_x + x_offset][eye_y + y_offset].id != 0 && level_array[eye_x + x_offset][eye_y + y_offset].id != -1 && !level_array[eye_x + x_offset][eye_y + y_offset].is_small) {
-                return false;
-            }
-        }
-        // Code here is unreachable
-
-    }
 
 
     fun next_level() {
         if (level_number >= 50 || level_number < 0) {
-            mode = GameMode.PLAY;
-            steps_taken = 0;
-            soundDataSource.play_sound(6);
-            buttons_activated[0] = false;
-            buttons_activated[2] = false;
-            return;
+            mode = GameMode.PLAY
+            gameHandler.resetSteps()
+            soundDataSource.play_sound(6)
+            buttons_activated[0] = false
+            buttons_activated[2] = false
+            return
         }
-        load_level(level_number + 1);// Prevent overflow here
+        load_level(level_number + 1)// Prevent overflow here
         if (level_number > level_unlocked) {
-            level_unlocked = level_number;
+            level_unlocked = level_number
         }
     }
-
 
 
     fun prev_level() {
         if (level_number >= 1) {
-            load_level(level_number - 1);
+            load_level(level_number - 1)
+        }
+    }
+    fun kt_update_entities(input: MyInput) {
+        var tick = (update_tick * 60 / UPS)
+        var synced_move = (tick % (12 / move_speed)) == 0.0
+
+        // The player moves first at all times to ensure the best response time and remove directional quirks.
+        // The player moves first at all times to ensure the best response time and remove directional quirks.
+        for (position in berti_positions) {
+            level_array[position.x][position.y].register_input(position.x, position.y, !synced_move, input)
+        }
+
+        if (synced_move) {
+            // NPC logic and stop walking logic.
+            for (y in 0 until LEV_DIMENSION_Y) {
+                for (x in 0 until LEV_DIMENSION_X) {
+                    when (level_array[x][y].id) {
+                        2 -> {// MENU Berti
+                            level_array[x][y].move_randomly(x, y)
+                        }
+                        7, 10 -> {// Purple and green monster
+                            level_array[x][y].chase_berti(x, y)
+                        }
+                    }
+
+                    if (level_array[x][y].just_moved) {
+                        level_array[x][y].just_moved = false
+                        vis.update_animation(x, y)
+                    }
+                }
+            }
+        }
+
+        // After calculating who moves where, the entities actually get updated.
+        for (y in 0 until LEV_DIMENSION_Y) {
+            for (x in 0 until LEV_DIMENSION_X) {
+                level_array[x][y].updateEntity(x, y)
+            }
+        }
+
+        // Gameover condition check.
+        for (position in berti_positions) {
+            level_array[position.x][position.y].check_enemy_proximity(position.x, position.y)
         }
     }
 
-
     fun reset_level() {
-        if (mode == GameMode.ENTRY) {
-            load_level(3);
-        } else if (mode == GameMode.MENU) {
-            if (level_number == 0) {
-                load_level(1);
-            } else {
-                load_level(level_number);
+        when (mode) {
+            GameMode.ENTRY -> {
+                load_level(3)
+            }
+            GameMode.MENU -> {
+                if (level_number == 0) {
+                    load_level(1)
+                } else {
+                    load_level(level_number)
+                }
             }
         }
     }
 
-    fun toggle_paused() {
-        paused = !paused
-    }
-
-
-
 
     fun toggle_single_steps() {
         if (single_steps) {
-            walk_dir = DIR_NONE;
-            single_steps = false;
+            walk_dir = DIR_NONE
+            single_steps = false
         } else {
-            single_steps = true;
+            single_steps = true
         }
     }
-
 
 
     fun get_adjacent_tiles(tile_x: Int, tile_y: Int): Array<Tile> {
@@ -411,12 +321,12 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
 
 
     fun start_move(src_x: Int, src_y: Int, dir: Int) {
-        var dst = dir_to_coords(src_x, src_y, dir);
-        level_array[src_x][src_y].moving = true;
-        level_array[src_x][src_y].face_dir = dir;
+        var dst = dir_to_coords(src_x, src_y, dir)
+        level_array[src_x][src_y].moving = true
+        level_array[src_x][src_y].face_dir = dir
 
         if (level_array[src_x][src_y].id == 1) {
-            steps_taken++;
+            gameHandler.increaseSteps()
         }
 
         if ((level_array[src_x][src_y].id == 1 || level_array[src_x][src_y].id == 2) && level_array[dst.x][dst.y].consumable) {
@@ -424,80 +334,80 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
         } else if (level_array[dst.x][dst.y].moving) {
             // It's moving out of place by itself, don't do anything
         } else if (level_array[dst.x][dst.y].id != 0) {
-            level_array[src_x][src_y].pushing = true;
-            start_move(dst.x, dst.y, dir);
+            level_array[src_x][src_y].pushing = true
+            start_move(dst.x, dst.y, dir)
         } else {
-            level_array[dst.x][dst.y].init(-1);// DUMMYBLOCK, invisible and blocks everything.
+            level_array[dst.x][dst.y].init(-1)// DUMMYBLOCK, invisible and blocks everything.
         }
 
-        vis.update_animation(src_x, src_y);
+        vis.update_animation(src_x, src_y)
 
 
     }
 
     fun move(src_x: Int, src_y: Int, dir: Int) {
-        var dst = dir_to_coords(src_x, src_y, dir);
-        level_array[src_x][src_y].moving = false;
-        level_array[src_x][src_y].moving_offset = js("{x: 0, y: 0}");
-        level_array[src_x][src_y].pushing = false;
+        var dst = dir_to_coords(src_x, src_y, dir)
+        level_array[src_x][src_y].moving = false
+        level_array[src_x][src_y].moving_offset = js("{x: 0, y: 0}")
+        level_array[src_x][src_y].pushing = false
 
         if ((level_array[src_x][src_y].id == 1 || level_array[src_x][src_y].id == 2) && level_array[dst.x][dst.y].consumable) {
             when (level_array[dst.x][dst.y].id) {// Done Om nom nom
                 4 -> {
-                    num_bananas--;
-                    if (num_bananas <= 0) {
-                        wait_timer = LEV_STOP_DELAY * UPS;
-                        level_ended = GameState.WON;
+                    gameHandler.decreaseBanana()
+                    if (gameHandler.getBananas() <= 0) {
+                        wait_timer = LEV_STOP_DELAY * UPS
+                        levelState = GameState.WON
                         if (Random.nextDouble() < 0.50) {
-                            wow = true;
-                            soundDataSource.play_sound(10);// wow
+                            wow = true
+                            soundDataSource.play_sound(10)// wow
                         } else {
-                            wow = false;
-                            soundDataSource.play_sound(11);// yeah
+                            wow = false
+                            soundDataSource.play_sound(11)// yeah
                         }
-                        vis.update_all_animations();
+                        vis.update_all_animations()
                     } else {
-                        soundDataSource.play_sound(7);// Om nom nom
+                        soundDataSource.play_sound(7)// Om nom nom
                     }
                 }
                 13 -> {
-                    remove_door(19);
+                    remove_door(19)
                 }
                 14 -> {
-                    remove_door(20);
+                    remove_door(20)
                 }
                 15 -> {
-                    remove_door(21);
+                    remove_door(21)
                 }
                 16 -> {
-                    remove_door(22);
+                    remove_door(22)
                 }
                 17 -> {
-                    remove_door(24);
+                    remove_door(24)
                 }
                 else -> {
                     console.log("003: Something went mighty wrong! Blame the programmer! " + level_array[dst.x][dst.y].id)
                 }
             }
         } else if (level_array[dst.x][dst.y].id != -1 && level_array[dst.x][dst.y].id != 0) {
-            move(dst.x, dst.y, dir);
+            move(dst.x, dst.y, dir)
         } else if (sound) {// we need another logic to determine this correctly...DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            var dst2 = dir_to_coords(dst.x, dst.y, dir);
+            var dst2 = dir_to_coords(dst.x, dst.y, dir)
             if ((level_array[src_x][src_y].id == 5 || level_array[src_x][src_y].id == 6) &&
                 (!is_in_bounds(dst2.x, dst2.y) || level_array[dst2.x][dst2.y].id == 3)
             ) {
-                soundDataSource.play_sound(5);
+                soundDataSource.play_sound(5)
             }
         }
 
-        var swapper = level_array[dst.x][dst.y];
-        level_array[dst.x][dst.y] = level_array[src_x][src_y];
-        level_array[src_x][src_y] = swapper;
+        var swapper = level_array[dst.x][dst.y]
+        level_array[dst.x][dst.y] = level_array[src_x][src_y]
+        level_array[src_x][src_y] = swapper
 
-        var back_dir = opposite_dir(dir);
-        var before_src = dir_to_coords(src_x, src_y, back_dir);
+        var back_dir = opposite_dir(dir)
+        var before_src = dir_to_coords(src_x, src_y, back_dir)
 
-        var possibilities = arrayOf(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT);
+        var possibilities = arrayOf(DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT)
         for (i in possibilities.indices) {
             if (possibilities[i] == dir || possibilities[i] == back_dir) {
                 //TODO: Find out how this works in Kotlin
@@ -509,8 +419,8 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
             }
         }
 
-        var before_src2 = dir_to_coords(src_x, src_y, possibilities[0]);
-        var before_src3 = dir_to_coords(src_x, src_y, possibilities[1]);
+        var before_src2 = dir_to_coords(src_x, src_y, possibilities[0])
+        var before_src3 = dir_to_coords(src_x, src_y, possibilities[1])
 
         if (
             (is_in_bounds(
@@ -526,22 +436,22 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
                         before_src3.y
                     ) && (level_array[before_src3.x][before_src3.y].is_small && level_array[before_src3.x][before_src3.y].moving && level_array[before_src3.x][before_src3.y].face_dir == possibilities[0])))
         ) {
-            level_array[src_x][src_y].init(-1);
+            level_array[src_x][src_y].init(-1)
         } else {
-            level_array[src_x][src_y].init(0);
+            level_array[src_x][src_y].init(0)
         }
         if (level_array[dst.x][dst.y].id == 1) {// Rectify the position of berti
-            berti_positions[level_array[dst.x][dst.y].berti_id] = dst;
+            berti_positions[level_array[dst.x][dst.y].berti_id] = dst
         }
 
     }
 
     fun remove_door(id: Int) {
-        soundDataSource.play_sound(9);
+        soundDataSource.play_sound(9)
         for (y in 0 until LEV_DIMENSION_Y) {
             for (x in 0 until LEV_DIMENSION_X) {
                 if (level_array[x][y].id == id) {
-                    level_array[x][y].gets_removed_in = door_removal_delay;
+                    level_array[x][y].gets_removed_in = door_removal_delay
                 }
             }
         }
@@ -550,28 +460,28 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
 
     // Whether you can walk from a tile in a certain direction, boolean
     fun walkable(curr_x: Int, curr_y: Int, dir: Int): Boolean {
-        var dst = dir_to_coords(curr_x, curr_y, dir);
+        var dst = dir_to_coords(curr_x, curr_y, dir)
 
         if (!is_in_bounds(dst.x, dst.y)) {// Can't go out of boundaries
-            return false;
+            return false
         }
 
         if (level_array[dst.x][dst.y].id == 0) {// Blank space is always walkable
-            return true;
+            return true
         } else if (!level_array[dst.x][dst.y].moving) {
             if ((level_array[curr_x][curr_y].id == 1 || level_array[curr_x][curr_y].id == 2) && level_array[dst.x][dst.y].consumable) {// Berti and MENU Berti can pick up items.
-                return true;
+                return true
             } else {
                 if (level_array[curr_x][curr_y].can_push && level_array[dst.x][dst.y].pushable) {
-                    return walkable(dst.x, dst.y, dir);
+                    return walkable(dst.x, dst.y, dir)
                 } else {
-                    return false;
+                    return false
                 }
             }
         } else if (level_array[dst.x][dst.y].face_dir == dir || (level_array[curr_x][curr_y].is_small && level_array[dst.x][dst.y].is_small)) {// If the block is already moving away in the right direction
-            return true;
+            return true
         } else {
-            return false;
+            return false
         }
     }
 
@@ -582,64 +492,64 @@ class KtGame(val volumeBar: VolumeBar, val res: MyRes, val saveGameDataSource: S
 
     fun dbxcall_load(uname: String?, pass: String): Boolean {
         if (uname === null || uname == "") {
-            vis.error_dbx(ERR_EMPTYNAME);
-            return false;
+            vis.error_dbx(ERR_EMPTYNAME)
+            return false
         }
 
-        var result = saveGameDataSource.retrieve_savegame(uname, pass);
+        var result = saveGameDataSource.retrieve_savegame(uname, pass)
         if (result == ERR_SUCCESS) {
-            level_unlocked = savegame.reached_level;
+            level_unlocked = savegame.reached_level
             if (level_unlocked >= 50) {
-                load_level(50);
+                load_level(50)
             } else {
-                load_level(level_unlocked);
+                load_level(level_unlocked)
             }
         } else {
-            vis.error_dbx(result);
-            return false;
+            vis.error_dbx(result)
+            return false
         }
 
-        return true;
+        return true
     }
 
 
     // Those calls are on a higher abstraction levels and can be safely used by dialog boxes:
     fun dbxcall_save(uname: String?, pass: String): Boolean {
-        var result: Int;
+        var result: Int
         if (uname === null || uname == "") {
-            vis.error_dbx(ERR_EMPTYNAME);
-            return false;
+            vis.error_dbx(ERR_EMPTYNAME)
+            return false
         }
 
         if (savegame.username === null) {
-            result = saveGameDataSource.name_savegame(uname, pass);
+            result = saveGameDataSource.name_savegame(uname, pass)
             if (result != ERR_SUCCESS) {
-                vis.error_dbx(result);
-                return false;
+                vis.error_dbx(result)
+                return false
             }
         }
 
-        result = saveGameDataSource.store_savegame();
+        result = saveGameDataSource.store_savegame()
         if (result != ERR_SUCCESS) {
-            vis.error_dbx(result);
-            return false;
+            vis.error_dbx(result)
+            return false
         }
 
-        return true;
+        return true
     }
 
     fun createNewGame() {
         saveGameDataSource.clear_savegame()
-        level_unlocked = 1;
-        load_level(level_unlocked);
+        level_unlocked = 1
+        load_level(level_unlocked)
     }
 
     override fun onSoundChanged(vol: Double) {
-        volumeBar.volume = vol;
-        val newVol = vol.pow(3.0);// LOGARITHMIC!
+        volumeBar.volume = vol
+        val newVol = vol.pow(3.0)// LOGARITHMIC!
 
         for (element in res.sounds) {
-            element.volume = newVol;
+            element.volume = newVol
         }
     }
 

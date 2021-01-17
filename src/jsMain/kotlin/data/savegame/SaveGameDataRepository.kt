@@ -1,11 +1,16 @@
 package data.savegame
 
 import App
+import KtVisual.Companion.ERR_EXISTS
+import KtVisual.Companion.ERR_NOSAVE
+import KtVisual.Companion.ERR_NOTFOUND
+import KtVisual.Companion.ERR_SUCCESS
+import KtVisual.Companion.ERR_WRONGPW
 import de.jensklingenberg.bananiakt.SaveGame
 import kotlinx.browser.localStorage
 import md5
 
-class SaveGameDataRepository: SaveGameDataSource {
+class SaveGameDataRepository : SaveGameDataSource {
     var savegame = SaveGame();
     override fun update_savegame(lev: Int, steps: Int) {
         if (savegame.reached_level <= lev) {
@@ -28,8 +33,7 @@ class SaveGameDataRepository: SaveGameDataSource {
     }
 
 
-
-   override fun store_savegame(): Int {
+    override fun store_savegame(): Int {
         if (localStorage.getItem("user_count") == null) {
             localStorage.setItem("user_count", "1");
             savegame.usernumber = 0
@@ -48,7 +52,7 @@ class SaveGameDataRepository: SaveGameDataSource {
         }
 
         savegame.progressed = false
-        return App.ERR_SUCCESS
+        return ERR_SUCCESS
 
     }
 
@@ -59,19 +63,19 @@ class SaveGameDataRepository: SaveGameDataSource {
             for (i in 0 until userCountNum) {
                 var prefix = "player" + i + "_";
                 if (localStorage.getItem(prefix + "username") == uname) {
-                    return App.ERR_EXISTS;// Failed already exists
+                    return ERR_EXISTS;// Failed already exists
                 }
             }
         }
         savegame.username = uname;
         savegame.password = md5.digest(pass)
-        return App.ERR_SUCCESS;// Worked
+        return ERR_SUCCESS;// Worked
     }
 
-    override  fun retrieve_savegame(uname: String, pass: String): Int {
+    override fun retrieve_savegame(uname: String, pass: String): Int {
         var user_count = localStorage.getItem("user_count")?.toIntOrNull() ?: 0;
         if (user_count == 0) {
-            return App.ERR_NOSAVE;// There are no save games
+            return ERR_NOSAVE;// There are no save games
         }
 
         val md5pass = md5.digest(pass);
@@ -93,12 +97,12 @@ class SaveGameDataRepository: SaveGameDataSource {
 
 
 
-                    return App.ERR_SUCCESS;// Success!
+                    return ERR_SUCCESS;// Success!
                 } else {
-                    return App.ERR_WRONGPW;// Wrong password!
+                    return ERR_WRONGPW;// Wrong password!
                 }
             }
         }
-        return App.ERR_NOTFOUND;// There's no such name
+        return ERR_NOTFOUND;// There's no such name
     }
 }

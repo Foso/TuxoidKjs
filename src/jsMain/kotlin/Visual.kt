@@ -8,12 +8,7 @@ import App.Companion.DIR_DOWN
 import App.Companion.DIR_LEFT
 import App.Companion.DIR_RIGHT
 import App.Companion.DIR_UP
-import App.Companion.ERR_EMPTYNAME
-import App.Companion.ERR_EXISTS
-import App.Companion.ERR_NOSAVE
-import App.Companion.ERR_NOTFOUND
-import App.Companion.ERR_SUCCESS
-import App.Companion.ERR_WRONGPW
+
 import App.Companion.MYCTX
 import App.Companion.ktGame
 import data.savegame.SaveGameDataSource
@@ -21,34 +16,41 @@ import data.sound.SoundDataSource
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import model.Block
+import org.w3c.dom.BOTTOM
+import org.w3c.dom.CanvasTextAlign
+import org.w3c.dom.CanvasTextBaseline
+import org.w3c.dom.RIGHT
 import org.w3c.dom.events.MouseEvent
 import ui.menu.Menu
 import ui.menu.SubMenu
 import ui.volumebar.VolumeBar
+import kotlin.js.Date
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
 
 
-interface Contract{
-    interface Presenter{
+interface Contract {
+    interface Presenter {
         fun init()
         fun shutdown()
     }
-    interface View{
-        fun setupMenu(subMenus : Array<SubMenu>)
+
+    interface View {
+        fun setupMenu(subMenus: Array<SubMenu>)
     }
 }
 
 
 class KtVisual(
-    val vol_bar: VolumeBar,
-    val input: MyInput,
-    val res: MyRes,
+    private val vol_bar: VolumeBar,
+    private val input: MyInput,
+    private val res: MyRes,
     private val saveGameDataSource: SaveGameDataSource,
-   val soundDataSource: SoundDataSource
-) :Contract.View{
-    val presenter : Contract.Presenter = Presenter(this,saveGameDataSource)
+    private val soundDataSource: SoundDataSource,
+    game: KtGame
+) : Contract.View {
+    val presenter: Contract.Presenter = Presenter(this, saveGameDataSource)
     val savegame = saveGameDataSource.getSaveGame()
     var berti_blink_time = 0;
     var last_rendered = 0.0;
@@ -73,6 +75,14 @@ class KtVisual(
     var offset_argl_x = -20;
     var offset_argl_y = -44;
 
+    companion object{
+        var ERR_SUCCESS = 0
+        var ERR_EXISTS = 1
+        var ERR_NOSAVE = 2
+        var ERR_WRONGPW = 3
+        var ERR_NOTFOUND = 4
+        var ERR_EMPTYNAME = 5
+    }
 
     lateinit var menu1: Menu
 
@@ -84,7 +94,6 @@ class KtVisual(
     var white = js("{r:255, g:255, b: 255}");
     var blue = js("{r:10, g:36, b:106}");
     var dbx = document.createElement("div").asDynamic();
-
 
 
     fun error_dbx(errno: Int) {
@@ -116,6 +125,7 @@ class KtVisual(
         }
         dbx.errfield.innerHTML = err_string;
     }
+
     override fun setupMenu(subMenus: Array<SubMenu>) {
         menu1 = Menu(1, 2, 17, subMenus);
 
@@ -169,6 +179,7 @@ class KtVisual(
             dbx.arr_input[0].focus();
         }
     }
+
 
     fun close_dbx() {
         dbx.style.display = "none";
@@ -259,6 +270,32 @@ class KtVisual(
         add_errfield(20, 85);
     }
 
+    fun render_fps(game: KtGame) {
+        var now = Date.now()
+
+        if (now - fps_delay >= 250) {
+            val delta_rendered = now - vis.last_rendered
+            vis.apply {
+                static_ups = ((1000 / game.delta_updated).toFixed(2))
+                static_fps = ((1000 / delta_rendered).toFixed(2))
+
+                fps_delay = now
+            }
+        }
+
+        MYCTX.apply {
+            fillStyle = "rgb(255, 0, 0)"
+            font = "12px Helvetica"
+            textAlign = CanvasTextAlign.RIGHT
+            textBaseline = CanvasTextBaseline.BOTTOM
+            fillText(
+                "UPS: " + vis.static_ups + " FPS:" + vis.static_fps + " ", GameSettings.SCREEN_WIDTH.toDouble(),
+                GameSettings.SCREEN_HEIGHT.toDouble()
+            )
+        }
+
+        vis.last_rendered = now
+    }
 
     fun dbx_charts() {
         ktGame.soundDataSource.play_sound(4);
@@ -760,7 +797,7 @@ class KtVisual(
 
     fun kt_update_animation_case2(x: Int, y: Int, block: Block) {
         block.fine_offset_x = 0;
-        if (ktGame.level_ended == GameState.RUNNING) {
+        if (ktGame.levelState == GameState.RUNNING) {
             if (block.moving) {
                 block.fine_offset_x = -1;
                 if (block.pushing) {
@@ -813,9 +850,9 @@ class KtVisual(
             } else {
                 block.animation_frame = 59;
             }
-        } else if (ktGame.level_ended == GameState.WON) {
+        } else if (ktGame.levelState == GameState.WON) {
             block.animation_frame = 61;
-        } else if (ktGame.level_ended == GameState.DIED) {
+        } else if (ktGame.levelState == GameState.DIED) {
             block.animation_frame = 62;
         }
 
@@ -831,7 +868,7 @@ class KtVisual(
             7 -> {
                 // Purple monster (Monster 2)
                 block.fine_offset_x = 0
-                if (ktGame.level_ended == GameState.RUNNING) {
+                if (ktGame.levelState == GameState.RUNNING) {
                     if (block.moving) {
                         block.fine_offset_x = -1;
                         if (block.pushing) {
@@ -902,7 +939,7 @@ class KtVisual(
             10 -> {
                 // Green monster (Monster 2)
                 block.fine_offset_x = 0
-                if (ktGame.level_ended == GameState.RUNNING) {
+                if (ktGame.levelState == GameState.RUNNING) {
                     if (block.moving) {
                         block.fine_offset_x = -1;
                         when (block.face_dir) {
