@@ -48,7 +48,8 @@ class KtVisual(
     private val res: MyRes,
     private val saveGameDataSource: SaveGameDataSource,
     private val soundDataSource: SoundDataSource,
-    game: KtGame
+    game: KtGame,
+    val dbx: dynamic
 ) : Contract.View {
     val presenter: Contract.Presenter = Presenter(this, saveGameDataSource)
     val savegame = saveGameDataSource.getSaveGame()
@@ -86,14 +87,7 @@ class KtVisual(
 
     lateinit var menu1: Menu
 
-    // ui.menu.Menu stuff:
-    var black = js("{r:0, g:0, b: 0}")
-    var dark_grey = js("{r:64, g:64, b:64}")
-    var med_grey = js("{r:128, g:128, b:128}")
-    var light_grey = js("{r:212, g:208, b:200}")
-    var white = js("{r:255, g:255, b: 255}")
-    var blue = js("{r:10, g:36, b:106}")
-    var dbx = document.createElement("div").asDynamic()
+
 
 
     fun error_dbx(errno: Int) {

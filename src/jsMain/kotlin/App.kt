@@ -1,3 +1,10 @@
+import Color.Companion.black
+import Color.Companion.blue
+import Color.Companion.dark_grey
+import Color.Companion.light_grey
+import Color.Companion.med_grey
+import Color.Companion.toRgbString
+import Color.Companion.white
 import GameSettings.Companion.JOYSTICK_SIZE
 import data.savegame.SaveGameDataRepository
 import data.savegame.SaveGameDataSource
@@ -55,6 +62,8 @@ class App : KeyListener {
 
     }
 
+    var dbx = document.createElement("div").asDynamic()
+
     private val gameHandler: GameHandler = GameHandlerImpl()
     private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement
     private val vol_bar = VolumeBar()
@@ -75,7 +84,7 @@ class App : KeyListener {
 
 
     private val input: MyInput = MyInput(MYCANVAS, saveGameDataSource, soundDataSource, vol_bar, gameHandler)
-    val vis = KtVisual(vol_bar, input, res, saveGameDataSource, soundDataSource, game)
+    val vis = KtVisual(vol_bar, input, res, saveGameDataSource, soundDataSource, game, dbx)
 
     fun initCanvas() {
 
@@ -562,7 +571,7 @@ class App : KeyListener {
         for (i in 0 until vis.menu1.submenu_list.size) {
             var sm = vis.menu1.submenu_list[i]
             if (i == vis.menu1.submenu_open) {
-                MYCTX.fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")"
+                MYCTX.fillStyle = toRgbString(light_grey)
                 MYCTX.fillRect(
                     vis.menu1.offset_x + submenu_offset,
                     (vis.menu1.offset_y + vis.menu1.height + 1).toDouble(),
@@ -570,7 +579,7 @@ class App : KeyListener {
                     sm.dd_height.toDouble()
                 )// Options box
 
-                MYCTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")"
+                MYCTX.fillStyle = toRgbString(med_grey)
                 MYCTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y.toDouble(), sm.width, 1)
                 MYCTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y.toDouble(), 1, vis.menu1.height)
                 MYCTX.fillRect(
@@ -586,7 +595,7 @@ class App : KeyListener {
                     1
                 )// Options box
 
-                MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")"
+                MYCTX.fillStyle = toRgbString(white)
                 MYCTX.fillRect(vis.menu1.offset_x + submenu_offset, vis.menu1.offset_y + vis.menu1.height, sm.width, 1)
                 MYCTX.fillRect(
                     vis.menu1.offset_x + submenu_offset + sm.width - 1,
@@ -607,7 +616,7 @@ class App : KeyListener {
                     1
                 )// Options box
 
-                MYCTX.fillStyle = "rgb(" + vis.dark_grey.r + ", " + vis.dark_grey.g + ", " + vis.dark_grey.b + ")"
+                MYCTX.fillStyle = toRgbString(dark_grey)
                 MYCTX.fillRect(
                     vis.menu1.offset_x + submenu_offset + sm.dd_width - 1,
                     vis.menu1.offset_y + vis.menu1.height + 1,
@@ -623,7 +632,7 @@ class App : KeyListener {
 
                 //input.mouse_pos.x
                 var option_offset = vis.menu1.offset_y + vis.menu1.height + 4
-                MYCTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")"
+                MYCTX.fillStyle = toRgbString(black)
 
                 for (j in 0 until sm.options.size) {
                     var next_offset: Int
@@ -631,14 +640,14 @@ class App : KeyListener {
                     if (sm.options[j].line) {
                         next_offset = option_offset + sm.offset_line
 
-                        MYCTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")"
+                        MYCTX.fillStyle = toRgbString(med_grey)
                         MYCTX.fillRect(
                             vis.menu1.offset_x + submenu_offset + 3,
                             option_offset + 3,
                             sm.dd_width - 6,
                             1
                         )// Separator line
-                        MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")"
+                        MYCTX.fillStyle = toRgbString(white)
                         MYCTX.fillRect(
                             vis.menu1.offset_x + submenu_offset + 3,
                             option_offset + 4,
@@ -653,27 +662,27 @@ class App : KeyListener {
                     if (!sm.options[j].line && input.mouse_pos.x > vis.menu1.offset_x + submenu_offset && input.mouse_pos.x < vis.menu1.offset_x + submenu_offset + sm.dd_width &&
                         input.mouse_pos.y > option_offset && input.mouse_pos.y < next_offset
                     ) {
-                        MYCTX.fillStyle = "rgb(" + vis.blue.r + ", " + vis.blue.g + ", " + vis.blue.b + ")"
+                        MYCTX.fillStyle = toRgbString(blue)
                         MYCTX.fillRect(
                             vis.menu1.offset_x + submenu_offset + 3,
                             option_offset,
                             sm.dd_width - 6,
                             sm.offset_text
                         )// Options box
-                        MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")"
+                        MYCTX.fillStyle = toRgbString(white)
 
                         check_image = 172
                     } else if (!sm.options[j].on()) {
-                        MYCTX.fillStyle = "rgb(" + vis.white.r + ", " + vis.white.g + ", " + vis.white.b + ")"
+                        MYCTX.fillStyle = toRgbString(white)
                         MYCTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 21, option_offset + 2)
                     } else {
-                        MYCTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")"
+                        MYCTX.fillStyle = toRgbString(black)
                     }
 
                     if (sm.options[j].on()) {
                         MYCTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1)
                     } else {
-                        MYCTX.fillStyle = "rgb(" + vis.med_grey.r + ", " + vis.med_grey.g + ", " + vis.med_grey.b + ")"
+                        MYCTX.fillStyle = toRgbString(med_grey)
                         MYCTX.fillText(sm.options[j].name, vis.menu1.offset_x + submenu_offset + 20, option_offset + 1)
                     }
 
@@ -691,14 +700,14 @@ class App : KeyListener {
 
                 }
             }
-            MYCTX.fillStyle = "rgb(" + vis.black.r + ", " + vis.black.g + ", " + vis.black.b + ")"
+            MYCTX.fillStyle = toRgbString(black)
             MYCTX.fillText(sm.name, vis.menu1.offset_x + submenu_offset + 6, vis.menu1.offset_y + 3)
             submenu_offset += sm.width as Double
         }
     }
 
 
-        fun render() {
+    fun render() {
 
         game.now = Date.now()
         val elapsed = game.now - game.then
@@ -787,7 +796,7 @@ class App : KeyListener {
             kt_render_menu(input, res, gameHandler)
         } else {
             MYCTX.apply {
-                fillStyle = "rgb(" + vis.light_grey.r + ", " + vis.light_grey.g + ", " + vis.light_grey.b + ")"
+                fillStyle = toRgbString(light_grey)
                 fillRect(0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT)// Options box
                 fillStyle = "rgb(0, 0, 0)"
                 font = "36px Helvetica"
@@ -823,7 +832,7 @@ class App : KeyListener {
             }
         }
 
-        if (vis.dbx.firstChild) {// If a dialog box is open
+        if (dbx.firstChild) {// If a dialog box is open
             when (evt.keyCode) {
                 Key.ENTER.value -> {// Enter
                     vis.dbx.enterfun()
