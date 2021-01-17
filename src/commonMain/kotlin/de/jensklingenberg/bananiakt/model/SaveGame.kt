@@ -1,4 +1,4 @@
-package de.jensklingenberg.bananiakt
+package de.jensklingenberg.bananiakt.model
 class SaveGame {
     var usernumber: Int = -1
     var username: String? = null

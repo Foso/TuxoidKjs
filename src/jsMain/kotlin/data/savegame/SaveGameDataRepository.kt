@@ -1,12 +1,11 @@
 package data.savegame
 
-import App
 import KtVisual.Companion.ERR_EXISTS
 import KtVisual.Companion.ERR_NOSAVE
 import KtVisual.Companion.ERR_NOTFOUND
 import KtVisual.Companion.ERR_SUCCESS
 import KtVisual.Companion.ERR_WRONGPW
-import de.jensklingenberg.bananiakt.SaveGame
+import de.jensklingenberg.bananiakt.model.SaveGame
 import kotlinx.browser.localStorage
 import md5
 

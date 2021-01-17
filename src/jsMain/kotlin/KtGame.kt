@@ -11,9 +11,9 @@ import data.savegame.SaveGameDataSource
 import data.sound.SoundDataSource
 import data.sound.VolumeChangeListener
 import de.jensklingenberg.bananiakt.Tile
+import de.jensklingenberg.bananiakt.model.GameMode
 import ui.volumebar.VolumeBar
 import kotlin.js.Date
-import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.random.Random

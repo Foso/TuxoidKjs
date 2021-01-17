@@ -1,6 +1,6 @@
 package data.savegame
 
-import de.jensklingenberg.bananiakt.SaveGame
+import de.jensklingenberg.bananiakt.model.SaveGame
 
 interface SaveGameDataSource {
 

@@ -6,4 +6,8 @@ class TestCanvas(val MYCTX: CanvasRenderingContext2D) : MyCanvas {
 
     }
 
+    override fun drawImage(b: dynamic, toDouble: Int, d: Int) {
+        MYCTX.drawImage(b,toDouble,d)
+    }
+
 }
