@@ -1,10 +1,3 @@
-import Color.Companion.black
-import Color.Companion.blue
-import Color.Companion.dark_grey
-import Color.Companion.light_grey
-import Color.Companion.med_grey
-import Color.Companion.toRgbString
-import Color.Companion.white
 import GameSettings.Companion.JOYSTICK_SIZE
 import data.savegame.SaveGameDataRepository
 import data.savegame.SaveGameDataSource
@@ -15,6 +8,13 @@ import de.jensklingenberg.bananiakt.model.GameMode
 import kotlinx.browser.document
 import kotlinx.browser.window
 import model.Block
+import model.Color.Companion.black
+import model.Color.Companion.blue
+import model.Color.Companion.dark_grey
+import model.Color.Companion.light_grey
+import model.Color.Companion.med_grey
+import model.Color.Companion.toRgbString
+import model.Color.Companion.white
 import org.w3c.dom.BOTTOM
 import org.w3c.dom.CENTER
 import org.w3c.dom.CanvasRenderingContext2D
@@ -57,15 +57,16 @@ class App : KeyListener {
         var DIR_RIGHT = 3
         var LEV_START_DELAY = 1
         var UPS: Int = 60
-        lateinit var MYCTX: CanvasRenderingContext2D
-        lateinit var ktGame: KtGame
 
+        lateinit var ktGame: KtGame
+        private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement
+        val MYCTX: CanvasRenderingContext2D = MYCANVAS.getContext("2d") as CanvasRenderingContext2D
     }
 
     var dbx = document.createElement("div").asDynamic()
 
     private val gameHandler: GameHandler = GameHandlerImpl()
-    private val MYCANVAS: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement
+
     private val vol_bar = VolumeBar()
     private val res = MyRes()
     private val saveGameDataSource: SaveGameDataSource = SaveGameDataRepository()
@@ -88,7 +89,7 @@ class App : KeyListener {
 
     fun initCanvas() {
 
-        MYCTX = MYCANVAS.getContext("2d") as CanvasRenderingContext2D
+
         MYCANVAS.apply {
             width = GameSettings.SCREEN_WIDTH
             height = GameSettings.SCREEN_HEIGHT
@@ -143,7 +144,7 @@ class App : KeyListener {
     }
 
 
-    fun render_displays(res: MyRes, myCanvas: MyCanvas) {
+    fun renderToolbar(res: MyRes, myCanvas: MyCanvas) {
 
         val toolbar = Toolbar(res, myCanvas)
         toolbar.renderStepsDisplay(gameHandler.getStepsTaken().toString())
@@ -770,7 +771,7 @@ class App : KeyListener {
                 drawImage(res.images[MyImage.Steps], 22.0, 41.0)// Steps
                 drawImage(res.images[MyImage.Ladder], 427.0, 41.0)// Ladder
             }
-            render_displays(res, TestCanvas(MYCTX))
+            renderToolbar(res, TestCanvas(MYCTX))
             kt_render_buttons(MYCTX, input, res, game)
 
             when (game.mode) {
@@ -792,7 +793,7 @@ class App : KeyListener {
                     MYCTX.drawImage(res.images[170], LEV_OFFSET_X + 4, LEV_OFFSET_Y + 4)
                 }
             }
-            vis.render_vol_bar()
+            vis.renderVolumeBar()
             kt_render_menu(input, res, gameHandler)
         } else {
             MYCTX.apply {
@@ -835,10 +836,10 @@ class App : KeyListener {
         if (dbx.firstChild) {// If a dialog box is open
             when (evt.keyCode) {
                 Key.ENTER.value -> {// Enter
-                    vis.dbx.enterfun()
+                    dbx.enterfun()
                 }
                 Key.ESCAPE.value -> {// Esc
-                    vis.dbx.cancelfun()
+                    dbx.cancelfun()
                 }
             }
         }

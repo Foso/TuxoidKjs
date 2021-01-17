@@ -1,3 +1,5 @@
+package model
+
 class Color{
     companion object{
         var black = js("{r:0, g:0, b: 0}")

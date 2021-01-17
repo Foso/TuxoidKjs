@@ -264,23 +264,23 @@ class MyInput(
                 when (lastklick_option.effect_id) {
                     0 -> {
                         if (ktGame.savegame.progressed) {
-                            vis.open_dbx(DBX_CONFIRM, 0)
+                            vis.openDialog(DBX_CONFIRM, 0)
                         } else {
                             ktGame.createNewGame()
                         }
                     }
                     1 -> {
                         if (ktGame.savegame.progressed) {
-                            vis.open_dbx(DBX_CONFIRM, 1)
+                            vis.openDialog(DBX_CONFIRM, 1)
                         } else {
-                            vis.open_dbx(DBX_LOAD)
+                            vis.openDialog(DBX_LOAD)
                         }
                     }
                     2 -> {
                         if (ktGame.savegame.username !== null) {
                             saveGameDataSource.store_savegame()
                         } else {
-                            vis.open_dbx(DBX_SAVE)
+                            vis.openDialog(DBX_SAVE)
                         }
                     }
                     3 -> {
@@ -293,13 +293,13 @@ class MyInput(
                         ktGame.soundDataSource.toggle_sound()
                     }
                     6 -> {
-                        vis.open_dbx(DBX_LOADLVL)
+                        vis.openDialog(DBX_LOADLVL)
                     }
                     7 -> {
-                        vis.open_dbx(DBX_CHPASS)
+                        vis.openDialog(DBX_CHPASS)
                     }
                     8 -> {
-                        vis.open_dbx(DBX_CHARTS)
+                        vis.openDialog(DBX_CHARTS)
                     }
                 }
                 menu_pressed = -1

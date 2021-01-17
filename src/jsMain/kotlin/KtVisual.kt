@@ -16,6 +16,7 @@ import data.sound.SoundDataSource
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import model.Block
+import model.Color
 import org.w3c.dom.BOTTOM
 import org.w3c.dom.CanvasTextAlign
 import org.w3c.dom.CanvasTextBaseline
@@ -51,19 +52,19 @@ class KtVisual(
     game: KtGame,
     val dbx: dynamic
 ) : Contract.View {
-    val presenter: Contract.Presenter = Presenter(this, saveGameDataSource)
-    val savegame = saveGameDataSource.getSaveGame()
+    private val presenter: Contract.Presenter = Presenter(this, saveGameDataSource)
+    private val savegame = saveGameDataSource.getSaveGame()
     var berti_blink_time = 0
     var last_rendered = 0.0
-    var fps_delay = 0.0
-    var static_ups = 0.0
+    private var fps_delay = 0.0
+    private var static_ups = 0.0
     var static_fps = 0.0
 
     var buttons_pressed = arrayOf<dynamic>()
 
     // Animations:
     private var offset_key_x = 3
-    var offset_key_y = 4
+    private var offset_key_y = 4
     var offset_banana_x = 4
     var offset_banana_y = 4
 
@@ -76,7 +77,7 @@ class KtVisual(
     var offset_argl_x = -20
     var offset_argl_y = -44
 
-    companion object{
+    companion object {
         var ERR_SUCCESS = 0
         var ERR_EXISTS = 1
         var ERR_NOSAVE = 2
@@ -86,8 +87,6 @@ class KtVisual(
     }
 
     lateinit var menu1: Menu
-
-
 
 
     fun error_dbx(errno: Int) {
@@ -132,20 +131,26 @@ class KtVisual(
         buttons_pressed[1] == false
         buttons_pressed[0] == false
 
-        dbx.style.position = "fixed"
-        dbx.style.zIndex = 100
-        dbx.style.display = "none"
-        document.body?.appendChild(dbx)
-        dbx.drag_pos = js("{x:0, y:0}")
-        dbx.drag = false
-        dbx.arr_btn = arrayOf<dynamic>()
-        dbx.arr_input = arrayOf<dynamic>()
-        dbx.lvlselect = null
-        dbx.errfield = null
+        setupDbx()
     }
 
-    fun open_dbx(dbx_id: dynamic, opt: Int? = 0) {
-        close_dbx()
+    private fun setupDbx() {
+        with(dbx) {
+            style.position = "fixed"
+            style.zIndex = 100
+            style.display = "none"
+            drag_pos = js("{x:0, y:0}")
+            drag = false
+            arr_btn = arrayOf<dynamic>()
+            arr_input = arrayOf<dynamic>()
+            lvlselect = null
+            errfield = null
+        }
+        document.body?.appendChild(dbx)
+    }
+
+    fun openDialog(dbx_id: dynamic, opt: Int? = 0) {
+        closeDialog()
         when (dbx_id) {
             DBX_CONFIRM -> {
                 dbx_confirm(opt)
@@ -163,7 +168,7 @@ class KtVisual(
                 dbx_loadlvl()
             }
             DBX_CHARTS -> {
-                dbx_charts()
+                chartsDialog()
             }
         }
 
@@ -175,7 +180,7 @@ class KtVisual(
     }
 
 
-    fun close_dbx() {
+    fun closeDialog() {
         dbx.style.display = "none"
 
         // IMPORTANT MEMORY LEAK PREVENTION
@@ -213,7 +218,7 @@ class KtVisual(
     fun dbx_save(opt: dynamic) {
         add_title("Save game")
 
-        with(dbx){
+        with(dbx) {
             style.width = "256px"
             style.height = "213px"
             style.left = js("Math.max(Math.floor(window.innerWidth-256)/2, 0)+\"px\";")
@@ -234,26 +239,26 @@ class KtVisual(
             0 -> {// "Save game"
                 f_o = {
                     if (ktGame.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                        close_dbx()
+                        closeDialog()
                     }
                 }
-                f_c = { close_dbx(); }
+                f_c = { closeDialog(); }
             }
             1 -> {// "New Game" -> yes, save
                 f_o = {
                     if (ktGame.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                        ktGame.createNewGame();close_dbx()
+                        ktGame.createNewGame();closeDialog()
                     }
                 }
-                f_c = { ktGame.createNewGame();close_dbx(); }
+                f_c = { ktGame.createNewGame();closeDialog(); }
             }
             2 -> {// "Load Game" -> yes, save
                 f_o = {
                     if (ktGame.dbxcall_save(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                        open_dbx(DBX_LOAD)
+                        openDialog(DBX_LOAD)
                     }
                 }
-                f_c = { open_dbx(DBX_LOAD); }
+                f_c = { openDialog(DBX_LOAD); }
             }
         }
 
@@ -271,12 +276,12 @@ class KtVisual(
 
         if (now - fps_delay >= 250) {
             val delta_rendered = now - vis.last_rendered
-            vis.apply {
-                static_ups = ((1000 / game.delta_updated).toFixed(2))
-                static_fps = ((1000 / delta_rendered).toFixed(2))
 
-                fps_delay = now
-            }
+            static_ups = ((1000 / game.delta_updated).toFixed(2))
+            static_fps = ((1000 / delta_rendered).toFixed(2))
+
+            fps_delay = now
+
         }
 
         MYCTX.apply {
@@ -285,15 +290,15 @@ class KtVisual(
             textAlign = CanvasTextAlign.RIGHT
             textBaseline = CanvasTextBaseline.BOTTOM
             fillText(
-                "UPS: " + vis.static_ups + " FPS:" + vis.static_fps + " ", GameSettings.SCREEN_WIDTH.toDouble(),
+                "UPS: " + static_ups + " FPS:" + static_fps + " ", GameSettings.SCREEN_WIDTH.toDouble(),
                 GameSettings.SCREEN_HEIGHT.toDouble()
             )
         }
 
-        vis.last_rendered = now
+        last_rendered = now
     }
 
-    fun dbx_charts() {
+    fun chartsDialog() {
         ktGame.soundDataSource.play_sound(4)
 
         add_title("Charts")
@@ -330,7 +335,7 @@ class KtVisual(
             add_number(user_arr[i].steps, 95, 65 + 18 * i, 40, 20)
             add_text(user_arr[i].name, 155, 65 + 18 * i)
         }
-        var f_o = { close_dbx(); }
+        var f_o = { closeDialog(); }
 
         dbx.enterfun = f_o
         dbx.cancelfun = f_o
@@ -355,10 +360,10 @@ class KtVisual(
         var f_o = {
             if (dbx.lvlselect.value > 0) {
                 ktGame.load_level(dbx.lvlselect.value)
-                close_dbx()
+                closeDialog()
             }
         }
-        var f_c = { close_dbx(); }
+        var f_c = { closeDialog(); }
 
         dbx.enterfun = f_o
         dbx.cancelfun = f_c
@@ -395,10 +400,10 @@ class KtVisual(
 
         var f_o = {
             if (dbxcall_chpass(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                close_dbx()
+                closeDialog()
             }
         }
-        var f_c = { close_dbx(); }
+        var f_c = { closeDialog(); }
 
         dbx.enterfun = f_o
         dbx.cancelfun = f_c
@@ -412,7 +417,7 @@ class KtVisual(
     fun dbxcall_chpass(pass: String, newpass: String): Boolean {
         var result = change_password(pass, newpass)
         if (result != ERR_SUCCESS) {
-            vis.error_dbx(result)
+            error_dbx(result)
             return false
         }
 
@@ -445,10 +450,10 @@ class KtVisual(
 
         var f_o = {
             if (ktGame.dbxcall_load(dbx.arr_input[0].value, dbx.arr_input[1].value)) {
-                close_dbx()
+                closeDialog()
             }
         }
-        var f_c = { close_dbx(); }
+        var f_c = { closeDialog(); }
 
         dbx.enterfun = f_o
         dbx.cancelfun = f_c
@@ -471,14 +476,14 @@ class KtVisual(
 
         var f_y: () -> Unit = {}
         var f_n: () -> Unit = {}
-        var f_c = { close_dbx(); }
+        var f_c = { closeDialog(); }
 
         if (opt == 0) {// "New Game"
-            f_y = { open_dbx(DBX_SAVE, 1); }
-            f_n = { ktGame.createNewGame();close_dbx(); }
+            f_y = { openDialog(DBX_SAVE, 1); }
+            f_n = { ktGame.createNewGame();closeDialog(); }
         } else if (opt == 1) {// "Load Game"
-            f_y = { open_dbx(DBX_SAVE, 2); }
-            f_n = { open_dbx(DBX_LOAD); }
+            f_y = { openDialog(DBX_SAVE, 2); }
+            f_n = { openDialog(DBX_LOAD); }
         }
 
         dbx.enterfun = f_y
@@ -755,8 +760,8 @@ class KtVisual(
         }
     }
 
-    fun render_vol_bar() {
-        var vb = vis.vol_bar
+    fun renderVolumeBar() {
+        val vb = vol_bar
         var switcher = false
 
         for (i in 0 until vb.width) {
@@ -764,7 +769,7 @@ class KtVisual(
 
             if (switcher) {
                 switcher = false
-                MYCTX.fillStyle = "rgb(" + vb.colour_4.r + ", " + vb.colour_4.g + ", " + vb.colour_4.b + ")"
+                MYCTX.fillStyle = Color.toRgbString(vb.colour_4)
             } else {
                 switcher = true
                 var ratio2 = i / vb.width.toDouble()
@@ -779,10 +784,10 @@ class KtVisual(
                             ) + ")"
                     } else {
                         MYCTX.fillStyle =
-                            "rgb(" + vb.colour_5.r + ", " + vb.colour_5.g + ", " + vb.colour_5.b + ")"
+                            Color.toRgbString(vb.colour_5)
                     }
                 } else {
-                    MYCTX.fillStyle = "rgb(" + vb.colour_3.r + ", " + vb.colour_3.g + ", " + vb.colour_3.b + ")"
+                    MYCTX.fillStyle = Color.toRgbString(vb.colour_3)
                 }
 
             }
